@@ -1,0 +1,147 @@
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+.sidebar {
+  width: 300px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.closed {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 10;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--accent-secondary);
+}
+
+.sidebar-nav {
+  padding: 1rem;
+  flex: 1;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+}
+
+.nav-link.active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.tree-level-0,
+.tree-level-1,
+.tree-level-2 {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.tree-level-1 {
+  padding-left: 1rem;
+}
+
+.tree-level-2 {
+  padding-left: 2rem;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  color: var(--text-primary);
+}
+
+.tree-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+}
+
+.tree-item.active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.tree-item.expanded .tree-icon {
+  transform: rotate(0deg);
+}
+
+.tree-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.tree-name {
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-directory {
+  margin-bottom: 0.25rem;
+}
+
+.tree-file {
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 999;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  .sidebar.closed {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}

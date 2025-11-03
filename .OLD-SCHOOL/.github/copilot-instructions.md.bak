@@ -1,0 +1,1643 @@
+# GitHub Copilot Instructions - js-bambisleep-chat
+
+## 📑 Table of Contents
+
+- [🎯 Project Overview](#-project-overview)
+- [🏗️ Architecture & Critical Patterns](#️-architecture--critical-patterns)
+  - [Centralized Environment Configuration](#centralized-environment-configuration-srcconfigenvjs)
+  - [Worker Thread Architecture](#worker-thread-architecture)
+  - [Socket.io Event Patterns](#socketio-event-patterns)
+  - [React + Vite Development Mode](#react--vite-development-mode)
+- [🧪 Testing Philosophy](#-testing-philosophy---unified-test-framework-v30)
+- [🚀 Development Workflows](#-development-workflows)
+- [🎨 Frontend Architecture](#-frontend-architecture)
+  - [React Component Structure](#react-component-structure-guidelines)
+  - [Dropdown System](#dropdown-system---centralized-state-management)
+  - [Animation System](#animation-system)
+- [🔧 Key Implementation Details](#-key-implementation-details)
+  - [Trigger System](#trigger-system---read-only-official-data)
+  - [TTS System](#tts-system---kokoro-only-no-web-speech-api-fallback)
+  - [Chat History Management](#chat-history-management-system)
+  - [Session Management](#session-management-system)
+  - [Git Pull Detection](#git-pull-detection-system)
+- [🔌 Adding New Socket.io Events](#-adding-new-socketio-events)
+- [🔧 Integrating New Worker Services](#-integrating-new-worker-services)
+- [🤖 MCP Integration](#-mcp-model-context-protocol-integration)
+- [📦 Configuration & Environment](#-configuration--environment)
+- [🐛 Common Pitfalls & Solutions](#-common-pitfalls--solutions)
+- [📚 Essential Files](#-essential-files-for-ai-understanding)
+- [🎓 Learning Path](#-learning-path-for-new-ai-agents)
+- [🔄 Recent Major Changes](#-recent-major-changes-v030)
+- [📖 Quick Reference Guide](#-quick-reference-guide)
+
+## 🎯 Project Overview
+
+Modern real-time chat application with **Socket.io WebSockets**, **React frontend**, **Kokoro TTS**, **LM Studio AI**, psychedelic spiral animations, and trigger word detection. Features worker-based background processing and comprehensive unified testing framework.
+
+**Stack**: Node.js 20+, Express 5, Socket.io 4.8, React 18, Vite 7, Worker Threads
+**Ports**: Express server (7878), Vite dev server (5173)
+
+## 🏗️ Architecture & Critical Patterns
+
+### Centralized Environment Configuration (`src/config/env.js`)
+**ALL environment variables MUST use the `ENV` module** - no direct `process.env` access in application code:
+
+```javascript
+const ENV = require('../config/env');
+
+// ✅ CORRECT: Use centralized ENV object
+const port = ENV.SERVER.PORT;           // Server config
+const lmsUrl = ENV.LMS.URL;             // Auto-selects prod/dev host
+const kokoroUrl = ENV.KOKORO.URL;       // Computed from host+port
+const isProduction = ENV.SERVER.isProduction;
+
+// ❌ WRONG: Never access process.env directly in app code
+const port = process.env.PORT;  // Don't do this!
+```
+
+**Why**: Environment-aware host selection (production vs development), computed URLs, type safety, centralized validation.
+
+### Worker Thread Architecture
+Background services run in dedicated worker threads to prevent blocking:
+
+```javascript
+// server.js spawns workers
+const kokoroWorker = new Worker('./src/workers/kokoro.js');
+const lmsWorker = new Worker('./src/workers/lmstudio.js');
+
+// Workers communicate via messages
+kokoroWorker.postMessage({ type: 'tts', text: 'Hello', voice: 'af_sky' });
+kokoroWorker.on('message', (msg) => {
+    if (msg.type === 'tts-result') socket.emit('tts-audio', msg);
+});
+```
+
+**Workers**:
+- `kokoro.js` - Kokoro-FastAPI TTS (HTTP streaming, graceful fallback)
+- `lmstudio.js` - LM Studio AI chat (session management, model loading, 15min timeout)
+- `triggers.json` - Official BambiSleep trigger definitions (read-only)
+
+### Socket.io Event Patterns
+Real-time bidirectional communication follows consistent naming:
+
+```javascript
+// CLIENT -> SERVER events (kebab-case actions)
+socket.emit('global-message', { username, text });
+socket.emit('ai-chat', { message, sessionId });
+socket.emit('tts-request', { text, voice });
+
+// SERVER -> CLIENT events (kebab-case responses)
+socket.emit('global-chat-history', messages);
+socket.emit('ai-response', { response, sessionId });
+socket.emit('tts-audio', { audioData, format: 'mp3' });
+socket.emit('tts-error', { error: 'Service unavailable' });
+```
+
+**State synchronization**: Server sends `connection-ack` on connect with server state (user count, trigger stats).
+
+### React + Vite Development Mode
+Dual-server setup with intelligent proxying:
+
+```bash
+npm run dev  # Starts both servers concurrently
+# Vite: localhost:5173 (hot reload, React Fast Refresh)
+# Express: localhost:7878 (API, Socket.io, static assets)
+```
+
+**Vite proxies** `/api/*` and `/socket.io/*` to Express (see `vite.config.js`). Frontend lives in `src/client/`, built to `dist/` for production.
+
+## 🧪 Testing Philosophy - Unified Test Framework v3.0
+
+Custom test runner (`tests/unified-test-runner.js`) with **zero external dependencies**. All tests follow the suite class pattern:
+
+```javascript
+class MyTestSuite {
+    constructor() {
+        this.name = 'Feature Name';
+        this.tags = ['critical', 'architecture'];  // For filtering
+        this.priority = 90;  // Higher = runs first
+    }
+    
+    async run() {
+        const results = { passed: 0, failed: 0, tests: [] };
+        // Test logic with file system checks, regex validations
+        return results;
+    }
+}
+```
+
+**Critical test commands**:
+```bash
+npm test                  # All 32 tests (~30-60 sec)
+npm run test:critical     # Tagged critical only (6-8 tests, ~5 sec)
+npm run test:ci           # CI mode with HTML reports
+npm run test:watch        # Watch mode for development
+```
+
+**Test categories** (see `tests/` directory):
+- `architecture-v2.test.js` - Dropdown architecture, CSS layers, centralized state
+- `environment-v2.test.js` - ENV module validation, host selection logic  
+- `stability-v2.test.js` - Race conditions, memory leaks, error handling
+- `performance-benchmark.test.js` - Response times, concurrent connections
+
+**Tests run on every**:
+- `npm start` (critical tests via `prestart` hook)
+- `npm run build` (full test suite)
+- `npm run workflow` (comprehensive quality checks)
+
+## 🚀 Development Workflows
+
+### Rapid Development Cycle
+```bash
+npm run workflow:dev      # Clean → Critical tests → Start dev servers (1-2 min)
+# Edit code → Vite hot reload → Manual browser testing
+```
+
+### Pre-Deployment Validation
+```bash
+npm run workflow:fast     # Clean → Critical tests → Fast build (2-5 min)
+npm run workflow          # Full production workflow with security audit (15-30 min)
+```
+
+### Build System (`scripts/build.js`)
+**Never manually copy files** - use build script:
+
+```bash
+npm run build             # Full build: Vite + server packaging + validation
+npm run build:fast        # Skips tests for rapid iteration
+```
+
+**Output**: `dist/` with bundled frontend, server files, production `package.json`, and `build-manifest.json`.
+
+### Production Deployment (`scripts/deploy.js`)
+```bash
+node scripts/deploy.js install    # Install systemd service
+node scripts/deploy.js restart    # Restart service
+node scripts/deploy.js logs       # View logs
+```
+
+**Service file**: `bambisleepchat.service` (systemd unit, port 7878, production ENV).
+
+## 🎨 Frontend Architecture
+
+### Modern React Patterns
+```jsx
+// src/client/main.jsx - Entry point
+import App from './App.jsx';
+
+// Component structure:
+// src/client/
+//   ├── components/     - Reusable UI components
+//   ├── hooks/          - Custom React hooks
+//   ├── context/        - React Context providers
+//   ├── utils/          - Pure functions
+//   └── styles/         - CSS modules and global styles
+```
+
+### React Component Structure Guidelines
+
+**Component Organization Pattern**:
+```jsx
+// src/client/components/ChatMessage.jsx
+import React, { useState, useEffect } from 'react';
+import { useSocket } from '../hooks/useSocket';
+import styles from '../styles/ChatMessage.module.css';
+
+const ChatMessage = ({ message, username, timestamp, isTrigger }) => {
+    // 1. Hooks first
+    const [isAnimating, setIsAnimating] = useState(false);
+    const socket = useSocket();
+    
+    // 2. Effects
+    useEffect(() => {
+        if (isTrigger) {
+            setIsAnimating(true);
+            const timer = setTimeout(() => setIsAnimating(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [isTrigger]);
+    
+    // 3. Event handlers
+    const handleClick = () => {
+        socket.emit('message-interaction', { messageId: message.id });
+    };
+    
+    // 4. Render
+    return (
+        <div className={`${styles.message} ${isAnimating ? styles.trigger : ''}`}>
+            <span className={styles.username}>{username}</span>
+            <span className={styles.text}>{message}</span>
+            <time className={styles.timestamp}>{timestamp}</time>
+        </div>
+    );
+};
+
+export default ChatMessage;
+```
+
+**Custom Hooks Pattern**:
+```jsx
+// src/client/hooks/useSocket.js
+import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
+
+export const useSocket = () => {
+    const [socket, setSocket] = useState(null);
+    const [connected, setConnected] = useState(false);
+    
+    useEffect(() => {
+        const socketInstance = io('http://localhost:7878', {
+            transports: ['websocket'],
+            reconnection: true,
+            reconnectionDelay: 1000
+        });
+        
+        socketInstance.on('connect', () => setConnected(true));
+        socketInstance.on('disconnect', () => setConnected(false));
+        
+        setSocket(socketInstance);
+        
+        return () => socketInstance.disconnect();
+    }, []);
+    
+    return { socket, connected };
+};
+```
+
+**Context Provider Pattern**:
+```jsx
+// src/client/context/ChatContext.jsx
+import React, { createContext, useContext, useReducer } from 'react';
+
+const ChatContext = createContext();
+
+const chatReducer = (state, action) => {
+    switch (action.type) {
+        case 'ADD_MESSAGE':
+            return {
+                ...state,
+                messages: [...state.messages, action.payload]
+            };
+        case 'SET_USER_COUNT':
+            return { ...state, userCount: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const ChatProvider = ({ children }) => {
+    const [state, dispatch] = useReducer(chatReducer, {
+        messages: [],
+        userCount: 0
+    });
+    
+    return (
+        <ChatContext.Provider value={{ state, dispatch }}>
+            {children}
+        </ChatContext.Provider>
+    );
+};
+
+export const useChat = () => useContext(ChatContext);
+```
+
+### Dropdown System - Centralized State Management
+**DO NOT** add click handlers to individual dropdown components. All dropdown state is managed by `DropdownManager`:
+
+```javascript
+// ✅ CORRECT: Register dropdown in manager
+dropdownManager.register('myDropdown', element, {
+    closeOnClickOutside: true,
+    animations: 'slide-fade'
+});
+
+// ❌ WRONG: Separate click handlers cause race conditions
+button.addEventListener('click', () => dropdown.toggle());  // Don't do this!
+```
+
+**CSS Architecture**: Uses CSS `@layer` system for style precedence:
+1. `base` - Resets and defaults
+2. `components` - Component styles
+3. `utilities` - Utility classes
+4. `overrides` - High-priority overrides
+
+### Animation System
+Psychedelic spiral animations use `p5.js` (creative coding library). Located in `src/client/components/` or legacy `public/js/psychodelic-trigger-mania.js`.
+
+**Animation System Architecture**:
+```javascript
+// public/js/psychodelic-trigger-mania.js
+class SpiralAnimation {
+    constructor() {
+        this.spiralSpeed = 0.02;    // Rotation speed
+        this.maxParticles = 100;    // Particle count
+        this.colorPhase = 0;        // Color cycling phase
+        this.isActive = false;      // Animation state
+    }
+    
+    setup() {
+        createCanvas(windowWidth, windowHeight);
+        colorMode(HSB, 360, 100, 100);
+    }
+    
+    draw() {
+        if (!this.isActive) return;
+        
+        background(0, 0, 0, 25); // Trail effect
+        translate(width / 2, height / 2);
+        
+        for (let i = 0; i < this.maxParticles; i++) {
+            const angle = (i / this.maxParticles) * TWO_PI + frameCount * this.spiralSpeed;
+            const radius = i * 2;
+            
+            const x = cos(angle) * radius;
+            const y = sin(angle) * radius;
+            
+            const hue = (this.colorPhase + i * 3) % 360;
+            fill(hue, 80, 100);
+            noStroke();
+            circle(x, y, 5);
+        }
+        
+        this.colorPhase = (this.colorPhase + 1) % 360;
+    }
+    
+    toggle() {
+        this.isActive = !this.isActive;
+    }
+    
+    trigger() {
+        // Flash effect on trigger detection
+        this.maxParticles = 200;
+        setTimeout(() => { this.maxParticles = 100; }, 2000);
+    }
+}
+
+// Global instance
+let spiralAnimation;
+
+function setup() {
+    spiralAnimation = new SpiralAnimation();
+    spiralAnimation.setup();
+}
+
+function draw() {
+    spiralAnimation.draw();
+}
+```
+
+**Integrating Animations with React**:
+```jsx
+// src/client/components/SpiralCanvas.jsx
+import React, { useEffect, useRef } from 'react';
+import p5 from 'p5';
+
+const SpiralCanvas = ({ isActive, triggerFlash }) => {
+    const canvasRef = useRef();
+    const p5Instance = useRef();
+    
+    useEffect(() => {
+        // Initialize p5
+        p5Instance.current = new p5((sketch) => {
+            let spiralSpeed = 0.02;
+            let colorPhase = 0;
+            
+            sketch.setup = () => {
+                sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
+                sketch.colorMode(sketch.HSB, 360, 100, 100);
+            };
+            
+            sketch.draw = () => {
+                if (!isActive) return;
+                
+                sketch.background(0, 0, 0, 25);
+                sketch.translate(sketch.width / 2, sketch.height / 2);
+                
+                for (let i = 0; i < 100; i++) {
+                    const angle = (i / 100) * sketch.TWO_PI + sketch.frameCount * spiralSpeed;
+                    const radius = i * 2;
+                    const x = sketch.cos(angle) * radius;
+                    const y = sketch.sin(angle) * radius;
+                    const hue = (colorPhase + i * 3) % 360;
+                    
+                    sketch.fill(hue, 80, 100);
+                    sketch.noStroke();
+                    sketch.circle(x, y, 5);
+                }
+                
+                colorPhase = (colorPhase + 1) % 360;
+            };
+        }, canvasRef.current);
+        
+        return () => p5Instance.current.remove();
+    }, []);
+    
+    useEffect(() => {
+        // Trigger flash effect
+        if (triggerFlash && p5Instance.current) {
+            // Implement flash logic
+        }
+    }, [triggerFlash]);
+    
+    return <div ref={canvasRef} />;
+};
+
+export default SpiralCanvas;
+```
+
+## 🔧 Key Implementation Details
+
+### Trigger System - Read-Only Official Data
+**Trigger modifications are DISABLED**. Only official BambiSleep triggers from `src/workers/triggers.json`:
+
+```javascript
+// ✅ Access via API
+fetch('/api/triggers/json');                        // All triggers
+fetch('/api/triggers/category/primary');            // Category filter
+fetch('/api/triggers/details/Sleep');               // Specific trigger
+
+// ❌ POST endpoints are disabled
+// POST /api/triggers → 501 Not Implemented
+```
+
+### TTS System - Kokoro-Only (No Web Speech API Fallback)
+**Breaking change in v0.3.0**: Removed Web Speech API fallback (~300 lines). Only Kokoro-FastAPI backend:
+
+```javascript
+// Message format standardized to { display, tts }
+const message = {
+    display: "Hello <b>world</b>!",  // HTML allowed
+    tts: "Hello world!"               // Plain text for TTS
+};
+
+// Worker handles streaming and errors
+kokoroWorker.postMessage({ type: 'tts', text: message.tts, voice });
+```
+
+**Fallback behavior**: If Kokoro unavailable, `fallbackMode = true` (no TTS, logs warning).
+
+### Chat History Management System
+**Server-side history management** (`src/server/server.js`):
+
+```javascript
+// Chat history manager with dual storage
+class ChatHistoryManager {
+    constructor() {
+        this.globalHistory = [];      // New unified format
+        this.legacyHistory = [];      // Legacy format for compatibility
+        this.maxHistory = ENV.APPLICATION.CHAT_HISTORY_LIMIT || 100;
+    }
+    
+    addMessage(message) {
+        // Unified message format
+        const unifiedMessage = {
+            id: this.generateId(),
+            username: message.username,
+            text: message.text,
+            timestamp: new Date().toISOString(),
+            type: message.type || 'chat',  // 'chat', 'ai', 'system'
+            metadata: {
+                hasTriggers: message.hasTriggers || false,
+                triggerCount: message.triggerCount || 0,
+                voice: message.voice || null
+            }
+        };
+        
+        this.globalHistory.push(unifiedMessage);
+        
+        // Maintain legacy format
+        this.legacyHistory.push({
+            username: message.username,
+            text: message.text,
+            timestamp: unifiedMessage.timestamp
+        });
+        
+        // Trim to max length
+        if (this.globalHistory.length > this.maxHistory) {
+            this.globalHistory.shift();
+            this.legacyHistory.shift();
+        }
+        
+        return unifiedMessage;
+    }
+    
+    getGlobalHistory(limit = 20) {
+        return this.globalHistory.slice(-limit);
+    }
+    
+    getLegacyHistory(limit = 20) {
+        return this.legacyHistory.slice(-limit);
+    }
+    
+    searchHistory(query) {
+        return this.globalHistory.filter(msg => 
+            msg.text.toLowerCase().includes(query.toLowerCase()) ||
+            msg.username.toLowerCase().includes(query.toLowerCase())
+        );
+    }
+    
+    getStatistics() {
+        return {
+            totalMessages: this.globalHistory.length,
+            messagesByType: this.globalHistory.reduce((acc, msg) => {
+                acc[msg.type] = (acc[msg.type] || 0) + 1;
+                return acc;
+            }, {}),
+            triggersDetected: this.globalHistory.reduce((sum, msg) => 
+                sum + (msg.metadata.triggerCount || 0), 0
+            )
+        };
+    }
+    
+    generateId() {
+        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+}
+
+// Initialize manager
+const chatHistoryManager = new ChatHistoryManager();
+
+// Usage in Socket.io handlers
+io.on('connection', (socket) => {
+    // Send history on connect
+    socket.emit('global-chat-history', chatHistoryManager.getGlobalHistory(20));
+    
+    socket.on('global-message', (data) => {
+        const message = chatHistoryManager.addMessage(data);
+        io.emit('new-message', message);
+    });
+    
+    socket.on('search-history', (query) => {
+        const results = chatHistoryManager.searchHistory(query);
+        socket.emit('search-results', results);
+    });
+});
+```
+
+**Client-side history handling**:
+```jsx
+// src/client/hooks/useChatHistory.js
+import { useState, useEffect } from 'react';
+
+export const useChatHistory = (socket) => {
+    const [messages, setMessages] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    
+    useEffect(() => {
+        if (!socket) return;
+        
+        // Request history on mount
+        socket.on('global-chat-history', (history) => {
+            setMessages(history);
+            setIsLoading(false);
+        });
+        
+        // Listen for new messages
+        socket.on('new-message', (message) => {
+            setMessages(prev => [...prev, message].slice(-100));
+        });
+        
+        return () => {
+            socket.off('global-chat-history');
+            socket.off('new-message');
+        };
+    }, [socket]);
+    
+    const searchHistory = (query) => {
+        socket.emit('search-history', query);
+    };
+    
+    return { messages, isLoading, searchHistory };
+};
+```
+
+### Session Management System
+**LM Studio AI session handling** (`src/workers/lmstudio.js`):
+
+```javascript
+// Session manager with timeout and cleanup
+class SessionManager {
+    constructor() {
+        this.sessions = new Map();
+        this.SESSION_TIMEOUT = ENV.LMS.SESSION_TIMEOUT_MINUTES * 60 * 1000;
+        this.startCleanupInterval();
+    }
+    
+    createSession(userId) {
+        const sessionId = this.generateSessionId();
+        const session = {
+            id: sessionId,
+            userId: userId,
+            createdAt: Date.now(),
+            lastActivity: Date.now(),
+            conversationHistory: [],
+            metadata: {
+                messageCount: 0,
+                totalTokens: 0
+            }
+        };
+        
+        this.sessions.set(sessionId, session);
+        console.log(`✅ Session created: ${sessionId} for user ${userId}`);
+        return session;
+    }
+    
+    getSession(sessionId) {
+        const session = this.sessions.get(sessionId);
+        if (session) {
+            session.lastActivity = Date.now();
+            return session;
+        }
+        return null;
+    }
+    
+    addMessage(sessionId, role, content) {
+        const session = this.getSession(sessionId);
+        if (!session) {
+            throw new Error(`Session not found: ${sessionId}`);
+        }
+        
+        session.conversationHistory.push({
+            role: role,  // 'user' or 'assistant'
+            content: content,
+            timestamp: Date.now()
+        });
+        
+        session.metadata.messageCount++;
+        session.lastActivity = Date.now();
+        
+        // Trim history if too long (keep last 20 messages)
+        if (session.conversationHistory.length > 20) {
+            session.conversationHistory = session.conversationHistory.slice(-20);
+        }
+    }
+    
+    deleteSession(sessionId) {
+        const deleted = this.sessions.delete(sessionId);
+        if (deleted) {
+            console.log(`🗑️ Session deleted: ${sessionId}`);
+        }
+        return deleted;
+    }
+    
+    cleanupExpiredSessions() {
+        const now = Date.now();
+        let cleanedCount = 0;
+        
+        for (const [sessionId, session] of this.sessions.entries()) {
+            if (now - session.lastActivity > this.SESSION_TIMEOUT) {
+                this.sessions.delete(sessionId);
+                cleanedCount++;
+                console.log(`🧹 Expired session cleaned: ${sessionId}`);
+            }
+        }
+        
+        if (cleanedCount > 0) {
+            console.log(`✅ Cleaned ${cleanedCount} expired sessions`);
+        }
+    }
+    
+    startCleanupInterval() {
+        setInterval(() => {
+            this.cleanupExpiredSessions();
+        }, 5 * 60 * 1000); // Run every 5 minutes
+    }
+    
+    generateSessionId() {
+        return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
+    getStatistics() {
+        return {
+            activeSessions: this.sessions.size,
+            totalMessages: Array.from(this.sessions.values())
+                .reduce((sum, s) => sum + s.metadata.messageCount, 0)
+        };
+    }
+}
+
+// Initialize manager
+const sessionManager = new SessionManager();
+
+// Worker message handler
+parentPort.on('message', async (msg) => {
+    if (msg.type === 'ai-chat') {
+        let session = sessionManager.getSession(msg.sessionId);
+        
+        if (!session) {
+            session = sessionManager.createSession(msg.userId);
+        }
+        
+        // Add user message to history
+        sessionManager.addMessage(session.id, 'user', msg.message);
+        
+        // Generate AI response with full conversation history
+        const response = await generateAIResponse(session.conversationHistory);
+        
+        // Add assistant response to history
+        sessionManager.addMessage(session.id, 'assistant', response);
+        
+        parentPort.postMessage({
+            type: 'ai-response',
+            sessionId: session.id,
+            response: response
+        });
+    }
+});
+```
+
+**Client-side session usage**:
+```jsx
+// src/client/hooks/useAISession.js
+import { useState, useEffect } from 'react';
+
+export const useAISession = (socket) => {
+    const [sessionId, setSessionId] = useState(null);
+    const [conversationHistory, setConversationHistory] = useState([]);
+    
+    const sendMessage = (message) => {
+        socket.emit('ai-chat', {
+            message: message,
+            sessionId: sessionId,
+            userId: socket.id
+        });
+    };
+    
+    useEffect(() => {
+        if (!socket) return;
+        
+        socket.on('ai-response', (data) => {
+            setSessionId(data.sessionId);
+            setConversationHistory(prev => [
+                ...prev,
+                { role: 'user', content: data.userMessage },
+                { role: 'assistant', content: data.response }
+            ]);
+        });
+        
+        return () => socket.off('ai-response');
+    }, [socket]);
+    
+    const clearSession = () => {
+        setSessionId(null);
+        setConversationHistory([]);
+    };
+    
+    return { sessionId, conversationHistory, sendMessage, clearSession };
+};
+```
+
+### Git Pull Detection System
+Server **auto-detects deployments** by monitoring git commit hash every 30 seconds:
+
+```javascript
+// server.js polls git hash
+setInterval(() => {
+    const newHash = execSync('git rev-parse HEAD').toString().trim();
+    if (newHash !== currentHash) {
+        io.emit('server-restarting', { reason: 'deployment' });
+        gracefulShutdown();  // Cleanup workers, close connections
+    }
+}, 30000);
+```
+
+**Why**: Prevents stale server instances after `git pull` deployments.
+
+## 🔌 Adding New Socket.io Events
+
+### Server-Side Event Handler Pattern
+```javascript
+// src/server/server.js - Add new events in connection handler
+io.on('connection', (socket) => {
+    console.log(`✅ User connected: ${socket.id}`);
+    
+    // ✅ CORRECT: New custom event handler
+    socket.on('custom-action', async (data) => {
+        try {
+            // 1. Validate input
+            if (!data || !data.requiredField) {
+                socket.emit('custom-error', { 
+                    error: 'Missing required field',
+                    code: 'INVALID_INPUT'
+                });
+                return;
+            }
+            
+            // 2. Process action
+            const result = await performCustomAction(data);
+            
+            // 3. Emit response
+            socket.emit('custom-response', {
+                success: true,
+                data: result,
+                timestamp: new Date().toISOString()
+            });
+            
+            // 4. Broadcast to all clients (optional)
+            io.emit('custom-broadcast', {
+                userId: socket.id,
+                action: 'custom-action',
+                result: result
+            });
+            
+        } catch (error) {
+            console.error('Custom action error:', error);
+            socket.emit('custom-error', {
+                error: error.message,
+                code: 'INTERNAL_ERROR'
+            });
+        }
+    });
+    
+    // Cleanup on disconnect
+    socket.on('disconnect', () => {
+        console.log(`❌ User disconnected: ${socket.id}`);
+        // Cleanup user-specific resources
+    });
+});
+```
+
+### Client-Side Event Usage
+```jsx
+// src/client/hooks/useCustomAction.js
+import { useState, useEffect } from 'react';
+
+export const useCustomAction = (socket) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [result, setResult] = useState(null);
+    
+    useEffect(() => {
+        if (!socket) return;
+        
+        socket.on('custom-response', (data) => {
+            setResult(data);
+            setIsLoading(false);
+            setError(null);
+        });
+        
+        socket.on('custom-error', (data) => {
+            setError(data.error);
+            setIsLoading(false);
+        });
+        
+        socket.on('custom-broadcast', (data) => {
+            console.log('Broadcast received:', data);
+        });
+        
+        return () => {
+            socket.off('custom-response');
+            socket.off('custom-error');
+            socket.off('custom-broadcast');
+        };
+    }, [socket]);
+    
+    const performAction = (data) => {
+        setIsLoading(true);
+        setError(null);
+        socket.emit('custom-action', data);
+    };
+    
+    return { performAction, isLoading, error, result };
+};
+```
+
+### Event Naming Conventions
+- **Client to Server**: `action-name` (e.g., `global-message`, `ai-chat`, `tts-request`)
+- **Server to Client**: `action-response` or `action-error` (e.g., `ai-response`, `tts-error`)
+- **Broadcasts**: `event-broadcast` (e.g., `user-joined`, `trigger-detected`)
+
+## 🔧 Integrating New Worker Services
+
+### Creating a New Worker
+```javascript
+// src/workers/my-service.js
+const { parentPort } = require('worker_threads');
+const ENV = require('../config/env');
+
+class MyServiceWorker {
+    constructor() {
+        this.isHealthy = false;
+        this.config = this.loadConfiguration();
+        this.init();
+    }
+    
+    loadConfiguration() {
+        // Load from ENV module
+        if (!ENV.MY_SERVICE?.isConfigured) {
+            console.warn('⚠️ My Service not configured, running in fallback mode');
+            return { fallbackMode: true };
+        }
+        
+        return {
+            url: ENV.MY_SERVICE.URL,
+            apiKey: ENV.MY_SERVICE.API_KEY,
+            timeout: ENV.MY_SERVICE.TIMEOUT || 30000,
+            fallbackMode: false
+        };
+    }
+    
+    async init() {
+        console.log('🚀 My Service Worker initializing...');
+        
+        if (!this.config.fallbackMode) {
+            await this.healthCheck();
+        }
+        
+        if (parentPort) {
+            parentPort.on('message', this.handleMessage.bind(this));
+        }
+    }
+    
+    async healthCheck() {
+        try {
+            // Perform health check
+            const response = await fetch(`${this.config.url}/health`);
+            this.isHealthy = response.ok;
+            console.log(`✅ My Service health check: ${this.isHealthy ? 'OK' : 'FAILED'}`);
+        } catch (error) {
+            console.error('❌ My Service health check failed:', error.message);
+            this.isHealthy = false;
+        }
+    }
+    
+    async handleMessage(msg) {
+        try {
+            switch (msg.type) {
+                case 'process-request':
+                    await this.processRequest(msg);
+                    break;
+                    
+                case 'health-check':
+                    await this.healthCheck();
+                    parentPort.postMessage({
+                        type: 'health-status',
+                        isHealthy: this.isHealthy
+                    });
+                    break;
+                    
+                default:
+                    console.warn('⚠️ Unknown message type:', msg.type);
+            }
+        } catch (error) {
+            console.error('❌ Worker error:', error);
+            parentPort.postMessage({
+                type: 'error',
+                error: error.message,
+                originalMessage: msg
+            });
+        }
+    }
+    
+    async processRequest(msg) {
+        if (this.config.fallbackMode) {
+            parentPort.postMessage({
+                type: 'process-result',
+                result: null,
+                fallback: true,
+                message: 'Service unavailable'
+            });
+            return;
+        }
+        
+        // Perform actual work
+        const result = await this.performWork(msg.data);
+        
+        parentPort.postMessage({
+            type: 'process-result',
+            result: result,
+            fallback: false
+        });
+    }
+    
+    async performWork(data) {
+        // Implement actual service logic
+        return { processed: true, data: data };
+    }
+}
+
+// Initialize worker
+const worker = new MyServiceWorker();
+```
+
+### Integrating Worker in Server
+```javascript
+// src/server/server.js
+const { Worker } = require('worker_threads');
+const path = require('path');
+
+// Initialize worker
+const myServiceWorker = new Worker(path.join(__dirname, '../workers/my-service.js'));
+
+// Handle worker messages
+myServiceWorker.on('message', (msg) => {
+    switch (msg.type) {
+        case 'process-result':
+            // Emit to Socket.io client
+            io.emit('service-result', msg);
+            break;
+            
+        case 'error':
+            console.error('Worker error:', msg.error);
+            io.emit('service-error', { error: msg.error });
+            break;
+            
+        case 'health-status':
+            console.log('Service health:', msg.isHealthy ? '✅' : '❌');
+            break;
+    }
+});
+
+// Handle worker errors
+myServiceWorker.on('error', (error) => {
+    console.error('❌ Worker thread error:', error);
+});
+
+// Handle worker exit
+myServiceWorker.on('exit', (code) => {
+    if (code !== 0) {
+        console.error(`❌ Worker stopped with exit code ${code}`);
+    }
+});
+
+// Socket.io handler to use worker
+io.on('connection', (socket) => {
+    socket.on('service-request', (data) => {
+        myServiceWorker.postMessage({
+            type: 'process-request',
+            data: data,
+            socketId: socket.id
+        });
+    });
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, terminating worker...');
+    myServiceWorker.terminate();
+});
+```
+
+### Adding Worker Configuration to ENV
+```javascript
+// src/config/env.js
+const MY_SERVICE = {
+    ENABLED: process.env.MY_SERVICE_ENABLED !== 'false',
+    HOST: isProduction
+        ? process.env.MY_SERVICE_HOST_PRODUCTION
+        : process.env.MY_SERVICE_HOST_DEVELOPMENT,
+    PORT: parseInt(process.env.MY_SERVICE_PORT) || 8080,
+    API_KEY: process.env.MY_SERVICE_API_KEY,
+    TIMEOUT: parseInt(process.env.MY_SERVICE_TIMEOUT) || 30000,
+    
+    get URL() {
+        return this.HOST ? `http://${this.HOST}:${this.PORT}` : null;
+    },
+    
+    get isConfigured() {
+        return !!(this.ENABLED && this.HOST && this.PORT);
+    }
+};
+
+module.exports = {
+    // ... existing exports
+    MY_SERVICE
+};
+```
+
+## 🤖 MCP (Model Context Protocol) Integration
+
+### Available MCP Tools
+The project has active MCP integrations (see `MCP-SETUP.md`):
+
+**Active Services**:
+- **Hugging Face** (`mcp_hf-mcp-server_*`) - ML models, datasets, image generation
+- **Stripe** (`mcp_stripe_agent-_*`) - Payment processing, subscriptions
+- **Microsoft Clarity** (`mcp_microsoft_cla_*`) - Web analytics, session recordings
+- **MongoDB** (`mcp_mongodb_*`) - Database operations (requires Atlas Local)
+
+### Using MCP Tools in Code
+```javascript
+// Example: Search Hugging Face models via MCP
+async function searchMLModels(query) {
+    try {
+        // MCP tools are available in VS Code context
+        // In production, use direct API calls
+        const models = await fetch('https://huggingface.co/api/models', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ search: query })
+        });
+        
+        return await models.json();
+    } catch (error) {
+        console.error('Model search failed:', error);
+        return [];
+    }
+}
+
+// Example: Stripe payment integration
+async function createPaymentLink(productId, quantity) {
+    const stripe = require('stripe')(ENV.STRIPE.SECRET_KEY);
+    
+    try {
+        const paymentLink = await stripe.paymentLinks.create({
+            line_items: [{ price: productId, quantity: quantity }]
+        });
+        
+        return paymentLink;
+    } catch (error) {
+        console.error('Payment link creation failed:', error);
+        throw error;
+    }
+}
+
+// Example: MongoDB operations
+async function logChatMessage(message) {
+    const { MongoClient } = require('mongodb');
+    const client = new MongoClient(ENV.MONGODB.URI);
+    
+    try {
+        await client.connect();
+        const db = client.db('bambisleep');
+        const collection = db.collection('chat_history');
+        
+        const result = await collection.insertOne({
+            ...message,
+            timestamp: new Date(),
+            indexed: true
+        });
+        
+        return result.insertedId;
+    } catch (error) {
+        console.error('MongoDB insert failed:', error);
+    } finally {
+        await client.close();
+    }
+}
+```
+
+### MCP Configuration Pattern
+```javascript
+// src/config/env.js - Add MCP service configurations
+const MCP = {
+    HUGGINGFACE: {
+        API_KEY: process.env.HUGGINGFACE_API_KEY,
+        ENABLED: !!process.env.HUGGINGFACE_API_KEY
+    },
+    STRIPE: {
+        SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+        PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY,
+        ENABLED: !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PUBLISHABLE_KEY)
+    },
+    MONGODB: {
+        URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/bambisleep',
+        ENABLED: !!process.env.MONGODB_URI
+    },
+    CLARITY: {
+        PROJECT_ID: process.env.CLARITY_PROJECT_ID,
+        ENABLED: !!process.env.CLARITY_PROJECT_ID
+    }
+};
+
+module.exports = {
+    // ... existing exports
+    MCP
+};
+```
+
+### MCP Worker Integration
+```javascript
+// src/workers/mcp-analytics.js - Example MCP-powered worker
+const { parentPort } = require('worker_threads');
+const ENV = require('../config/env');
+
+class MCPAnalyticsWorker {
+    constructor() {
+        this.clarityEnabled = ENV.MCP.CLARITY.ENABLED;
+        this.mongoEnabled = ENV.MCP.MONGODB.ENABLED;
+    }
+    
+    async logEvent(eventData) {
+        const results = { clarity: null, mongo: null };
+        
+        // Log to Clarity if enabled
+        if (this.clarityEnabled) {
+            results.clarity = await this.logToClarity(eventData);
+        }
+        
+        // Store in MongoDB if enabled
+        if (this.mongoEnabled) {
+            results.mongo = await this.logToMongoDB(eventData);
+        }
+        
+        return results;
+    }
+    
+    async logToClarity(eventData) {
+        // Implement Clarity logging
+        console.log('📊 Logging to Clarity:', eventData);
+        return { success: true };
+    }
+    
+    async logToMongoDB(eventData) {
+        // Implement MongoDB storage
+        console.log('💾 Storing in MongoDB:', eventData);
+        return { success: true, id: 'document-id' };
+    }
+}
+
+const worker = new MCPAnalyticsWorker();
+
+parentPort.on('message', async (msg) => {
+    if (msg.type === 'log-event') {
+        const results = await worker.logEvent(msg.data);
+        parentPort.postMessage({
+            type: 'log-result',
+            results: results
+        });
+    }
+});
+```
+
+## 📦 Configuration & Environment
+
+### Environment Variables (see `.env.example`)
+```env
+# Server
+PORT=7878
+NODE_ENV=development|production
+
+# LM Studio (auto-selects host by environment)
+LMS_HOST_PRODUCTION=192.168.0.100
+LMS_HOST_DEVELOPMENT=localhost
+LMS_PORT=7777
+TARGET_MODEL_NAME=l3-sthenomaidblackroot-8b-v1@q4_k_s
+
+# Kokoro TTS (auto-selects host by environment)
+KOKORO_HOST_PRODUCTION=192.168.0.100
+KOKORO_HOST_DEVELOPMENT=localhost
+KOKORO_PORT=8880
+KOKORO_DEFAULT_VOICE=af_sky+af_bella
+
+# Application
+MAX_MESSAGE_LENGTH=500
+CHAT_HISTORY_LIMIT=100
+DEBUG_MODE=true
+```
+
+**Host selection**: Production uses LAN IPs (e.g., `192.168.0.100`), development uses `localhost`. Handled automatically by `ENV` module.
+
+## 🐛 Common Pitfalls & Solutions
+
+1. **❌ Dropdown closes immediately after opening**
+   - **Cause**: Multiple click handlers racing
+   - **Fix**: Use centralized `DropdownManager`, never add separate click handlers
+
+2. **❌ Worker communication failing**
+   - **Cause**: Incorrect message format or missing handlers
+   - **Fix**: Always check `msg.type` and handle errors: `if (msg.type === 'error') log(msg.error)`
+
+3. **❌ Tests passing locally, failing in CI**
+   - **Cause**: Environment differences or race conditions
+   - **Fix**: Use `TEST_VERBOSE=true npm run test:ci` for detailed output, check for hardcoded paths
+
+4. **❌ Vite proxy not forwarding requests**
+   - **Cause**: Express server not running or port mismatch
+   - **Fix**: Run `npm run dev` (starts both servers), check `vite.config.js` proxy target matches Express port
+
+5. **❌ Environment variables not loading**
+   - **Cause**: Accessing `process.env` instead of `ENV` module
+   - **Fix**: Always use `const ENV = require('../config/env')` and access via `ENV.SERVER.PORT`, etc.
+
+## 📚 Essential Files for AI Understanding
+
+### Core Server Architecture
+- `src/server/server.js` - Main Express + Socket.io server (2300+ lines)
+  - Socket.io connection handling and event routing
+  - Worker thread initialization and management
+  - Chat history manager implementation
+  - API endpoints and middleware
+  - Git pull detection system
+
+### Configuration & Environment
+- `src/config/env.js` - **Centralized environment configuration** (single source of truth)
+  - Environment-aware host selection (production/development)
+  - Computed URLs and validation
+  - All service configurations (LMS, Kokoro, MCP)
+
+### Worker Services
+- `src/workers/kokoro.js` - Kokoro TTS worker
+  - HTTP streaming TTS from Kokoro-FastAPI
+  - Graceful fallback handling
+  - Voice selection and audio format handling
+  
+- `src/workers/lmstudio.js` - LM Studio AI worker
+  - Session management with 15min timeout
+  - Model loading with retry logic
+  - Conversation history tracking
+  - Token limit management
+
+- `src/workers/triggers.json` - Official BambiSleep trigger definitions (read-only)
+
+### Frontend Architecture
+- `src/client/main.jsx` - React app entry point
+- `src/client/App.jsx` - Root component with routing
+- `src/client/components/` - Reusable React components
+- `src/client/hooks/` - Custom hooks (useSocket, useChatHistory, useAISession)
+- `src/client/context/` - Context providers (ChatContext, ThemeContext)
+- `src/client/styles/` - CSS modules and global styles
+
+### Testing Framework
+- `tests/unified-test-runner.js` - Custom test runner with zero dependencies
+- `tests/unified-test-framework.js` - Test framework core
+- `tests/architecture-v2.test.js` - Architecture validation (dropdowns, CSS layers)
+- `tests/environment-v2.test.js` - ENV module and configuration tests
+- `tests/stability-v2.test.js` - Race conditions, memory leaks, error handling
+- `tests/performance-benchmark.test.js` - Response times, concurrent connections
+
+### Build & Deployment
+- `scripts/build.js` - Production build orchestration
+  - Vite frontend build
+  - Server file packaging
+  - Validation and manifest generation
+  
+- `scripts/deploy.js` - Systemd service management
+  - Service installation and configuration
+  - Start/stop/restart operations
+  - Log monitoring
+
+- `scripts/clean.js` - Cleanup artifacts and caches
+- `scripts/validate-service.js` - Production validation
+
+### Configuration Files
+- `vite.config.js` - Frontend build and dev server proxy
+  - Proxy configuration for `/api/*` and `/socket.io/*`
+  - React Fast Refresh setup
+  - Build optimization settings
+
+- `package.json` - Dependencies and npm scripts
+  - Workflow commands (workflow:dev, workflow:fast, workflow:ci)
+  - Test commands (test, test:critical, test:ci, test:watch)
+  - Build commands (build, build:fast)
+
+- `bambisleepchat.service` - Systemd service configuration
+- `.env.example` - Environment variable templates
+
+### Documentation
+- `README.md` - Project overview and quick start
+- `WORKFLOWS.md` - Comprehensive workflow documentation
+- `BUILD.md` - Build system details and troubleshooting
+- `CHANGELOG.md` - Version history and breaking changes
+- `MCP-SETUP.md` - MCP tool configuration and usage
+
+---
+
+## ⚙️ Workspace-Level Tooling & Coordination
+
+### Current State: Project-Independent Architecture
+
+**No centralized orchestration tooling exists** - this is an intentional design where projects are independently deployable but share common patterns.
+
+### GitHub Actions (HarleyVader only)
+
+**Location**: `HarleyVader/.github/workflows/`
+- `static.yml` - Deploy documentation to GitHub Pages
+- `build.yml` - Docker image build and push to Docker Hub (uses Docker Buildx cloud)
+
+**Pattern**: Each project can have its own CI/CD workflow. No monorepo orchestration tools (Lerna, Turborepo, Nx) are used.
+
+### Deployment Coordination: HestiaCP Integration
+
+**The `#workbench/` tool serves as the workspace deployment coordinator**:
+
+```bash
+# Deploy multiple projects to HestiaCP in one command
+cd #workbench/
+sudo ./hestia-port-opener.sh --config config.json
+```
+
+**How it works**:
+1. `config.json` defines **ALL projects** with their ports, domains, and repos
+2. Single command creates nginx templates for ALL projects simultaneously
+3. PM2 process manager coordinates multi-project execution
+4. Each project gets its own port, but shared nginx/SSL infrastructure
+
+**Example multi-project config.json**:
+```json
+{
+  "sites": [
+    {
+      "name": "BambiSleep Church",
+      "domain": "bambisleep.church",
+      "port": 3000,
+      "repo": "https://github.com/.../bambisleep-church.git",
+      "enabled": true
+    },
+    {
+      "name": "Documentation Hub",
+      "domain": "docs.bambisleep.church",
+      "port": 3001,
+      "repo": "https://github.com/.../HarleyVader.git",
+      "enabled": true
+    }
+  ]
+}
+```
+
+### Process Management: PM2 Coordination
+
+**Cross-project monitoring**:
+```bash
+pm2 list                      # View ALL projects
+pm2 logs                      # Aggregate logs from all projects
+pm2 monit                     # Real-time multi-project dashboard
+pm2 restart all               # Restart entire workspace
+pm2 save && pm2 startup       # Persist configuration
+```
+
+**Individual project ecosystem configs**:
+- `bambisleep-church/ecosystem.config.js` - PM2 config with cluster mode
+- Projects use shared PM2 daemon for coordination
+
+### Docker Deployment Pattern
+
+**Each project is independently containerized**:
+```bash
+# Build and run individual projects
+cd bambisleep-church/
+docker-compose up -d
+
+# Or deploy multiple projects with shared network
+docker network create bambisleep-network
+docker-compose -f bambisleep-church/docker-compose.yml up -d
+docker-compose -f [other-project]/docker-compose.yml up -d
+```
+
+**No orchestration layer** (no Kubernetes, Docker Swarm) - projects share network but run independently.
+
+### Development Workflow Scripts
+
+**Project-specific setup scripts** (no workspace-level wrapper):
+- `bambisleep-church/setup.sh` - Node.js 20+ check, .env creation, npm install
+- `bambisleep-church/start.sh` - Quick start with validation
+- `#workbench/test-script.sh` - Dry-run deployment testing
+
+**Pattern**: Each project is self-contained. No `make`, `npm workspaces`, or `pnpm` coordination.
+
+### Version Control Strategy
+
+**Monorepo without tooling**:
+- Single `.git` repository at root
+- Projects share git history but no automated cross-project versioning
+- No `lerna.json`, `pnpm-workspace.yaml`, or `rush.json`
+- Each project maintains its own `package.json` version independently
+
+### Why This Architecture?
+
+**Deliberate "loosely coupled monorepo" design**:
+1. **Projects can be extracted** - Each folder is independently runnable
+2. **No build tool lock-in** - No dependency on Turborepo/Nx/Lerna
+3. **Simple deployment** - HestiaCP tool provides coordination when needed
+4. **Flexible versioning** - Projects can evolve at different rates
+
+### Adding New Projects
+
+**To add a new project to the workspace**:
+1. Create project directory at root level
+2. Add project-specific `.github/copilot-instructions.md`
+3. Add entry to `#workbench/config.json` for deployment
+4. Update root copilot-instructions.md with project summary
+5. Follow shared patterns (Node 20+, .env, setup.sh, Docker support)
+
+---
+
+## 🎓 AI Agent Learning Path for New AI Agents
+
+1. **Start with `README.md`** - Understand project purpose and basic architecture
+2. **Read `src/config/env.js`** - Learn centralized configuration pattern
+3. **Study `src/server/server.js`** (lines 1-200) - See server initialization and worker setup
+4. **Examine worker files** - Understand background service patterns
+5. **Review test files** - See validation patterns and quality standards
+6. **Check `WORKFLOWS.md`** - Learn development workflows
+7. **Read this file** - Reference for specific implementation patterns
+
+## 🔄 Recent Major Changes (v0.3.0)
+
+- **Removed Web Speech API fallback** - Kokoro-only TTS system
+- **Git pull detection** - Auto-restart on deployments
+- **Dropdown race condition fix** - Centralized state management
+- **Console log cleanup** - 350+ lines removed, cleaner output
+- **File structure consolidation** - Merged `dropdown-utils.js` into `dropdowns.js`
+
+## 📖 Quick Reference Guide
+
+### Most Common Tasks
+
+**Starting Development**:
+```bash
+npm run workflow:dev              # Clean → Test → Start dev servers
+```
+
+**Adding New Socket.io Event**:
+1. Add handler in `src/server/server.js` inside `io.on('connection', ...)`
+2. Create custom hook in `src/client/hooks/useYourEvent.js`
+3. Use kebab-case naming: `action-name`, `action-response`, `action-error`
+
+**Creating New Worker Service**:
+1. Create `src/workers/your-service.js` with Worker class pattern
+2. Add configuration to `src/config/env.js` with `YOUR_SERVICE` object
+3. Initialize in `src/server/server.js` with `new Worker()`
+4. Handle messages with `worker.on('message', ...)`
+
+**Adding Environment Variable**:
+1. Add to `.env.example` with description
+2. Add to `src/config/env.js` in appropriate section (SERVER, LMS, KOKORO, etc.)
+3. Use computed properties for URLs: `get URL() { return ... }`
+4. Never access `process.env` directly in app code
+
+**Running Tests**:
+```bash
+npm run test:critical            # Fast critical tests only (5-8 sec)
+npm test                         # All tests (30-60 sec)
+npm run test:watch              # Watch mode for development
+```
+
+**Building for Production**:
+```bash
+npm run workflow:fast           # Quick validation + build (2-5 min)
+npm run workflow                # Full workflow with security audit (15-30 min)
+```
+
+### Code Pattern Quick Lookup
+
+**Import ENV Module** (Required everywhere):
+```javascript
+const ENV = require('../config/env');  // Server-side
+```
+
+**Socket.io Event Pattern**:
+```javascript
+// Server: src/server/server.js
+socket.on('event-name', (data) => { /* validate, process, emit */ });
+socket.emit('event-response', { success: true, data });
+
+// Client: src/client/hooks/useEvent.js
+socket.emit('event-name', data);
+socket.on('event-response', (data) => { /* handle */ });
+```
+
+**Worker Message Pattern**:
+```javascript
+// Server: src/server/server.js
+worker.postMessage({ type: 'action', data });
+worker.on('message', (msg) => { /* handle msg.type */ });
+
+// Worker: src/workers/worker.js
+parentPort.on('message', (msg) => { /* handle msg.type */ });
+parentPort.postMessage({ type: 'result', data });
+```
+
+**React Component Pattern**:
+```jsx
+// 1. Hooks → 2. Effects → 3. Handlers → 4. Render
+const Component = ({ prop }) => {
+    const [state, setState] = useState();        // 1. Hooks
+    useEffect(() => { /* side effects */ }, []); // 2. Effects
+    const handleClick = () => { /* logic */ };   // 3. Handlers
+    return <div>...</div>;                       // 4. Render
+};
+```
+
+**Test Suite Pattern**:
+```javascript
+class MyTestSuite {
+    constructor() {
+        this.name = 'Suite Name';
+        this.tags = ['critical', 'feature'];
+        this.priority = 90;
+    }
+    async run() {
+        return { passed: 0, failed: 0, tests: [] };
+    }
+}
+```
+
+### File Locations Cheat Sheet
+
+| Need to... | Edit File |
+|------------|-----------|
+| Add Socket.io event | `src/server/server.js` (connection handler) |
+| Add environment variable | `src/config/env.js` + `.env.example` |
+| Create new worker | `src/workers/your-service.js` |
+| Add React component | `src/client/components/YourComponent.jsx` |
+| Create custom hook | `src/client/hooks/useYourHook.js` |
+| Add test suite | `tests/your-feature.test.js` |
+| Modify build process | `scripts/build.js` |
+| Change proxy settings | `vite.config.js` |
+| Update workflow | `package.json` (scripts section) |
+| Add API endpoint | `src/server/server.js` (Express routes) |
+
+---
+
+**Key Principle**: This codebase prioritizes **real-time performance**, **graceful degradation**, and **comprehensive validation**. When in doubt, check existing patterns in tests and centralized configuration modules.

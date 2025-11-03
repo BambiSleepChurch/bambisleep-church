@@ -1,0 +1,155 @@
+.document-viewer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.document-viewer.loading,
+.document-viewer.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 1rem;
+}
+
+.document-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.document-path {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-family: 'Fira Code', monospace;
+}
+
+.markdown-content {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  line-height: 1.8;
+}
+
+/* Markdown-specific styles */
+.markdown-content h1 {
+  margin-top: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--accent-primary);
+}
+
+.markdown-content h2 {
+  margin-top: 2rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.markdown-content h3 {
+  margin-top: 1.5rem;
+}
+
+.markdown-content a {
+  color: var(--link-color);
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  color: var(--link-hover);
+}
+
+.markdown-content code {
+  background: var(--code-bg);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.markdown-content pre {
+  background: var(--code-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+}
+
+.markdown-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid var(--accent-primary);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.markdown-content th,
+.markdown-content td {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+}
+
+.markdown-content th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+  text-align: left;
+}
+
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 2px solid var(--border-color);
+  margin: 2rem 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Syntax highlighting adjustments */
+.markdown-content .hljs {
+  background: var(--code-bg);
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .document-viewer {
+    padding: 1rem;
+  }
+
+  .markdown-content {
+    padding: 1rem;
+  }
+
+  .markdown-content pre {
+    font-size: 0.85rem;
+  }
+}

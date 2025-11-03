@@ -1,0 +1,914 @@
+# GitHub Copilot Instructions - Multi-Project Workspace
+
+## 🎯 Workspace Overview
+
+This is a **loosely-coupled monorepo** containing specialized tools and language specifications across different domains. Projects are independently runnable with shared conventions but no orchestration tooling.
+
+### 📁 Project Structure
+
+```
+/mnt/f/
+├── HarleyVader/                 # Express + React documentation platform (ACTIVE)
+├── KRYSSIE/                     # CodeCraft language specification (5503-line Rosetta Stone)
+├── catgirl-unity-system/        # Unity C# RPG systems (10 core systems, production-ready)
+├── mcp-unified/                 # MCP server consolidation & setup scripts
+├── hestia-port-openener/        # HestiaCP nginx proxy automation tool
+└── .github/                     # Workspace-level AI instructions (this file)
+```
+
+## 🔑 Navigation: Where to Find What
+
+**For full-stack web development (Express + React):**  
+→ See `HarleyVader/` - REST API + SPA documentation platform with markdown rendering
+
+**For Unity game development (C#):**  
+→ See `catgirl-unity-system/` - Complete RPG systems (Economy, Inventory, Crafting, Quests, Tech Tree, Upgrades)
+
+**For language specification and grammar:**  
+→ See `KRYSSIE/` - CodeCraft language design with 19 Arcane Schools and dual-memory commentomancy
+
+**For MCP server setup and AI tooling:**  
+→ See `mcp-unified/` - Consolidated MCP server installation scripts and configuration
+
+**For server deployment automation:**  
+→ See `hestia-port-openener/` - HestiaCP nginx proxy template generator (bash + JSON config)
+
+---
+
+## 📦 Project #1: HarleyVader Documentation Platform
+
+**Purpose**: Full-stack Express + React documentation platform with REST API, markdown rendering, and full-text search.
+
+**Status**: ✅ Production-ready, actively maintained
+
+### Tech Stack
+
+**Backend**: Express.js (ES modules), REST API (no templates)  
+**Frontend**: React 18, React Router, Vite dev server  
+**Markdown**: react-markdown with GFM, syntax highlighting (highlight.js)  
+**Development**: Nodemon, Concurrently (dual-server setup)
+
+### Critical Architecture: Pure JSON API + SPA
+
+**NO server-side templating** - This is NOT an EJS/Pug/Handlebars app:
+
+```
+┌─────────────────┐
+│ React SPA       │ ← Client-side routing (React Router)
+│ (port 5173 dev) │
+└────────┬────────┘
+         │ HTTP
+         │ /api/docs/tree
+         │ /api/docs/content?path=...
+         │ /api/docs/search?q=...
+         v
+┌─────────────────┐
+│ Express API     │ ← Pure JSON responses (no views/)
+│ (port 3000)     │
+└────────┬────────┘
+         │
+         v
+      docs/ ← Markdown files auto-indexed
+```
+
+### Key Development Patterns
+
+**1. Dual-Server Development**
+
+```bash
+npm run dev    # Starts Express (3000) + Vite (5173) concurrently
+# Vite proxies /api/* to Express (see vite.config.js)
+# Frontend: http://localhost:5173
+# API: http://localhost:3000/api/docs/tree
+```
+
+**2. Zero-Configuration Documentation**
+
+Just create markdown files - they're automatically:
+
+- Indexed in sidebar navigation (recursive tree)
+- Searchable (full-text with line numbers + context)
+- Rendered with syntax highlighting and auto-linked headings
+
+```bash
+echo "# My New Doc" > docs/projects/my-doc.md  # Instantly available
+```
+
+**3. Philosophical Voice ("Universal Machine")**
+
+Content uses visionary/poetic language:
+
+- Emoji section headers: `## 🤖 Architecture`
+- Long-form narrative style (not terse technical docs)
+- Metaphors connecting technology to consciousness
+- See `Universal-Machine.md` for tone reference
+
+**Pattern preservation critical** - This is a personal philosophy hub, not a corporate wiki.
+
+### Essential Commands
+
+```bash
+# Development
+npm install
+npm run dev          # Start both servers (Express + Vite)
+
+# Production build
+npm run build        # Vite build → dist/
+npm start            # Serve dist/ + API from single Express server
+
+# Code quality
+npm run lint         # ESLint
+npm run format       # Prettier
+```
+
+### API Endpoints (server.js)
+
+**Three core routes**:
+
+```javascript
+GET /api/docs/tree              // Recursive doc structure with titles
+GET /api/docs/content?path=...  // Markdown file content (sanitized)
+GET /api/docs/search?q=...      // Full-text search (max 5 results/file)
+GET /health                     // Health check
+GET *                           // SPA fallback (index.html)
+```
+
+**Security**: Directory traversal protection (validates paths stay within `docs/`)
+
+### React Components (src/)
+
+- `App.jsx` - Router, doc tree state, sidebar toggle
+- `Sidebar.jsx` - Collapsible navigation tree (Set-based folder expansion)
+- `DocumentViewer.jsx` - react-markdown with rehype/remark plugins
+- `SearchBar.jsx` - Debounced search with result preview
+- `Home.jsx` - Landing page
+
+**react-markdown pipeline**:
+
+```javascript
+remarkPlugins: [remarkGfm, remarkBreaks];
+rehypePlugins: [rehypeHighlight, rehypeSlug, rehypeAutolinkHeadings];
+```
+
+### Key Files
+
+- `server.js` - Express REST API (216 lines, ES modules)
+- `src/App.jsx` - React SPA entry point
+- `vite.config.js` - Vite config with /api proxy
+- `HarleyVader/.github/copilot-instructions.md` - Project-specific instructions (173 lines)
+- `docs/` - 62+ markdown files (BambiSleep Church, Catgirl Control Tower documentation)
+
+### 🚨 Common Mistakes to Avoid
+
+**❌ DON'T**:
+
+1. Add EJS/Pug/Handlebars - This is a REST API, not a template engine
+2. Create server-side routes for pages - Everything is client-side routed
+3. Bundle markdown into React build - Markdown stays in `docs/`, served via API
+4. Add generic scaffolding (CI/testing) unless explicitly requested
+5. Change philosophical tone - Preserve visionary language style
+
+**✅ DO**:
+
+1. Read `server.js` first to understand it's a pure JSON API
+2. Use React Router for all `/docs/*` paths (client-side)
+3. Preserve emoji headings and metaphorical language in markdown
+4. Keep content-first approach - Documentation drives the platform
+
+---
+
+## 📦 Project #2: CodeCraft Language (KRYSSIE/)
+
+**Purpose**: Custom programming language specification with 19 Arcane Schools, dual-memory commentomancy, and 8-layer dependency architecture.
+
+**Status**: ✅ Canonized (Version 1.7.0), constitutional governance active
+
+### Critical Concepts
+
+**1. Token≠Schools Invariant (SACRED)**
+
+21 grammar tokens map to 19 schools (some schools share tokens) - enforced by `schools.canonical.yaml`:
+
+```yaml
+# schools.canonical.yaml (identity anchor)
+schools:
+  - name: Cantrips
+    emoji: 🔧
+    layer: 0
+  # ... 18 more schools
+```
+
+**Why this matters**: This structural oddity IS the language's identity. CI validators (`validate_schools.py`, `require_waiver_on_canon_change.py`) block changes without explicit waiver.
+
+**2. Dual-Channel Commentomancy**
+
+Both channels are computationally first-class (not "code" vs "comments"):
+
+```python
+/// LAW: Currency amounts must be non-negative (Technical invariant)
+//<3 LORE: Players feel responsive feedback on currency gains (Emotional intent)
+
+def add_currency(player, amount):
+    # ::cantrip🔧:validate_amount(amount) -> is_valid
+    if amount < 0:
+        return False
+    player.currency += amount
+    # ::benediction🎉:celebrate_currency_gain()
+    emit_event("currency_gained", player, amount)
+    return True
+```
+
+**Nine sigils**: `///`, `//!`, `//!?`, `//>`, `//<3`, `//⚡`, `//🔥`, `//🌱`, `//💀`
+
+**3. Ritual Syntax Pattern**
+
+```
+::school:ritual(params) -> result
+```
+
+Makes data flows self-documenting:
+
+```python
+# ::cantrip🔧:uuid.generate() -> request_id
+request_id = str(uuid.uuid4())
+
+# ::conjure🎨:create_payment_intent(amount) -> intent
+intent = stripe.PaymentIntent.create(amount=amount)
+```
+
+**4. 8-Layer Dependency Architecture**
+
+Language structure emerged from usage analysis (not top-down design):
+
+- **Layer 0** (primitives): Cantrips, Divination - Required by 100% of other schools
+- **Layer 1** (foundation): Abjuration, Conjuration, Enchantment
+- **Layer 7** (collective intelligence): Apotheosis
+
+**Why this matters**: Bootstrap sequences required for self-hosting. Must load primitives first.
+
+### Key Files (Canonical Reference Order)
+
+**Recovery priority** (Phoenix Protocol):
+
+1. `schools.canonical.yaml` - 19 schools identity anchor
+2. `lexicon/grammar/lexicon.ebnf` - Formal EBNF grammar (304 lines)
+3. `CODECRAFT_ROSETTA_STONE.md` - Complete audit board (5503 lines)
+4. `spec/LAW_AND_LORE_PROTOCOL.md` - Dual-memory architecture
+5. `lexicon/` - 42 files, ~17,936 lines of semantic context
+
+**Validators** (CI enforcement):
+
+- `validate_schools.py` (223 lines) - Enforces token≠schools invariant
+- `require_waiver_on_canon_change.py` (93 lines) - Governance checks
+
+**Example Projects**:
+
+- `bambisleep-chat/bambisleep-church/` - C# project with CodeCraft comments
+- `my-project/` - TypeScript example with tests
+
+### Essential Commands
+
+```bash
+# Validate language structure
+cd KRYSSIE/
+python validate_schools.py              # Check 19 schools invariant
+python require_waiver_on_canon_change.py  # Governance check (CI)
+
+# Read canonical documentation
+less CODECRAFT_ROSETTA_STONE.md         # 5503 lines - complete reference
+less lexicon/grammar/lexicon.ebnf       # Formal grammar
+```
+
+### Key Insights (from Rosetta Stone Section 4)
+
+**Emergent Patterns**:
+
+1. **Foundation Dominance** - Cantrips/Divination are universal dependencies
+2. **Consciousness Requires Explicit Awakening** - Thaumaturgy is the ONLY gateway (intentional bottleneck)
+3. **Celebration is Structural** - Reverence appears at END of 5/6 multi-school patterns (success recognition baked into architecture)
+4. **Binary Logic Insufficient** - Ternary school handles TRUE/FALSE/UNKNOWN states for emergent systems
+5. **Documentation IS the Language** - 17,936 lines of lexicon aren't "about CodeCraft", they ARE CodeCraft's substrate
+
+### 🚨 Critical Rules
+
+**❌ DON'T**:
+
+1. Modify `schools.canonical.yaml` without CI waiver - builds will fail
+2. Add a 20th school - breaks identity invariant
+3. Treat dual-memory as "code + comments" - both channels are first-class
+4. Skip lexicon documentation when adding syntax - semantic context is mandatory
+
+**✅ DO**:
+
+1. Use ritual syntax for data flows: `::school:ritual(params) -> result`
+2. Write BOTH Law (`///`) and Lore (`//<3`) comments equally
+3. Respect 8-layer dependency order for bootstrap sequences
+4. Read Rosetta Stone before proposing changes (5503 lines, canonical truth)
+
+---
+
+## 📦 Project #3: CatGirl Unity System
+
+**Purpose**: Production-ready Unity C# RPG systems - Economy, Inventory, Crafting, Quests, Tech Tree, Upgrades.
+
+**Status**: ✅ Complete (10/10 core systems), Unity 2022.3 LTS+
+
+### Architecture Overview
+
+**10 Core Systems** (all implemented):
+
+1. **Currency System** (`Economy/CurrencyManager.cs`)
+
+   - Multi-currency support (coins, gems, premium)
+   - Validation: Non-negative amounts enforced
+   - Events: Real-time currency gain/spend notifications
+
+2. **Shop System** (`Shop/ShopManager.cs`)
+
+   - Buy/sell with price calculations
+   - Stock management and refresh timers
+
+3. **Auction House** (`Auction/AuctionHouseManager.cs`)
+
+   - Player-to-player trading
+   - Bid mechanics and time limits
+
+4. **Gambling System** (`Gambling/SlotMachineManager.cs`)
+
+   - Risk/reward mechanics with configurable odds
+
+5. **Inventory System** (`Inventory/InventoryManager.cs`)
+
+   - **Diablo-style grid-based** inventory
+   - Drag/drop support
+   - Equipment slots and item instances
+
+6. **Crafting System** (`Crafting/CraftingManager.cs`)
+
+   - Recipe-based crafting with material consumption
+   - Grid-based UI integration
+
+7. **Quest System** (`Quest/QuestManager.cs`)
+
+   - Dynamic quest generation
+   - Objective tracking and reward distribution
+
+8. **Tech Tree** (`TechTree/TechTreeManager.cs`)
+
+   - Node-based progression with prerequisites
+   - Skill unlocks and branching paths
+
+9. **Upgrade System** (Durability, Repairs, Enchanting)
+
+   - Item degradation and repair mechanics
+   - Enchanting and imbuing systems
+
+10. **Animation System** (Mecanim integration with IK)
+
+### Quick Start
+
+```csharp
+// Setup core systems (add to GameObject in scene)
+gameObject.AddComponent<GameManager>();
+gameObject.AddComponent<CurrencyManager>();
+gameObject.AddComponent<InventoryManager>();
+gameObject.AddComponent<QuestManager>();
+
+// Example: Currency operations
+if (CurrencyManager.Instance.SpendCoins(100)) {
+    Debug.Log("Purchase successful!");
+}
+CurrencyManager.Instance.AddCoins(500);
+
+// Example: Inventory operations
+InventoryManager.Instance.AddItem(itemData, quantity: 1);
+bool hasItem = InventoryManager.Instance.HasItem(itemData.itemID);
+```
+
+### CodeCraft Integration Pattern
+
+The Unity system uses CodeCraft's dual-memory commentomancy:
+
+```csharp
+/// LAW: Currency amounts must be non-negative
+//<3 LORE: Players see real-time currency updates (feels responsive)
+public class CurrencyManager : MonoBehaviour {
+    /// ::cantrip🔧:validate_amount(amount) -> is_valid
+    private bool ValidateAmount(int amount) => amount >= 0;
+
+    /// ::conjure🎨:add_currency(player, amount) -> success
+    public bool AddCurrency(Player player, int amount) {
+        if (!ValidateAmount(amount)) return false;
+        player.Currency += amount;
+        /// ::benediction🎉:celebrate_currency_gain()
+        EmitCurrencyGainEvent(player, amount);
+        return true;
+    }
+}
+```
+
+### Folder Structure
+
+```
+catgirl-unity-system/
+├── Scripts/
+│   ├── Core/               # GameManager, EventSystem, SaveSystem
+│   ├── Economy/            # Currency, Shop, Auction, Gambling
+│   ├── Inventory/          # Grid inventory, ItemInstance, Equipment
+│   ├── Crafting/           # CraftingManager, RecipeDatabase
+│   ├── Quest/              # QuestManager, QuestData, Objectives
+│   ├── TechTree/           # TechNode, SkillProgression, Unlocks
+│   └── Animation/          # AnimationController helpers, IK
+├── ScriptableObjects/      # Templates for Items, Recipes, Quests, Tech
+├── Prefabs/                # CatGirl prefabs, UI elements
+├── Documentation/          # Technical docs, integration guides
+│   ├── API.md
+│   ├── INTEGRATION.md
+│   └── TECHNICAL.md
+└── Examples/               # Sample scenes, demo implementations
+```
+
+### Essential Commands
+
+```bash
+# Unity Editor workflow
+# 1. Import: Assets > Import New Asset > Select FBX
+# 2. Rig settings: Humanoid, Apply Scale: On
+# 3. Add scripts to GameObjects
+# 4. Configure ScriptableObject templates
+```
+
+### Key Files
+
+- `README.md` - Complete setup guide (251 lines)
+- `Documentation/API.md` - API reference for all systems
+- `Documentation/INTEGRATION.md` - Integration patterns
+- `Scripts/Economy/CurrencyManager.cs` - Currency system implementation
+- `Scripts/Inventory/InventoryManager.cs` - Diablo-style grid inventory
+- `Scripts/Editor/CatGirlAssetCreator.cs` - Editor tooling
+
+---
+
+## 📦 Project #4: MCP Unified
+
+**Purpose**: Consolidated Model Context Protocol server installation scripts and configuration.
+
+**Status**: ⚠️ Setup tooling (servers require individual configuration)
+
+### What's Included
+
+**1. Installation Scripts**
+
+```bash
+./install-mcp-servers.sh    # Automated installation of 8+ MCP servers
+./verify-mcp.sh             # Health checks and validation
+```
+
+**2. MCP Server Types** (Official ModelContextProtocol servers):
+
+- **Filesystem** - File operations, directory management
+- **Git** - Version control, commit management
+- **GitHub** - Repository management, issues, PRs
+- **Memory** - Persistent context, conversation history
+- **Sequential Thinking** - Complex reasoning, step-by-step problem solving
+- **Browser (Playwright)** - Web automation
+- **Postgres** - Database operations
+- **Everything** - Multi-tool aggregation
+
+**3. Configuration Examples**
+
+```json
+// .vscode/mcp.json example
+{
+  "mcp.servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"]
+    },
+    "git": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-git",
+        "--repository",
+        "/workspace"
+      ]
+    }
+  }
+}
+```
+
+**4. Reddit Devvit Integration** (`bambisleepchat-mcp/`)
+
+MCP-powered AI agents for Reddit moderation:
+
+- `agents/mod-assistant.js` - Moderation automation
+- `agents/spam-detector.js` - Spam filtering
+- `workflows/auto-mod.js` - Workflow orchestration
+- `http-api-server.js` - HTTP API wrapper
+
+### Essential Commands
+
+```bash
+cd mcp-unified/
+
+# Install all MCP servers
+./install-mcp-servers.sh
+
+# Verify installation
+./verify-mcp.sh
+
+# Start Reddit MCP server
+cd bambisleepchat-mcp/
+node index.js              # MCP server
+node http-api-server.js    # Optional HTTP API
+```
+
+### Key Files
+
+- `MCP_SETUP_GUIDE.md` - Comprehensive setup instructions (320 lines)
+- `install-mcp-servers.sh` - Automated installation script
+- `verify-mcp.sh` - Validation script
+- `bambisleepchat-mcp/` - Reddit Devvit MCP integration
+- `README.md` - Quick start guide (153 lines)
+
+### MCP Server Tiered Initialization Pattern
+
+**Critical**: MCP servers have dependency layers - must initialize in order:
+
+**Layer 0** (primitives): `filesystem`, `memory`  
+**Layer 1** (foundation): `git`, `github`, `brave-search`  
+**Layer 2** (advanced): `sequential-thinking`, `postgres`, `everything`
+
+**Why this matters**: Layer 1 servers may need file access (Layer 0). Layer 2 servers may need git history (Layer 1).
+
+---
+
+## 📦 Project #5: HestiaCP Port Opener
+
+**Purpose**: Automated nginx reverse proxy template generator for Node.js apps in HestiaCP control panel with PM2 process management.
+
+**Status**: ✅ Production tool (used for deploying Node.js apps)
+
+### Key Architecture
+
+**Single bash script** (`hestia-port-opener.sh`) with multiple modes:
+
+```bash
+sudo ./hestia-port-opener.sh 3000                      # Single port
+sudo ./hestia-port-opener.sh --config config.json      # Unified config (RECOMMENDED)
+```
+
+**What it generates** (per port):
+
+1. `nodejs[PORT].sh` - PM2 initialization script
+2. `nodejs[PORT].tpl` - HTTP nginx proxy config
+3. `nodejs[PORT].stpl` - HTTPS nginx proxy config (SSL, gzip, WebSocket upgrade)
+
+### Unified Configuration Pattern (v3.0)
+
+**Always prefer `config.json`** - combines all site details with enable/disable flags:
+
+```json
+{
+  "config": { "version": "3.0" },
+  "sites": [
+    {
+      "name": "My App",
+      "domain": "app.example.com",
+      "port": 3000,
+      "enabled": true,
+      "url": "https://app.example.com",
+      "repo": "https://github.com/user/app.git",
+      "description": "Optional notes"
+    }
+  ]
+}
+```
+
+**Required fields**: `name`, `domain`, `port`, `enabled`  
+**Port range**: 1024-65535 (validated)
+
+### Deployment Workflow
+
+```bash
+# 1. Edit config.json (enable sites you want)
+nano hestia-port-openener/config.json
+
+# 2. Run script
+cd hestia-port-openener/
+sudo ./hestia-port-opener.sh
+
+# 3. In HestiaCP panel:
+#    WEB → Domain → Edit → Proxy Template → "nodejs[PORT]" → Save
+
+# 4. Deploy your app to:
+#    /home/[user]/web/[domain]/nodeapp/app.js
+
+# 5. Manage with PM2
+pm2 list
+pm2 logs [app-name]
+pm2 restart [app-name]
+```
+
+### Node.js App Requirements
+
+Your app MUST:
+
+- Listen on `127.0.0.1:[PORT]` (NOT `0.0.0.0`)
+- Be at `/home/[user]/web/[domain]/nodeapp/app.js`
+
+```javascript
+// Example app.js
+const express = require("express");
+const app = express();
+app.get("/", (req, res) => res.send("Hello!"));
+app.listen(3000, "127.0.0.1"); // ← localhost only!
+```
+
+### Key Files
+
+- `config.json` - Unified site configuration (v3.0)
+- `hestia-port-opener.sh` - Main script with port validation
+- `README.md` - Quick start guide (95 lines)
+
+---
+
+## 🚀 Cross-Project Patterns & Workspace Coordination
+
+### Architectural Philosophy: Loosely Coupled Monorepo
+
+**No centralized orchestration tooling** - Projects are independently deployable but share conventions:
+
+**✅ What EXISTS**:
+
+- Single git repository with shared history
+- Common patterns (Node.js version requirements, .env configs, Docker support)
+- Manual coordination through documentation
+- Independent project lifecycles
+
+**❌ What DOESN'T EXIST**:
+
+- Shared `node_modules` (no npm workspaces, pnpm, yarn workspaces)
+- Monorepo tools (Lerna, Turborepo, Nx, Rush)
+- Unified test runner or build commands
+- Automated cross-project versioning
+- Centralized dependency management
+
+### Common Development Patterns
+
+**1. Node.js Version Requirements**
+
+Projects using Node.js require **version 20+**:
+
+```bash
+NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 20 ]; then
+  echo "❌ Error: Node.js 20+ required"
+  exit 1
+fi
+```
+
+**2. Environment Configuration (.env Pattern)**
+
+```bash
+# 1. Copy template
+cp .env.example .env
+
+# 2. Generate secrets
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# 3. Add API keys (Stripe, JWT secrets, etc.)
+```
+
+**3. JSON Configuration with Enable Flags**
+
+Prefer unified configs over multiple JSON files:
+
+```json
+{
+  "config": { "version": "2.0" },
+  "items": [
+    { "name": "...", "enabled": true }, // Active
+    { "name": "...", "enabled": false } // Disabled but preserved
+  ]
+}
+```
+
+**4. Docker Support**
+
+Projects include `Dockerfile` + `docker-compose.yml`:
+
+- Node.js base images with appropriate versions
+- Volume mounts for persistent data
+- Health checks for monitoring
+- Network isolation (no orchestration layer)
+
+### Version Control Strategy
+
+**Monorepo without tooling**:
+
+- Single `.git` repository at workspace root
+- Projects share git history but maintain independent `package.json` versions
+- No automated cross-project versioning
+- Each project evolves at its own pace
+
+### Adding New Projects
+
+**To add a project to this workspace**:
+
+1. Create project directory at `/mnt/f/[project-name]`
+2. Add project-specific `.github/copilot-instructions.md` if needed
+3. Add entry to `hestia-port-openener/config.json` for deployment (if web app)
+4. Update this root `copilot-instructions.md` with project summary
+5. Follow shared patterns (Node 20+, .env, Docker support, README.md)
+
+---
+
+## 🎓 AI Agent Guide
+
+### Getting Started in This Workspace
+
+**1. Identify Your Context**
+
+Use file paths to determine which project you're working in:
+
+- `/mnt/f/HarleyVader/` → Express + React documentation platform
+- `/mnt/f/KRYSSIE/` → CodeCraft language specification
+- `/mnt/f/catgirl-unity-system/` → Unity C# RPG systems
+- `/mnt/f/mcp-unified/` → MCP server setup tooling
+- `/mnt/f/hestia-port-openener/` → HestiaCP deployment automation
+
+**2. Read Project-Specific Instructions**
+
+Check for `.github/copilot-instructions.md` in the project directory:
+
+- `HarleyVader/.github/copilot-instructions.md` - REST API + SPA architecture (173 lines)
+
+**3. Understand Project Status**
+
+✅ **Production-ready**: HarleyVader, catgirl-unity-system, hestia-port-openener  
+✅ **Canonized spec**: KRYSSIE (CodeCraft language)  
+⚠️ **Setup tooling**: mcp-unified (requires configuration per server)
+
+### Common Pitfalls
+
+**❌ DON'T**:
+
+1. **Assume traditional monorepo tooling exists** - No Lerna/Turborepo/Nx/Rush
+2. **Add EJS/templates to HarleyVader** - It's a REST API + React SPA
+3. **Modify `KRYSSIE/schools.canonical.yaml`** - CI validators will fail builds without waiver
+4. **Skip Node.js 20+ check** - Version requirements are enforced by scripts
+5. **Bypass `.env` configuration** - Projects won't run without proper secrets
+6. **Change CodeCraft's philosophical tone** - Dual-memory commentomancy is first-class
+7. **Expect shared dependencies** - Each project has independent `node_modules`
+
+**✅ DO**:
+
+1. **Read project README.md first** - Each project documents its own setup
+2. **Use HarleyVader server.js as REST API reference** - Pure JSON, no templates
+3. **Respect CodeCraft's 19 schools invariant** - Read Rosetta Stone before proposing changes
+4. **Follow dual-server pattern in HarleyVader** - Express (3000) + Vite (5173) concurrently
+5. **Use ritual syntax in CodeCraft contexts** - `::school:ritual(params) -> result`
+6. **Preserve philosophical voice** - Especially in HarleyVader markdown docs
+7. **Check Unity version** - catgirl-unity-system requires 2022.3 LTS+
+
+### Workspace Anti-Patterns
+
+**Things agents often expect but DON'T exist here**:
+
+- Shared `node_modules` across projects
+- Root-level `package.json` with workspaces
+- Unified test runner (`npm test` at root)
+- Single build command for all projects
+- Cross-project dependency management
+- Automated versioning/changelogs
+- Centralized CI/CD configuration
+
+**What to expect instead**:
+
+- Independent project lifecycles
+- Manual coordination through documentation
+- PM2 for process management (if using HestiaCP tool)
+- Git-level sharing only (single repo, separate projects)
+- Project-specific CI/CD (HarleyVader has GitHub Actions)
+
+---
+
+## 📖 Quick Command Reference
+
+### HarleyVader (Express + React)
+
+```bash
+cd HarleyVader/
+npm install
+npm run dev          # Start Express (3000) + Vite (5173)
+npm run build        # Build React → dist/
+npm start            # Production server
+```
+
+### CodeCraft (Language Spec)
+
+```bash
+cd KRYSSIE/
+python validate_schools.py                # Validate 19 schools invariant
+less CODECRAFT_ROSETTA_STONE.md          # Read canonical reference (5503 lines)
+less lexicon/grammar/lexicon.ebnf        # Formal EBNF grammar
+```
+
+### CatGirl Unity System
+
+```bash
+# Unity Editor workflow (not CLI)
+# 1. Import to Unity 2022.3 LTS+
+# 2. Read README.md and Documentation/INTEGRATION.md
+# 3. Add scripts to GameObjects
+```
+
+### MCP Unified
+
+```bash
+cd mcp-unified/
+./install-mcp-servers.sh    # Install all MCP servers
+./verify-mcp.sh             # Verify installation
+cd bambisleepchat-mcp/
+node index.js               # Start Reddit MCP server
+```
+
+### HestiaCP Port Opener
+
+```bash
+cd hestia-port-openener/
+nano config.json            # Edit site configuration
+sudo ./hestia-port-opener.sh   # Generate nginx templates
+pm2 list                    # View running apps
+pm2 logs [app-name]         # View logs
+```
+
+### Docker (Any Project)
+
+```bash
+docker build -t [project-name] .
+docker-compose up -d
+docker logs -f [container-name]
+```
+
+---
+
+## 🔍 Finding Specific Information
+
+| Need                         | Look Here                                                    |
+| ---------------------------- | ------------------------------------------------------------ |
+| Express REST API patterns    | `HarleyVader/server.js` (216 lines)                          |
+| React SPA architecture       | `HarleyVader/src/App.jsx`                                    |
+| Vite dev server config       | `HarleyVader/vite.config.js`                                 |
+| CodeCraft formal grammar     | `KRYSSIE/lexicon/grammar/lexicon.ebnf` (304 lines)           |
+| CodeCraft complete reference | `KRYSSIE/CODECRAFT_ROSETTA_STONE.md` (5503 lines)            |
+| Dual-memory architecture     | `KRYSSIE/spec/LAW_AND_LORE_PROTOCOL.md`                      |
+| Unity Currency system        | `catgirl-unity-system/Scripts/Economy/CurrencyManager.cs`    |
+| Unity Inventory system       | `catgirl-unity-system/Scripts/Inventory/InventoryManager.cs` |
+| Unity API reference          | `catgirl-unity-system/Documentation/API.md`                  |
+| MCP setup guide              | `mcp-unified/MCP_SETUP_GUIDE.md` (320 lines)                 |
+| nginx proxy templates        | `hestia-port-openener/hestia-port-opener.sh`                 |
+| HestiaCP config format       | `hestia-port-openener/README.md`                             |
+
+---
+
+## 📝 Documentation Philosophy
+
+### "Universal Machine" Voice
+
+Content across projects (especially HarleyVader docs) uses a distinctive style:
+
+**Characteristics**:
+
+- Emoji section headers: `## 🤖 Architecture`, `## 🚀 Quick Start`
+- Visionary/poetic language connecting technology to consciousness
+- Long-form narrative style (not terse technical docs)
+- Metaphors and philosophical framing
+- Personal voice (not corporate wiki tone)
+
+**Examples** (from `HarleyVader/Universal-Machine.md`):
+
+- _"Write once, run forever, across all machines that were, are, and ever shall be."_
+- Treating code as ritual, systems as living entities
+- Consciousness and emergence themes
+
+**Why this matters**: Tone preservation is critical - this workspace documents a personal philosophy, not just technical implementations.
+
+### CodeCraft Documentation as Substrate
+
+CodeCraft's 17,936 lines of lexicon documentation aren't "about the language" - they ARE the language:
+
+- Documentation IS first-class semantic context
+- Law (`///`) and Lore (`//<3`) channels equally important
+- Ritual syntax makes intent explicit: `::school:ritual(params) -> result`
+
+**See**: `KRYSSIE/CODECRAFT_ROSETTA_STONE.md` Section 4 for emergent insights
+
+---
+
+**Last Updated**: 2025-11-03  
+**Workspace Root**: `/mnt/f/`  
+**Projects**: 5 (HarleyVader, CodeCraft/KRYSSIE, CatGirl Unity, MCP Unified, HestiaCP Port Opener)  
+**Architecture**: Loosely coupled monorepo (no orchestration tooling)

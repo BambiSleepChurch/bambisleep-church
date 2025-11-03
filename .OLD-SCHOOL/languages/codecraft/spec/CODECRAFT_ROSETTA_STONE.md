@@ -1,0 +1,1 @@
+../../../docs/languages/codecraft/CODECRAFT_ROSETTA_STONE.md

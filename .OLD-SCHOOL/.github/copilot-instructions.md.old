@@ -1,0 +1,1171 @@
+# GitHub Copilot Instructions - Multi-Project Workspace
+
+## 🎯 Workspace Overview
+
+This is a **loosely-coupled monorepo** containing specialized tools and language specifications across different domains. Projects are independently runnable with shared conventions but no orchestration tooling.
+
+### 📁 Project Structure
+
+```
+/mnt/f/
+├── HarleyVader/                 # Express + React documentation platform (ACTIVE)
+├── KRYSSIE/                     # CodeCraft language specification (5503-line Rosetta Stone)
+├── catgirl-unity-system/        # Unity C# RPG systems (10 core systems, production-ready)
+├── mcp-unified/                 # MCP server consolidation & setup scripts
+├── hestia-port-openener/        # HestiaCP nginx proxy automation tool
+└── .github/                     # Workspace-level AI instructions (this file)
+```
+
+## 🔑 Navigation: Where to Find What
+
+**For full-stack web development (Express + React):**  
+→ See `HarleyVader/` - REST API + SPA documentation platform with markdown rendering
+
+**For Unity game development (C#):**  
+→ See `catgirl-unity-system/` - Complete RPG systems (Economy, Inventory, Crafting, Quests, Tech Tree, Upgrades)
+
+**For language specification and grammar:**  
+→ See `KRYSSIE/` - CodeCraft language design with 19 Arcane Schools and dual-memory commentomancy
+
+**For MCP server setup and AI tooling:**  
+→ See `mcp-unified/` - Consolidated MCP server installation scripts and configuration
+
+**For server deployment automation:**  
+→ See `hestia-port-openener/` - HestiaCP nginx proxy template generator (bash + JSON config)
+
+---
+
+## 📦 Project #1: HarleyVader Documentation Platform
+
+**Purpose**: Full-stack Express + React documentation platform with REST API, markdown rendering, and full-text search.
+
+**Status**: ✅ Production-ready, actively maintained
+
+### Tech Stack
+
+**Backend**: Express.js (ES modules), REST API (no templates)  
+**Frontend**: React 18, React Router, Vite dev server  
+**Markdown**: react-markdown with GFM, syntax highlighting (highlight.js)  
+**Development**: Nodemon, Concurrently (dual-server setup)
+
+### Critical Architecture: Pure JSON API + SPA
+
+**NO server-side templating** - This is NOT an EJS/Pug/Handlebars app:
+
+```
+┌─────────────────┐
+│ React SPA       │ ← Client-side routing (React Router)
+│ (port 5173 dev) │
+└────────┬────────┘
+         │ HTTP
+         │ /api/docs/tree
+         │ /api/docs/content?path=...
+         │ /api/docs/search?q=...
+         v
+┌─────────────────┐
+│ Express API     │ ← Pure JSON responses (no views/)
+│ (port 3000)     │
+└────────┬────────┘
+         │
+         v
+      docs/ ← Markdown files auto-indexed
+```
+
+### Key Development Patterns
+
+**1. Dual-Server Development**
+
+```bash
+npm run dev    # Starts Express (3000) + Vite (5173) concurrently
+# Vite proxies /api/* to Express (see vite.config.js)
+# Frontend: http://localhost:5173
+# API: http://localhost:3000/api/docs/tree
+```
+
+**2. Zero-Configuration Documentation**
+
+Just create markdown files - they're automatically:
+- Indexed in sidebar navigation (recursive tree)
+- Searchable (full-text with line numbers + context)
+- Rendered with syntax highlighting and auto-linked headings
+
+```bash
+echo "# My New Doc" > docs/projects/my-doc.md  # Instantly available
+```
+
+**3. Philosophical Voice ("Universal Machine")**
+
+Content uses visionary/poetic language:
+- Emoji section headers: `## 🤖 Architecture`
+- Long-form narrative style (not terse technical docs)
+- Metaphors connecting technology to consciousness
+- See `Universal-Machine.md` for tone reference
+
+**Pattern preservation critical** - This is a personal philosophy hub, not a corporate wiki.
+
+### Essential Commands
+
+```bash
+# Development
+npm install
+npm run dev          # Start both servers (Express + Vite)
+
+# Production build
+npm run build        # Vite build → dist/
+npm start            # Serve dist/ + API from single Express server
+
+# Code quality
+npm run lint         # ESLint
+npm run format       # Prettier
+```
+
+### API Endpoints (server.js)
+
+**Three core routes**:
+
+```javascript
+GET /api/docs/tree              // Recursive doc structure with titles
+GET /api/docs/content?path=...  // Markdown file content (sanitized)
+GET /api/docs/search?q=...      // Full-text search (max 5 results/file)
+GET /health                     // Health check
+GET *                           // SPA fallback (index.html)
+```
+
+**Security**: Directory traversal protection (validates paths stay within `docs/`)
+
+### React Components (src/)
+
+- `App.jsx` - Router, doc tree state, sidebar toggle
+- `Sidebar.jsx` - Collapsible navigation tree (Set-based folder expansion)
+- `DocumentViewer.jsx` - react-markdown with rehype/remark plugins
+- `SearchBar.jsx` - Debounced search with result preview
+- `Home.jsx` - Landing page
+
+**react-markdown pipeline**:
+```javascript
+remarkPlugins: [remarkGfm, remarkBreaks]
+rehypePlugins: [rehypeHighlight, rehypeSlug, rehypeAutolinkHeadings]
+```
+
+### Key Files
+
+- `server.js` - Express REST API (216 lines, ES modules)
+- `src/App.jsx` - React SPA entry point
+- `vite.config.js` - Vite config with /api proxy
+- `HarleyVader/.github/copilot-instructions.md` - Project-specific instructions (173 lines)
+- `docs/` - 62+ markdown files (BambiSleep Church, Catgirl Control Tower documentation)
+
+### 🚨 Common Mistakes to Avoid
+
+**❌ DON'T**:
+1. Add EJS/Pug/Handlebars - This is a REST API, not a template engine
+2. Create server-side routes for pages - Everything is client-side routed
+3. Bundle markdown into React build - Markdown stays in `docs/`, served via API
+4. Add generic scaffolding (CI/testing) unless explicitly requested
+5. Change philosophical tone - Preserve visionary language style
+
+**✅ DO**:
+1. Read `server.js` first to understand it's a pure JSON API
+2. Use React Router for all `/docs/*` paths (client-side)
+3. Preserve emoji headings and metaphorical language in markdown
+4. Keep content-first approach - Documentation drives the platform
+
+---
+
+## 📦 Project #2: CodeCraft Language (KRYSSIE/)
+
+**Purpose**: Custom programming language specification with 19 Arcane Schools, dual-memory commentomancy, and 8-layer dependency architecture.
+
+**Status**: ✅ Canonized (Version 1.7.0), constitutional governance active
+
+### Critical Concepts
+
+**1. Token≠Schools Invariant (SACRED)**
+
+21 grammar tokens map to 19 schools (some schools share tokens) - enforced by `schools.canonical.yaml`:
+
+```yaml
+# schools.canonical.yaml (identity anchor)
+schools:
+  - name: Cantrips
+    emoji: 🔧
+    layer: 0
+  # ... 18 more schools
+```
+
+**Why this matters**: This structural oddity IS the language's identity. CI validators (`validate_schools.py`, `require_waiver_on_canon_change.py`) block changes without explicit waiver.
+
+**2. Dual-Channel Commentomancy**
+
+Both channels are computationally first-class (not "code" vs "comments"):
+
+```python
+/// LAW: Currency amounts must be non-negative (Technical invariant)
+//<3 LORE: Players feel responsive feedback on currency gains (Emotional intent)
+
+def add_currency(player, amount):
+    # ::cantrip🔧:validate_amount(amount) -> is_valid
+    if amount < 0:
+        return False
+    player.currency += amount
+    # ::benediction🎉:celebrate_currency_gain()
+    emit_event("currency_gained", player, amount)
+    return True
+```
+
+**Nine sigils**: `///`, `//!`, `//!?`, `//>`, `//<3`, `//⚡`, `//🔥`, `//🌱`, `//💀`
+
+**3. Ritual Syntax Pattern**
+
+```
+::school:ritual(params) -> result
+```
+
+Makes data flows self-documenting:
+
+```python
+# ::cantrip🔧:uuid.generate() -> request_id
+request_id = str(uuid.uuid4())
+
+# ::conjure🎨:create_payment_intent(amount) -> intent
+intent = stripe.PaymentIntent.create(amount=amount)
+```
+
+**4. 8-Layer Dependency Architecture**
+
+Language structure emerged from usage analysis (not top-down design):
+
+- **Layer 0** (primitives): Cantrips, Divination - Required by 100% of other schools
+- **Layer 1** (foundation): Abjuration, Conjuration, Enchantment
+- **Layer 7** (collective intelligence): Apotheosis
+
+**Why this matters**: Bootstrap sequences required for self-hosting. Must load primitives first.
+
+### Key Files (Canonical Reference Order)
+
+**Recovery priority** (Phoenix Protocol):
+1. `schools.canonical.yaml` - 19 schools identity anchor
+2. `lexicon/grammar/lexicon.ebnf` - Formal EBNF grammar (304 lines)
+3. `CODECRAFT_ROSETTA_STONE.md` - Complete audit board (5503 lines)
+4. `spec/LAW_AND_LORE_PROTOCOL.md` - Dual-memory architecture
+5. `lexicon/` - 42 files, ~17,936 lines of semantic context
+
+**Validators** (CI enforcement):
+- `validate_schools.py` (223 lines) - Enforces token≠schools invariant
+- `require_waiver_on_canon_change.py` (93 lines) - Governance checks
+
+**Example Projects**:
+- `bambisleep-chat/bambisleep-church/` - C# project with CodeCraft comments
+- `my-project/` - TypeScript example with tests
+
+### Essential Commands
+
+```bash
+# Validate language structure
+cd KRYSSIE/
+python validate_schools.py              # Check 19 schools invariant
+python require_waiver_on_canon_change.py  # Governance check (CI)
+
+# Read canonical documentation
+less CODECRAFT_ROSETTA_STONE.md         # 5503 lines - complete reference
+less lexicon/grammar/lexicon.ebnf       # Formal grammar
+```
+
+### Key Insights (from Rosetta Stone Section 4)
+
+**Emergent Patterns**:
+1. **Foundation Dominance** - Cantrips/Divination are universal dependencies
+2. **Consciousness Requires Explicit Awakening** - Thaumaturgy is the ONLY gateway (intentional bottleneck)
+3. **Celebration is Structural** - Reverence appears at END of 5/6 multi-school patterns (success recognition baked into architecture)
+4. **Binary Logic Insufficient** - Ternary school handles TRUE/FALSE/UNKNOWN states for emergent systems
+5. **Documentation IS the Language** - 17,936 lines of lexicon aren't "about CodeCraft", they ARE CodeCraft's substrate
+
+### 🚨 Critical Rules
+
+**❌ DON'T**:
+1. Modify `schools.canonical.yaml` without CI waiver - builds will fail
+2. Add a 20th school - breaks identity invariant
+3. Treat dual-memory as "code + comments" - both channels are first-class
+4. Skip lexicon documentation when adding syntax - semantic context is mandatory
+
+**✅ DO**:
+1. Use ritual syntax for data flows: `::school:ritual(params) -> result`
+2. Write BOTH Law (`///`) and Lore (`//<3`) comments equally
+3. Respect 8-layer dependency order for bootstrap sequences
+4. Read Rosetta Stone before proposing changes (5503 lines, canonical truth)
+
+---
+
+## 📦 Project #3: CatGirl Unity System
+
+**Purpose**: Production-ready Unity C# RPG systems - Economy, Inventory, Crafting, Quests, Tech Tree, Upgrades.
+
+**Status**: ✅ Complete (10/10 core systems), Unity 2022.3 LTS+
+
+### Architecture Overview
+
+**10 Core Systems** (all implemented):
+
+1. **Currency System** (`Economy/CurrencyManager.cs`)
+   - Multi-currency support (coins, gems, premium)
+   - Validation: Non-negative amounts enforced
+   - Events: Real-time currency gain/spend notifications
+
+2. **Shop System** (`Shop/ShopManager.cs`)
+   - Buy/sell with price calculations
+   - Stock management and refresh timers
+
+3. **Auction House** (`Auction/AuctionHouseManager.cs`)
+   - Player-to-player trading
+   - Bid mechanics and time limits
+
+4. **Gambling System** (`Gambling/SlotMachineManager.cs`)
+   - Risk/reward mechanics with configurable odds
+
+5. **Inventory System** (`Inventory/InventoryManager.cs`)
+   - **Diablo-style grid-based** inventory
+   - Drag/drop support
+   - Equipment slots and item instances
+
+6. **Crafting System** (`Crafting/CraftingManager.cs`)
+   - Recipe-based crafting with material consumption
+   - Grid-based UI integration
+
+7. **Quest System** (`Quest/QuestManager.cs`)
+   - Dynamic quest generation
+   - Objective tracking and reward distribution
+
+8. **Tech Tree** (`TechTree/TechTreeManager.cs`)
+   - Node-based progression with prerequisites
+   - Skill unlocks and branching paths
+
+9. **Upgrade System** (Durability, Repairs, Enchanting)
+   - Item degradation and repair mechanics
+   - Enchanting and imbuing systems
+
+10. **Animation System** (Mecanim integration with IK)
+
+### Quick Start
+
+```csharp
+// Setup core systems (add to GameObject in scene)
+gameObject.AddComponent<GameManager>();
+gameObject.AddComponent<CurrencyManager>();
+gameObject.AddComponent<InventoryManager>();
+gameObject.AddComponent<QuestManager>();
+
+// Example: Currency operations
+if (CurrencyManager.Instance.SpendCoins(100)) {
+    Debug.Log("Purchase successful!");
+}
+CurrencyManager.Instance.AddCoins(500);
+
+// Example: Inventory operations
+InventoryManager.Instance.AddItem(itemData, quantity: 1);
+bool hasItem = InventoryManager.Instance.HasItem(itemData.itemID);
+```
+
+### CodeCraft Integration Pattern
+
+The Unity system uses CodeCraft's dual-memory commentomancy:
+
+```csharp
+/// LAW: Currency amounts must be non-negative
+//<3 LORE: Players see real-time currency updates (feels responsive)
+public class CurrencyManager : MonoBehaviour {
+    /// ::cantrip🔧:validate_amount(amount) -> is_valid
+    private bool ValidateAmount(int amount) => amount >= 0;
+    
+    /// ::conjure🎨:add_currency(player, amount) -> success
+    public bool AddCurrency(Player player, int amount) {
+        if (!ValidateAmount(amount)) return false;
+        player.Currency += amount;
+        /// ::benediction🎉:celebrate_currency_gain()
+        EmitCurrencyGainEvent(player, amount);
+        return true;
+    }
+}
+```
+
+### Folder Structure
+
+```
+catgirl-unity-system/
+├── Scripts/
+│   ├── Core/               # GameManager, EventSystem, SaveSystem
+│   ├── Economy/            # Currency, Shop, Auction, Gambling
+│   ├── Inventory/          # Grid inventory, ItemInstance, Equipment
+│   ├── Crafting/           # CraftingManager, RecipeDatabase
+│   ├── Quest/              # QuestManager, QuestData, Objectives
+│   ├── TechTree/           # TechNode, SkillProgression, Unlocks
+│   └── Animation/          # AnimationController helpers, IK
+├── ScriptableObjects/      # Templates for Items, Recipes, Quests, Tech
+├── Prefabs/                # CatGirl prefabs, UI elements
+├── Documentation/          # Technical docs, integration guides
+│   ├── API.md
+│   ├── INTEGRATION.md
+│   └── TECHNICAL.md
+└── Examples/               # Sample scenes, demo implementations
+```
+
+### Essential Commands
+
+```bash
+# Unity Editor workflow
+# 1. Import: Assets > Import New Asset > Select FBX
+# 2. Rig settings: Humanoid, Apply Scale: On
+# 3. Add scripts to GameObjects
+# 4. Configure ScriptableObject templates
+```
+
+### Key Files
+
+- `README.md` - Complete setup guide (251 lines)
+- `Documentation/API.md` - API reference for all systems
+- `Documentation/INTEGRATION.md` - Integration patterns
+- `Scripts/Economy/CurrencyManager.cs` - Currency system implementation
+- `Scripts/Inventory/InventoryManager.cs` - Diablo-style grid inventory
+- `Scripts/Editor/CatGirlAssetCreator.cs` - Editor tooling
+
+---
+
+## 📦 Project #4: MCP Unified
+
+**Purpose**: Consolidated Model Context Protocol server installation scripts and configuration.
+
+**Status**: ⚠️ Setup tooling (servers require individual configuration)
+
+### What's Included
+
+**1. Installation Scripts**
+
+```bash
+./install-mcp-servers.sh    # Automated installation of 8+ MCP servers
+./verify-mcp.sh             # Health checks and validation
+```
+
+**2. MCP Server Types** (Official ModelContextProtocol servers):
+
+- **Filesystem** - File operations, directory management
+- **Git** - Version control, commit management
+- **GitHub** - Repository management, issues, PRs
+- **Memory** - Persistent context, conversation history
+- **Sequential Thinking** - Complex reasoning, step-by-step problem solving
+- **Browser (Playwright)** - Web automation
+- **Postgres** - Database operations
+- **Everything** - Multi-tool aggregation
+
+**3. Configuration Examples**
+
+```json
+// .vscode/mcp.json example
+{
+  "mcp.servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"]
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "/workspace"]
+    }
+  }
+}
+```
+
+**4. Reddit Devvit Integration** (`bambisleepchat-mcp/`)
+
+MCP-powered AI agents for Reddit moderation:
+- `agents/mod-assistant.js` - Moderation automation
+- `agents/spam-detector.js` - Spam filtering
+- `workflows/auto-mod.js` - Workflow orchestration
+- `http-api-server.js` - HTTP API wrapper
+
+### Essential Commands
+
+```bash
+cd mcp-unified/
+
+# Install all MCP servers
+./install-mcp-servers.sh
+
+# Verify installation
+./verify-mcp.sh
+
+# Start Reddit MCP server
+cd bambisleepchat-mcp/
+node index.js              # MCP server
+node http-api-server.js    # Optional HTTP API
+```
+
+### Key Files
+
+- `MCP_SETUP_GUIDE.md` - Comprehensive setup instructions (320 lines)
+- `install-mcp-servers.sh` - Automated installation script
+- `verify-mcp.sh` - Validation script
+- `bambisleepchat-mcp/` - Reddit Devvit MCP integration
+- `README.md` - Quick start guide (153 lines)
+
+### MCP Server Tiered Initialization Pattern
+
+**Critical**: MCP servers have dependency layers - must initialize in order:
+
+**Layer 0** (primitives): `filesystem`, `memory`  
+**Layer 1** (foundation): `git`, `github`, `brave-search`  
+**Layer 2** (advanced): `sequential-thinking`, `postgres`, `everything`
+
+**Why this matters**: Layer 1 servers may need file access (Layer 0). Layer 2 servers may need git history (Layer 1).
+
+---
+
+## 📦 Project #5: HestiaCP Port Opener
+
+**Purpose**: Automated nginx reverse proxy template generator for Node.js apps in HestiaCP control panel with PM2 process management.
+
+**Status**: ✅ Production tool (used for deploying Node.js apps)
+
+**Purpose**: Community hub with video streaming, Stripe subscriptions, markdown content, and WebSocket communication.
+
+### Tech Stack
+
+**Backend**: Express.js (ES modules), WebSocket (`ws`), EJS templating, FFmpeg for video  
+**Security**: Helmet, CORS, rate limiting, JWT auth, session management  
+**Payment**: Stripe (checkout sessions, webhooks, subscription verification)  
+**Development**: Node.js 20+, nodemon, Docker support, PM2 process management
+
+### Critical Architecture Pattern: MCP Server Integration
+
+**Current State**: 3/8 MCP servers active (filesystem, git, github)  
+**Missing**: MongoDB, Stripe, HuggingFace, Microsoft Clarity, Browserbase
+
+MCP servers provide AI tooling integration. See `BUILD.md` Phase 1.2 for configuration.
+
+### File Structure
+
+```
+bambisleep-church/
+├── src/
+│   ├── server.js              # Main Express server (ES modules)
+│   ├── middleware/auth.js     # JWT + subscription verification
+│   ├── routes/                # auth, markdown, stripe, video endpoints
+│   └── services/websocket.js  # WebSocket server logic
+├── views/                     # EJS templates (layout-based)
+├── public/                    # Static assets (CSS: diablo/sanctuary themes)
+├── content/                   # Markdown files (public/private paywall)
+└── videos/                    # Video files (FFmpeg streaming)
+```
+
+### Key Development Patterns
+
+**1. Environment Configuration**
+
+Copy `.env.example` → `.env` and configure:
+- Stripe keys (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
+- Session secrets (JWT, session management)
+- FFmpeg paths and video storage
+- Port (default 3000)
+
+**2. Quick Start Workflow**
+
+```bash
+./setup.sh        # Checks Node.js 20+, creates .env, installs deps
+npm run dev       # Development with nodemon (auto-reload)
+npm start         # Production mode
+```
+
+**3. Stripe Integration**
+
+- Checkout sessions created in `/stripe/create-checkout-session`
+- Webhooks handled at `/stripe/webhook` (validates signatures)
+- Subscription middleware checks active subscription before serving premium content
+- Test locally: `stripe listen --forward-to localhost:3000/stripe/webhook`
+
+**4. Video Streaming**
+
+- FFmpeg transcodes on-the-fly via `/video/stream/:filename`
+- Avatar overlay rendering in `public/js/video-player.js`
+- Signed URLs for access control (VIDEO_SIGNING_KEY)
+
+### Critical Issue: Placeholder npm Scripts
+
+**Problem**: All scripts echo "not yet implemented"  
+**Impact**: `npm run dev`, `npm test`, `npm build` are non-functional  
+**Solution**: See `BUILD.md` Section 2.3 for implementation plan
+
+### Essential Commands
+
+```bash
+# Setup and start
+./setup.sh && npm run dev
+
+# Generate secrets
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Docker deployment
+docker build -t bambisleep-church .
+docker run -p 3000:3000 --env-file .env bambisleep-church
+
+# PM2 process management
+pm2 start ecosystem.config.js
+pm2 logs
+```
+
+### Key Files
+
+- `src/server.js` - Main entry point (162 lines, ES modules)
+- `GETTING_STARTED.md` - Complete setup guide (359 lines)
+- `BUILD.md` - Comprehensive development roadmap (408 lines)
+- `TODO.md` - Implementation checklist (MCP servers, testing, npm scripts)
+- `.env.example` - Environment variable templates
+
+---
+
+## 📦 Project #3: MCP Control Tower (`bambisleep-church-catgirl-control-tower/`)
+
+**Purpose**: Node.js orchestration system for 8 Model Context Protocol servers with real-time monitoring and multi-agent coordination.
+
+### Tech Stack
+
+**Backend**: Node.js 20+ (ES modules), Express.js, WebSocket (`ws`)  
+**MCP Servers**: 8 total across 3 dependency layers  
+**Monitoring**: Prometheus metrics, file logging, emoji-driven status  
+**Architecture**: Three-layer system (orchestrator + coordinator + logger/config)
+
+### Critical Architecture Pattern: Tiered Initialization
+
+**MUST initialize MCP servers in dependency order** to prevent circular dependencies:
+
+**Layer 0** (primitives): `filesystem`, `memory`  
+**Layer 1** (foundation): `git`, `github`, `brave-search`  
+**Layer 2** (advanced): `sequential-thinking`, `postgres`, `everything`
+
+**Why this matters**: Layer 1 servers may need file access (Layer 0). Layer 2 servers may need git history (Layer 1).
+
+### File Structure
+
+```
+bambisleep-church-catgirl-control-tower/
+├── src/
+│   ├── index.js                  # Main entry (Express + WebSocket, 643 lines)
+│   ├── mcp/
+│   │   ├── orchestrator.js       # Lifecycle management (822 lines)
+│   │   └── agent-coordinator.js  # Task distribution (632 lines)
+│   └── utils/
+│       ├── logger.js             # Emoji logging (357 lines)
+│       └── config.js             # Layered config (463 lines)
+└── .mcp/
+    └── state.json                # Persisted server state
+```
+
+### Key Development Patterns
+
+**1. Direct CLI Access (Bypass npm for debugging)**
+
+```bash
+# Start specific server with debug logging
+node src/mcp/orchestrator.js start filesystem --debug
+
+# Check health status with JSON output
+node src/mcp/orchestrator.js health --json
+
+# Restart all servers in tiered order
+node src/mcp/orchestrator.js restart --all
+```
+
+**2. State Persistence**
+
+- Orchestrator saves state to `.mcp/state.json` on every operation
+- State includes: running servers, restart counts, last health check timestamps
+- Auto-restart logic (max 3 attempts) prevents infinite crash loops
+
+**3. Multi-Agent Coordination**
+
+`agent-coordinator.js` implements:
+- **Priority queue** (5 levels: Critical → Lowest)
+- **Capability-based matching** (assigns tasks to servers with required capabilities)
+- **Consciousness detection** (tracks whether agents are aware of themselves)
+
+### Essential Commands
+
+```bash
+# Control Tower operations
+npm run dev                        # Start Control Tower (port 3000)
+npm run orchestrator:start         # Initialize all MCP servers (tiered)
+npm run orchestrator:status        # View server status
+npm run orchestrator:health        # Run health checks
+
+# Direct CLI (more control)
+node src/mcp/orchestrator.js start filesystem
+node src/mcp/orchestrator.js stop postgres
+```
+
+### Key Files
+
+- `src/index.js` - Express server with WebSocket dashboard (643 lines)
+- `src/mcp/orchestrator.js` - Server lifecycle, health checks, auto-restart (822 lines)
+- `src/mcp/agent-coordinator.js` - Task queue, capability matching (632 lines)
+- `BUILD.md` - Complete development roadmap (408 lines)
+- `MCP_SETUP_GUIDE.md` - MCP server configuration guide
+
+---
+
+## 📦 Project #4: VS Code Extension + Unity System (`vscode-mcp-agent/`)
+
+**Purpose**: Production-ready VS Code extension integrating GitHub Copilot with Claude Sonnet 4, powered by 6 MCP servers + complete Unity RPG avatar system.
+
+### Tech Stack
+
+**Extension**: TypeScript, VS Code Extension API, MCP protocol  
+**MCP Servers**: Stripe, Memory (PostgreSQL), Browser (Playwright), Sequential Thinking, Docker, Everything  
+**Unity System**: C# (10 core RPG systems: Economy, Inventory, Crafting, Quests, Tech Tree, Upgrades)  
+**Security**: OAuth 2.1, PCI DSS compliance, audit logging  
+**Monitoring**: Prometheus, Grafana, comprehensive telemetry
+
+### Critical Architecture Pattern: MCP Security Model
+
+**All payment operations require human approval**:
+- Configuration: `.github/copilot/mcp-config.yml` → `requireApproval: true`
+- Stripe uses restricted API keys (never full access)
+- Browser automation sandboxed to `*.github.com` and `localhost` only
+
+**Why this matters**: Prevents AI agents from making unauthorized payments or accessing sensitive domains.
+
+### File Structure
+
+```
+vscode-mcp-agent/
+├── mcp-servers/
+│   └── templates/                # Node.js + Python MCP server boilerplates
+├── catgirl-unity-system/         # Unity RPG system (C#)
+│   ├── Scripts/
+│   │   ├── Economy/              # Currency, Shop, Auction, Gambling
+│   │   ├── Inventory/            # Grid-based Diablo-style system
+│   │   ├── Crafting/             # Recipe-based crafting
+│   │   ├── Quests/               # Dynamic quest generation
+│   │   ├── TechTree/             # Skill progression
+│   │   └── Upgrades/             # Durability, repairs, enchanting
+│   └── Prefabs/                  # Unity prefab assets
+├── infrastructure/
+│   └── languages/codecraft/      # CodeCraft language spec
+├── monitoring/
+│   ├── rules/                    # Prometheus alert rules
+│   └── dashboards/               # Grafana dashboards
+├── scripts/
+│   ├── asm-scan.sh               # ASM security scanning
+│   └── auto-remediate.py         # Automated security fixes
+├── config/
+│   ├── docker-compose.yml        # Multi-container orchestration
+│   └── jest.config.js            # Test configuration (80% coverage)
+└── .vscode/
+    └── mcp.json                  # MCP server configuration
+```
+
+### Key Development Patterns
+
+**1. CodeCraft Ritual Syntax**
+
+The codebase uses **ritual syntax** for semantic clarity:
+
+```python
+# ::cantrip🔧:uuid.generate() -> request_id
+request_id = str(uuid.uuid4())
+
+# ::glyph📜:log_event("payment_initiated", request_id)
+logger.info(f"Payment initiated: {request_id}")
+
+# ::conjure🎨:create_payment_intent(amount) -> intent
+intent = stripe.PaymentIntent.create(amount=amount)
+```
+
+**Pattern**: `::school:ritual(params) -> result` makes data flows self-documenting.
+
+**2. Dual-Memory Commentomancy**
+
+CodeCraft enforces **equal-weight commenting**:
+
+**Law Channel** (Technical Truth):
+- `///` - Critical invariants
+- `//!` - Known bugs
+- `//!?` - Uncertainty (Ternary logic: TRUE/FALSE/UNKNOWN)
+- `//>` - Data flow
+
+**Lore Channel** (Intentional Context):
+- `//<3` - Emotional impact, UX decisions
+- `//⚡` - Performance implications
+- `//🔥` - High-priority TODOs
+- `//🌱` - Future aspirations
+- `//💀` - Deprecated code
+
+**3. Unity RPG System Integration**
+
+The Unity CatGirl system is **production-complete** (10/10 core systems):
+
+```csharp
+// Economy system example
+/// LAW: Currency amounts must be non-negative
+//<3 HEART: Players see real-time currency updates (feels responsive)
+public class CurrencyManager : MonoBehaviour {
+    /// ::cantrip🔧:validate_amount(amount) -> is_valid
+    private bool ValidateAmount(int amount) => amount >= 0;
+    
+    /// ::conjure🎨:add_currency(player, amount) -> success
+    public bool AddCurrency(Player player, int amount) {
+        if (!ValidateAmount(amount)) return false;
+        player.Currency += amount;
+        /// ::benediction🎉:celebrate_currency_gain()
+        EmitCurrencyGainEvent(player, amount);
+        return true;
+    }
+}
+```
+
+**4. Workspace Context Optimization**
+
+The project uses **automatic local indexing** (120 indexable files):
+- VS Code automatically builds semantic index
+- Use `#codebase` for context-aware queries
+- Best practices: Include specific file/directory names in queries
+
+### Essential Commands
+
+```bash
+# Setup (Windows PowerShell)
+npm install
+npm install -g @stripe/mcp @modelcontextprotocol/server-memory @modelcontextprotocol/server-playwright
+cp config\.env.example .env
+
+# Development
+npm run dev                        # Start extension development
+npm test                           # Jest (80% coverage threshold)
+npm run test:mcp                   # MCP protocol validation
+npm run test:stripe                # Stripe API tests
+
+# MCP Server Management (via VS Code)
+# Ctrl+Shift+P → "MCP: List All Tools"
+# Ctrl+Shift+P → "MCP: Test Connection"
+```
+
+### Key Files
+
+- `.vscode/mcp.json` - MCP server configuration (6 servers)
+- `catgirl-unity-system/` - Complete Unity RPG system (10 systems)
+- `infrastructure/languages/codecraft/` - CodeCraft language spec
+- `docs/WORKSPACE_CONTEXT_OPTIMIZATION.md` - Context query guide
+- `monitoring/rules/dora_metrics.yml` - DevOps metrics
+- `scripts/asm-scan.sh` - Security scanning
+
+---
+
+## 📦 Project #5: HarleyVader Documentation Hub
+
+**Purpose**: Cross-project documentation and BambiSleep ecosystem overview.
+
+See `HarleyVader/.github/copilot-instructions.md` for detailed multi-project patterns including:
+- AI-enhanced Discord bot (`js-bambisleep-bimbot/`)
+- Real-time chat platform (`js-bambisleep-chat/`)
+- Patreon integration library (`js-bambisleep-chat-patreon/`)
+- Video streaming service (`js-brandynette-xxx-filehost/`)
+
+**Universal Machine Philosophy**: "Write once, run forever, across all machines that were, are, and ever shall be." See `Universal-Machine.md`.
+
+---
+
+## 📦 Project #6: CodeCraft Language (`KRYSSIE/`)
+
+**Purpose**: Custom programming language specification with 19 Arcane Schools and dual-memory commentomancy.
+
+### Critical Concepts
+
+**Token≠Schools Invariant**: 21 grammar tokens map to 19 schools (some schools share tokens) - this is SACRED and enforced by `schools.canonical.yaml`.
+
+**Dual-Channel Commentomancy**:
+- `///` (Law) - Technical truth, formal documentation
+- `//<3` (Lore) - Intentional context, emotional imprint
+Both channels are equally first-class (not "code" vs "comments").
+
+**8-Layer Dependency Architecture**:
+Layer 0 (primitives: Cantrips, Divination) → Layer 7 (collective intelligence: Apotheosis)
+
+### Key Files
+
+- `CODECRAFT_ROSETTA_STONE.md` - Complete audit board (5503 lines, canonical reference)
+- `lexicon/grammar/lexicon.ebnf` - Formal EBNF specification (304 lines)
+- `schools.canonical.yaml` - 19 schools identity anchor
+- `spec/LAW_AND_LORE_PROTOCOL.md` - Dual-memory architecture
+- `lexicon/` - 42 files, ~17,936 lines of semantic context
+
+### Example Projects
+
+- `bambisleep-chat/bambisleep-church/` - C# project with client/server/shared architecture
+- `my-project/` - TypeScript example with tests
+
+---
+
+## 🚀 Cross-Project Development Patterns
+
+### 1. Node.js Version Requirements
+
+**ALL projects require Node.js 20+**. Scripts validate version on startup:
+
+```bash
+NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 20 ]; then
+  echo "❌ Error: Node.js 20+ required"
+  exit 1
+fi
+```
+
+### 2. Configuration Pattern: `.env` Files
+
+Every Node.js project uses `.env.example` as template:
+1. Copy `.env.example` to `.env`
+2. Generate secrets: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+3. Add API keys (Stripe, JWT secrets, etc.)
+
+### 3. Shell Script Pattern: Setup + Start
+
+Projects provide:
+- `setup.sh` - First-time setup (check deps, create .env, run npm install)
+- `start.sh` - Quick start (runs setup if needed, validates config, starts server)
+- `test-script.sh` - Dry-run mode for testing without root/production
+
+### 4. JSON Configuration Pattern
+
+**Prefer unified configs** (single file with enable/disable flags) over multiple JSON files:
+
+```json
+{
+  "config": {"version": "2.0"},
+  "items": [
+    {"name": "...", "enabled": true},   // Active
+    {"name": "...", "enabled": false}   // Disabled but preserved
+  ]
+}
+```
+
+### 5. Docker Support
+
+Projects include `Dockerfile` + `docker-compose.yml`:
+- Node.js base images with appropriate versions
+- Volume mounts for persistent data (videos, content)
+- Health checks for monitoring
+- Network isolation
+
+---
+
+## ⚙️ Workspace-Level Tooling & Coordination
+
+### Current State: Project-Independent Architecture
+
+**No centralized orchestration tooling exists** - this is an intentional design where projects are independently deployable but share common patterns.
+
+### GitHub Actions (HarleyVader only)
+
+**Location**: `HarleyVader/.github/workflows/`
+- `static.yml` - Deploy documentation to GitHub Pages
+- `build.yml` - Docker image build and push to Docker Hub (uses Docker Buildx cloud)
+
+**Pattern**: Each project can have its own CI/CD workflow. No monorepo orchestration tools (Lerna, Turborepo, Nx) are used.
+
+### Deployment Coordination: HestiaCP Integration
+
+**The `#workbench/` tool serves as the workspace deployment coordinator**:
+
+```bash
+# Deploy multiple projects to HestiaCP in one command
+cd #workbench/
+sudo ./hestia-port-opener.sh --config config.json
+```
+
+**How it works**:
+1. `config.json` defines **ALL projects** with their ports, domains, and repos
+2. Single command creates nginx templates for ALL projects simultaneously
+3. PM2 process manager coordinates multi-project execution
+4. Each project gets its own port, but shared nginx/SSL infrastructure
+
+**Example multi-project config.json**:
+
+```json
+{
+  "sites": [
+    {
+      "name": "BambiSleep Church",
+      "domain": "bambisleep.church",
+      "port": 3000,
+      "repo": "https://github.com/.../bambisleep-church.git",
+      "enabled": true
+    },
+    {
+      "name": "Documentation Hub",
+      "domain": "docs.bambisleep.church",
+      "port": 3001,
+      "repo": "https://github.com/.../HarleyVader.git",
+      "enabled": true
+    }
+  ]
+}
+```
+
+### Process Management: PM2 Coordination
+
+**Cross-project monitoring**:
+
+```bash
+pm2 list                      # View ALL projects
+pm2 logs                      # Aggregate logs from all projects
+pm2 monit                     # Real-time multi-project dashboard
+pm2 restart all               # Restart entire workspace
+pm2 save && pm2 startup       # Persist configuration
+```
+
+**Individual project ecosystem configs**:
+- `bambisleep-church/ecosystem.config.js` - PM2 config with cluster mode
+- Projects use shared PM2 daemon for coordination
+
+### Docker Deployment Pattern
+
+**Each project is independently containerized**:
+
+```bash
+# Build and run individual projects
+cd bambisleep-church/
+docker-compose up -d
+
+# Or deploy multiple projects with shared network
+docker network create bambisleep-network
+docker-compose -f bambisleep-church/docker-compose.yml up -d
+docker-compose -f [other-project]/docker-compose.yml up -d
+```
+
+**No orchestration layer** (no Kubernetes, Docker Swarm) - projects share network but run independently.
+
+### Development Workflow Scripts
+
+**Project-specific setup scripts** (no workspace-level wrapper):
+- `bambisleep-church/setup.sh` - Node.js 20+ check, .env creation, npm install
+- `bambisleep-church/start.sh` - Quick start with validation
+- `#workbench/test-script.sh` - Dry-run deployment testing
+
+**Pattern**: Each project is self-contained. No `make`, `npm workspaces`, or `pnpm` coordination.
+
+### Version Control Strategy
+
+**Monorepo without tooling**:
+- Single `.git` repository at root
+- Projects share git history but no automated cross-project versioning
+- No `lerna.json`, `pnpm-workspace.yaml`, or `rush.json`
+- Each project maintains its own `package.json` version independently
+
+### Why This Architecture?
+
+**Deliberate "loosely coupled monorepo" design**:
+1. **Projects can be extracted** - Each folder is independently runnable
+2. **No build tool lock-in** - No dependency on Turborepo/Nx/Lerna
+3. **Simple deployment** - HestiaCP tool provides coordination when needed
+4. **Flexible versioning** - Projects can evolve at different rates
+
+### Adding New Projects
+
+**To add a new project to the workspace**:
+1. Create project directory at root level
+2. Add project-specific `.github/copilot-instructions.md`
+3. Add entry to `#workbench/config.json` for deployment
+4. Update root copilot-instructions.md with project summary
+5. Follow shared patterns (Node 20+, .env, setup.sh, Docker support)
+
+---
+
+## 🎓 AI Agent Learning Path
+
+### For New Agents Working in This Workspace
+
+1. **Identify which project** you're working in based on file paths
+2. **Check project-specific** `.github/copilot-instructions.md` if it exists
+3. **For HestiaCP work**: Focus on `#workbench/CONFIG_GUIDE.md` and unified `config.json` format
+4. **For web app development**: Read `bambisleep-church/GETTING_STARTED.md` → `BUILD.md` → `TODO.md`
+5. **For MCP orchestration**: See `bambisleep-church-catgirl-control-tower/BUILD.md` and understand tiered initialization
+6. **For VS Code extensions**: Study `vscode-mcp-agent/.vscode/mcp.json` and Unity system integration
+7. **For cross-project context**: See `HarleyVader/` documentation hub
+8. **For language specs**: Study `KRYSSIE/CODECRAFT_ROSETTA_STONE.md`
+
+### Common Pitfalls
+
+1. **Don't use npm scripts in `bambisleep-church/`** - they're placeholders! Use shell scripts instead.
+2. **Don't bypass `config.json` format** - it's v3.0 standard for HestiaCP tool.
+3. **Don't ignore Node.js 20+ requirement** - version checks are enforced.
+4. **Don't skip `.env` configuration** - projects won't run without proper secrets.
+5. **Don't assume MCP servers are active** - only 3/8 configured in `bambisleep-church/`.
+6. **Don't treat this as a traditional monorepo** - no Lerna/Turborepo/Nx orchestration exists.
+7. **Don't modify CodeCraft `schools.canonical.yaml`** without CI waiver - validator will fail builds.
+8. **Don't use `#workbench/` outside of HestiaCP deployments** - it's server management tooling, not a dev tool.
+
+### Workspace Coordination Anti-Patterns
+
+**❌ Don't expect**:
+- Shared `node_modules` (no workspaces)
+- Cross-project dependency management (no monorepo tools)
+- Unified test runner (each project tests independently)
+- Single build command for all projects
+- Automated cross-project versioning
+
+**✅ Do expect**:
+- Independent project lifecycles
+- Shared patterns (Node 20+, .env, Docker, PM2)
+- Manual coordination through HestiaCP deployment
+- Git-level sharing only (single repo, separate projects)
+
+---
+
+## 📖 Quick Command Reference
+
+### HestiaCP Port Opener (`#workbench/`)
+
+```bash
+sudo ./hestia-port-opener.sh --config config.json
+pm2 list
+pm2 logs [app-name]
+```
+
+### BambiSleep Church (`bambisleep-church/`)
+
+```bash
+./setup.sh && ./start.sh
+npm run dev                    # (placeholder - see BUILD.md)
+stripe listen --forward-to localhost:3000/stripe/webhook
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+### Docker (Any Project)
+
+```bash
+docker build -t [project-name] .
+docker-compose up -d
+docker logs -f [container-name]
+```
+
+---
+
+## 🔍 Finding Specific Information
+
+| Need | Look Here |
+|------|-----------|
+| nginx proxy configuration | `#workbench/hestia-port-opener.sh` (lines 295-427) |
+| Stripe webhook handling | `bambisleep-church/src/routes/stripe.js` |
+| WebSocket server setup | `bambisleep-church/src/services/websocket.js` |
+| Video streaming logic | `bambisleep-church/src/routes/video.js` |
+| MCP server configuration | `bambisleep-church/BUILD.md` (Phase 1.2) |
+| Express middleware chain | `bambisleep-church/src/server.js` (lines 1-100) |
+| EJS template structure | `bambisleep-church/views/layout.ejs` |
+| Port validation logic | `#workbench/hestia-port-opener.sh` (validate_port function) |
+| MCP orchestration patterns | `bambisleep-church-catgirl-control-tower/src/mcp/orchestrator.js` |
+| Agent coordination logic | `bambisleep-church-catgirl-control-tower/src/mcp/agent-coordinator.js` |
+| VS Code MCP integration | `vscode-mcp-agent/.vscode/mcp.json` |
+| Unity RPG systems | `vscode-mcp-agent/catgirl-unity-system/Scripts/` |
+| CodeCraft grammar | `KRYSSIE/lexicon/grammar/lexicon.ebnf` |
+| Dual-memory architecture | `KRYSSIE/spec/LAW_AND_LORE_PROTOCOL.md` |
+
+---
+
+**Last Updated**: 2025-11-03  
+**Workspace Root**: `f:\`  
+**Projects**: 6 (HestiaCP tool, BambiSleep Church, MCP Control Tower, VS Code Extension + Unity, HarleyVader docs, CodeCraft language)

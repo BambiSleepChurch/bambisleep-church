@@ -1,0 +1,105 @@
+﻿Folder PATH listing for volume FACTORY
+Volume serial number is A28A-B69F
+F:\HARLEYVADER\DOCS\PROJECTS
+|   README.md
+|   
++---bambisleep-church
+|   |   BUILD.md
+|   |   CHANGELOG.md
+|   |   DEPLOYMENT.md
+|   |   DEVELOPMENT_COMPLETE.md
+|   |   README.md
+|   |   SECURITY.md
+|   |   TELEMETRY.md
+|   |   TODO.md
+|   |   
+|   +---.github
+|   |       copilot-instructions.md
+|   |       README.md
+|   |       
+|   +---.vscode
+|   |       MCP_CONFIG_NOTES.md
+|   |       
+|   +---architecture
+|   |       architecture.md
+|   |       
+|   +---content
+|   |   +---private
+|   |   |       premium-welcome.md
+|   |   |       
+|   |   \---public
+|   |           welcome.md
+|   |           
+|   +---development
+|   |       development.md
+|   |       
+|   +---docs
+|   |       CHECKLIST.md
+|   |       GETTING_STARTED.md
+|   |       GIT_COMMIT_RECOMMENDATIONS.md
+|   |       PHASE3_COMPLETION.md
+|   |       TELEMETRY_QUICK_REFERENCE.md
+|   |       TELEMETRY_UPGRADE_SUMMARY.md
+|   |       UPGRADE_SUMMARY.md
+|   |       WINDOWS_TERMINAL_PROFILE.md
+|   |       WSL_INTEGRATION_ENHANCEMENTS.md
+|   |       WSL_SETUP_GUIDE.md
+|   |       
+|   +---integration
+|   |       mcp-servers.md
+|   |       
+|   +---operations
+|   |       monitoring.md
+|   |       
+|   +---philosophy
+|   |       philosophy.md
+|   |       
+|   \---reference
+|           QUICK_REFERENCE.md
+|           
+\---catgirl-control-tower
+    |   AGENT_README.md
+    |   AGENT_STATUS.md
+    |   BUILD.md
+    |   INDEX.md
+    |   MCP_SETUP_GUIDE.md
+    |   README.md
+    |   TODO.md
+    |   UNITY_SETUP_GUIDE.md
+    |   
+    \---.github
+        |   copilot-instructions.md
+        |   
+        \---docs
+            |   advanced-patterns.md
+            |   ci-cd-pipeline.md
+            |   dashboard-ui.md
+            |   debugging-guide.md
+            |   docker-deployment.md
+            |   testing-guide.md
+            |   
+            \---codebase
+                |   COMPLETION_REPORT.md
+                |   FINAL_STATUS.md
+                |   INDEX.md
+                |   README.md
+                |   
+                +---api
+                |       api-reference.md
+                |       integration-points.md
+                |       state-machines.md
+                |       
+                +---core
+                |       architecture.md
+                |       commentomancy.md
+                |       
+                +---guides
+                |       development-workflow.md
+                |       quick-reference.md
+                |       
+                \---implementation
+                        conventions.md
+                        error-handling.md
+                        modules.md
+                        patterns.md
+                        
