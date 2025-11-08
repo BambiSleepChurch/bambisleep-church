@@ -1,0 +1,46 @@
+{
+  "directory": "/mnt/f/FRINGESOCIAL",
+  "timestamp": "2025-11-08T20:07:08+01:00",
+  "files": [
+    {
+      "path": "/mnt/f/FRINGESOCIAL/hestia-port-openener/config.json",
+      "size": 5345,
+      "lines": 169,
+      "extension": "json"
+    },
+    {
+      "path": "/mnt/f/FRINGESOCIAL/hestia-port-openener/hestia-port-opener.sh",
+      "size": 11744,
+      "lines": 386,
+      "extension": "sh"
+    },
+    {
+      "path": "/mnt/f/FRINGESOCIAL/hestia-port-openener/README.md",
+      "size": 2072,
+      "lines": 94,
+      "extension": "md"
+    },
+    {
+      "path": "/mnt/f/FRINGESOCIAL/network_scan.ps1",
+      "size": 1134,
+      "lines": 40,
+      "extension": "ps1"
+    },
+    {
+      "path": "/mnt/f/FRINGESOCIAL/network_scan_results.csv",
+      "size": 276,
+      "lines": 8,
+      "extension": "csv"
+    },
+    {
+      "path": "/mnt/f/FRINGESOCIAL/README.md",
+      "size": 1131,
+      "lines": 56,
+      "extension": "md"
+    }
+  ],
+  "stats": {
+    "total_files": 6,
+    "total_dirs": 2
+  }
+}

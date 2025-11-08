@@ -1,0 +1,26 @@
+{
+  "terminals": {
+    "orchestrator": {
+      "id": "terminal-1",
+      "role": "orchestrator",
+      "description": "Creates and manages tasks, monitors overall progress"
+    },
+    "inspector": {
+      "id": "terminal-2",
+      "role": "inspector",
+      "description": "Analyzes files, explores codebase, reports findings"
+    },
+    "writer": {
+      "id": "terminal-3",
+      "role": "writer",
+      "description": "Creates and modifies files based on task specifications"
+    },
+    "validator": {
+      "id": "terminal-4",
+      "role": "validator",
+      "description": "Tests, lints, validates changes, runs builds"
+    }
+  },
+  "poll_interval_seconds": 2,
+  "lock_timeout_seconds": 300
+}

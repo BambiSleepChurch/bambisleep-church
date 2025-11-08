@@ -1,0 +1,96 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install MCP Dependencies",
+      "type": "shell",
+      "command": "cd mcp-server && npm install",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Build MCP Server",
+      "type": "shell",
+      "command": "cd mcp-server && npm run build",
+      "problemMatcher": ["$tsc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "dependsOn": ["Install MCP Dependencies"]
+    },
+    {
+      "label": "Start MCP Server (Dev)",
+      "type": "shell",
+      "command": "cd mcp-server && npm run dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Test MCP Server",
+      "type": "shell",
+      "command": "cd mcp-server && npm test",
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Validate All",
+      "type": "shell",
+      "command": "cd mcp-server && npm run validate",
+      "problemMatcher": ["$tsc", "$eslint-stylish"],
+      "group": "build"
+    },
+    {
+      "label": "Git: Stage All",
+      "type": "shell",
+      "command": "git add .",
+      "problemMatcher": [],
+      "group": "none"
+    },
+    {
+      "label": "Git: Commit (Phase 1 Complete)",
+      "type": "shell",
+      "command": "git commit -m 'feat: Phase 1 complete - ADR, persona, MCP scaffold, Unity setup'",
+      "problemMatcher": [],
+      "group": "none",
+      "dependsOn": ["Git: Stage All"]
+    },
+    {
+      "label": "Git: Push to Origin",
+      "type": "shell",
+      "command": "git push origin main",
+      "problemMatcher": [],
+      "group": "none"
+    },
+    {
+      "label": "Quick Commit & Push",
+      "type": "shell",
+      "command": "git add . && git commit -m '${input:commitMessage}' && git push origin main",
+      "problemMatcher": [],
+      "group": "none"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commitMessage",
+      "type": "promptString",
+      "description": "Enter commit message",
+      "default": "chore: update files"
+    }
+  ]
+}

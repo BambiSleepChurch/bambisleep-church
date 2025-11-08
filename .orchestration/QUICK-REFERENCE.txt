@@ -1,0 +1,210 @@
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  🎯 COPILOT CLI ORCHESTRATION - QUICK REFERENCE CARD          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📍 LOCATION: /mnt/f/.orchestration/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 GETTING STARTED (Pick One)
+
+1️⃣  INSTANT START:
+   bash /mnt/f/.orchestration/quick-start.sh
+
+2️⃣  MULTI-TERMINAL:
+   # Run each in separate terminal
+   bash /mnt/f/.orchestration/coordinator-terminal1.sh
+   bash /mnt/f/.orchestration/coordinator-terminal2.sh  
+   bash /mnt/f/.orchestration/coordinator-terminal3.sh
+   bash /mnt/f/.orchestration/coordinator-terminal4.sh
+
+3️⃣  FULL DEMO:
+   bash /mnt/f/.orchestration/demo-all-features.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚙️  MASTER ORCHESTRATOR COMMANDS
+
+cd /mnt/f/.orchestration
+
+bash master-orchestrator.sh start       # Start all workers
+bash master-orchestrator.sh stop        # Stop all workers  
+bash master-orchestrator.sh restart     # Restart system
+bash master-orchestrator.sh status      # Check status
+bash master-orchestrator.sh watch       # Live dashboard (updates every 2s)
+bash master-orchestrator.sh clean       # Clean work files
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 TASK MANAGEMENT
+
+# Enqueue tasks
+bash master-orchestrator.sh enqueue inspect /path/to/project
+bash master-orchestrator.sh enqueue build /path/to/project
+
+# Run parallel tasks
+bash master-orchestrator.sh parallel \
+    "command1" \
+    "command2" \
+    "command3"
+
+# Manual task creation
+echo "/path/to/project" > queue/inspect_$(date +%s).task
+echo "/path/to/project" > queue/build_$(date +%s).task
+echo "write|/path/file.txt|content" > queue/write_$(date +%s).task
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 MONITORING
+
+# Live dashboard
+bash master-orchestrator.sh watch
+
+# Check worker logs
+tail -f logs/inspector.log
+tail -f logs/writer.log
+tail -f logs/builder.log
+
+# Check queue
+ls -l queue/
+
+# View results
+ls -lh work/inspection-results/
+ls -lh work/builds/
+cat work/inspection-results/*.json
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 TROUBLESHOOTING
+
+# Check running workers
+ps aux | grep worker
+
+# Kill stuck workers
+pkill -f worker-inspector
+pkill -f worker-writer
+pkill -f worker-builder
+
+# Clean and restart
+bash master-orchestrator.sh stop
+bash master-orchestrator.sh clean
+bash master-orchestrator.sh start
+
+# Clear terminal signals
+rm -f signals/*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 DIRECTORY STRUCTURE
+
+.orchestration/
+├── master-orchestrator.sh      # Main controller
+├── worker-*.sh                 # 3 background workers
+├── coordinator-terminal*.sh    # 4 terminal coordinators
+├── shared-functions.sh         # Utilities
+├── queue/                      # Task queue (IPC)
+├── logs/                       # Worker logs
+├── pids/                       # Process IDs
+├── work/                       # Results & builds
+│   ├── inspection-results/     # JSON inspection data
+│   ├── builds/                 # Build logs
+│   └── backups/                # File backups
+└── signals/                    # Terminal sync signals
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 COMMON WORKFLOWS
+
+WORKFLOW 1: Inspect All Projects
+─────────────────────────────────
+bash master-orchestrator.sh start
+bash master-orchestrator.sh enqueue inspect /mnt/f/bambisleep-chat
+bash master-orchestrator.sh enqueue inspect /mnt/f/CATHEDRAL
+bash master-orchestrator.sh enqueue inspect /mnt/f/FRINGESOCIAL
+bash master-orchestrator.sh watch
+
+WORKFLOW 2: Build Multiple Projects
+────────────────────────────────────
+bash master-orchestrator.sh enqueue build /mnt/f/project1
+bash master-orchestrator.sh enqueue build /mnt/f/project2
+bash master-orchestrator.sh enqueue build /mnt/f/project3
+tail -f logs/builder.log
+
+WORKFLOW 3: Multi-Terminal Coordination
+────────────────────────────────────────
+Terminal 1: bash coordinator-terminal1.sh  # Inspects
+Terminal 2: bash coordinator-terminal2.sh  # Writes  
+Terminal 3: bash coordinator-terminal3.sh  # Builds
+Terminal 4: bash coordinator-terminal4.sh  # Monitors
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ KEY FEATURES
+
+✅ 3 Background Workers (Inspector, Writer, Builder)
+✅ 4 Terminal Coordinators (synchronized workflows)
+✅ Filesystem-based Task Queue (IPC)
+✅ Real-time Live Dashboard
+✅ Parallel Task Execution
+✅ Auto Build System Detection (npm, pip, go, cargo, maven)
+✅ Automatic File Backups
+✅ JSON Inspection Reports
+✅ Cross-terminal Synchronization
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 DOCUMENTATION
+
+Full Guide:    cat README.md
+Quick Start:   bash quick-start.sh
+Feature Demo:  bash demo-all-features.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 EXAMPLE: Parallel Inspection + Build
+
+# Start system
+bash master-orchestrator.sh start
+
+# Enqueue multiple projects (processed in parallel)
+for proj in /mnt/f/*/; do
+    bash master-orchestrator.sh enqueue inspect "$proj"
+done
+
+# Wait 10s for inspection, then build
+sleep 10
+for proj in /mnt/f/*/; do
+    bash master-orchestrator.sh enqueue build "$proj"
+done
+
+# Watch progress
+bash master-orchestrator.sh watch
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 PRO TIPS
+
+• Workers process tasks automatically - just enqueue and forget
+• Use 'watch' for real-time monitoring during long operations
+• Check logs if tasks seem stuck
+• Clean regularly to avoid disk usage
+• Multi-terminal mode provides best visualization
+• Inspector auto-inspects known projects every 30s
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 IMPORTANT
+
+Stop workers before shutting down:
+    bash master-orchestrator.sh stop
+
+Current Status:
+    bash master-orchestrator.sh status
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Created by: Copilot CLI
+Purpose:    Multi-threaded codebase orchestration
+Ready:      YES ✅
+
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛

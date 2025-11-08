@@ -1,0 +1,9 @@
+{
+  "terminal_id": "terminal-1",
+  "role": "orchestrator",
+  "status": "active",
+  "started_at": "2025-11-08T19:49:18+01:00",
+  "last_heartbeat": "2025-11-08T19:50:18+01:00",
+  "current_task": null,
+  "tasks_completed": 0
+}

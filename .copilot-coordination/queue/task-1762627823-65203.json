@@ -1,0 +1,14 @@
+{
+  "id": "task-1762627823-65203",
+  "role": "inspector",
+  "status": "completed",
+  "priority": 7,
+  "created_at": "2025-11-08T19:50:23+01:00",
+  "assigned_to": null,
+  "title": "Task for inspector",
+  "description": "Examine bambisleep-chat API endpoints and data flow",
+  "context": {},
+  "result": "API: MCP tools (chat, memory, persona, unity-bridge, RAG). WebSocket + Express server",
+  "dependencies": [],
+  "completed_at": "2025-11-08T19:55:25+01:00"
+}

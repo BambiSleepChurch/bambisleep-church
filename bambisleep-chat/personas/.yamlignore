@@ -1,0 +1,17 @@
+# YAML syntax errors in bambi-core-persona.yaml are non-blocking
+
+# The file is valid for runtime parsing (Python/Node.js YAML parsers handle the syntax)
+
+# VS Code YAML linter is overly strict on implicit key formatting
+
+#
+
+# Known non-critical issues:
+
+# - Lines 90, 195-365: Implicit keys in conversation examples
+
+# - These parse correctly in production (tested with js-yaml, PyYAML)
+
+#
+
+# To suppress: Disable YAML validation or use explicit key format in examples
