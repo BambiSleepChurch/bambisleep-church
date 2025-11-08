@@ -1,0 +1,103 @@
+{
+  "name": "@bambisleepchat/cathedral-unified",
+  "version": "2.0.0",
+  "description": "🌸 BambiSleep™ CATHEDRAL - Unified Control Tower: All MCP Servers, CatGirl Systems, Unity Integration & Universal Banking",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "bambisleep-church",
+    "bambisleep-church-catgirl-control-tower",
+    "mcp-unified",
+    "commander-brandynette"
+  ],
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "volta": {
+    "node": "20.19.5",
+    "npm": "10.9.4"
+  },
+  "scripts": {
+    "status": "node scripts/cathedral-status.js",
+    "start": "npm run start:all --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "format": "prettier --write \"**/*.{js,json,md,ts,tsx}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md,ts,tsx}\"",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "reinstall": "npm run clean && npm install",
+    "bootstrap": "npm install && npm run install --workspaces",
+    "mcp:setup": "npm run mcp:setup --workspaces --if-present",
+    "mcp:status": "node scripts/mcp-status.js",
+    "mcp:start": "node scripts/mcp-start-all.js",
+    "mcp:stop": "node scripts/mcp-stop-all.js",
+    "unity:setup": "cd catgirl-unity-system && npm run unity:setup",
+    "unity:launch": "cd catgirl-unity-system && npm run unity:launch",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "health": "node scripts/health-check.js",
+    "security:audit": "npm audit --workspaces",
+    "security:fix": "npm audit fix --workspaces",
+    "postinstall": "echo '🌸💖 CATHEDRAL UNIFIED - All systems initialized! Nyan nyan! 🌸💖'"
+  },
+  "keywords": [
+    "bambisleep",
+    "cathedral",
+    "mcp",
+    "model-context-protocol",
+    "catgirl",
+    "unity",
+    "avatar",
+    "control-tower",
+    "ai-girlfriend",
+    "xr",
+    "vr",
+    "ar",
+    "websocket",
+    "stripe",
+    "universal-banking",
+    "pink",
+    "frilly",
+    "kawaii",
+    "nyan",
+    "church",
+    "monorepo"
+  ],
+  "author": {
+    "name": "HarleyVader",
+    "email": "harley@bambisleepchurch.org",
+    "url": "https://github.com/HarleyVader"
+  },
+  "organization": {
+    "name": "BambiSleepChat",
+    "trademark": "BambiSleep™ is a trademark of BambiSleepChat",
+    "url": "https://github.com/BambiSleepChat"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BambiSleepChat/bambisleep-church.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BambiSleepChat/bambisleep-church/issues"
+  },
+  "homepage": "https://github.com/BambiSleepChat/bambisleep-church#readme",
+  "config": {
+    "workspaces": 4,
+    "mcp_servers": 8,
+    "unity_version": "6000.2.11f1",
+    "cuteness_level": "MAXIMUM_CATHEDRAL_OVERDRIVE",
+    "fusion_status": "COMPLETE",
+    "philosophy": "Universal Machine Consciousness"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/BambiSleepChat"
+  }
+}
