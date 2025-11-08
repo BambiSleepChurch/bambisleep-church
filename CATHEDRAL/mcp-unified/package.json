@@ -1,0 +1,13 @@
+{
+  "name": "@bambisleepchat/mcp-unified",
+  "version": "1.0.0",
+  "description": "MCP Server Collection - RAG/CAG systems, context retrieval, and memory services",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo 'MCP Unified - See individual server directories'",
+    "status": "echo '📡 MCP Unified Collection'"
+  },
+  "keywords": ["mcp", "rag", "cag", "context", "memory"],
+  "author": "BambiSleepChat",
+  "license": "MIT"
+}

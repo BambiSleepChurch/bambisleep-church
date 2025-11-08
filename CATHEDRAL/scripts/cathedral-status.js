@@ -35,14 +35,17 @@ function checkWorkspace(name) {
   const nodeModulesPath = join(path, 'node_modules');
   
   if (!existsSync(path)) {
-    return { exists: false, installed: false, version: null };
+    return { exists: false, installed: false, version: null, hasDeps: false };
   }
   
   let version = 'unknown';
+  let hasDeps = false;
   if (existsSync(packageJsonPath)) {
     try {
       const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
       version = pkg.version;
+      hasDeps = !!(pkg.dependencies && Object.keys(pkg.dependencies).length > 0) ||
+                !!(pkg.devDependencies && Object.keys(pkg.devDependencies).length > 0);
     } catch (e) {
       // ignore
     }
@@ -50,8 +53,9 @@ function checkWorkspace(name) {
   
   return {
     exists: true,
-    installed: existsSync(nodeModulesPath),
-    version
+    installed: hasDeps ? existsSync(nodeModulesPath) : true,
+    version,
+    hasDeps
   };
 }
 
