@@ -1,0 +1,219 @@
+{
+  "reddit": {
+    "appId": "${REDDIT_APP_ID}",
+    "appSecret": "${REDDIT_APP_SECRET}",
+    "testSubreddit": "${REDDIT_TEST_SUBREDDIT}",
+    "userAgent": "bambisleepchat-mcp-integration/1.0.0"
+  },
+  "mcpServers": {
+    "filesystem": {
+      "enabled": true,
+      "rootPath": "/mnt/e/bambisleep-chat-reddit",
+      "allowedOperations": ["read", "write", "list"]
+    },
+    "git": {
+      "enabled": true,
+      "repository": "/mnt/e/bambisleep-chat-reddit"
+    },
+    "github": {
+      "enabled": true,
+      "token": "${GITHUB_TOKEN}",
+      "organization": "BambiSleepChat",
+      "repository": "bambisleep-chat-reddit"
+    },
+    "memory": {
+      "enabled": true,
+      "persistPath": ".mcp-memory",
+      "maxEntries": 10000
+    },
+    "sequentialThinking": {
+      "enabled": true,
+      "maxSteps": 50,
+      "timeout": 30000
+    },
+    "everything": {
+      "enabled": true,
+      "demoMode": false
+    },
+    "braveSearch": {
+      "enabled": true,
+      "apiKey": "${BRAVE_API_KEY}",
+      "maxResults": 10
+    },
+    "puppeteer": {
+      "enabled": true,
+      "headless": true,
+      "timeout": 30000
+    }
+  },
+  "agents": {
+    "modAssistant": {
+      "enabled": true,
+      "mcpServers": ["sequentialThinking", "memory"],
+      "priority": "high",
+      "rateLimit": {
+        "maxRequests": 60,
+        "perSeconds": 60
+      },
+      "features": {
+        "contextAnalysis": true,
+        "actionSuggestion": true,
+        "removalReasons": true,
+        "userHistory": true
+      }
+    },
+    "contentAnalyzer": {
+      "enabled": true,
+      "mcpServers": ["memory", "github", "filesystem"],
+      "priority": "medium",
+      "features": {
+        "sentimentAnalysis": true,
+        "toxicityDetection": true,
+        "patternRecognition": true,
+        "trendAnalysis": true
+      },
+      "thresholds": {
+        "toxicity": 0.7,
+        "sentiment": -0.5,
+        "spam": 0.8
+      }
+    },
+    "spamDetector": {
+      "enabled": true,
+      "mcpServers": ["braveSearch", "puppeteer"],
+      "priority": "high",
+      "features": {
+        "linkVerification": true,
+        "accountAnalysis": true,
+        "coordinatedActivity": true,
+        "domainBlacklist": true
+      },
+      "blacklist": ["spam-domain.com", "scam-site.xyz"],
+      "whitelist": ["reddit.com", "imgur.com", "youtube.com"]
+    },
+    "workflowOrchestrator": {
+      "enabled": true,
+      "mcpServers": ["memory", "filesystem"],
+      "priority": "medium",
+      "features": {
+        "queueManagement": true,
+        "batchProcessing": true,
+        "errorRecovery": true,
+        "rollback": true
+      },
+      "queue": {
+        "maxSize": 1000,
+        "processingRate": 10,
+        "retryAttempts": 3,
+        "retryDelay": 5000
+      }
+    }
+  },
+  "workflows": {
+    "autoMod": {
+      "enabled": true,
+      "triggers": ["new_comment", "new_post", "report"],
+      "rules": [
+        {
+          "name": "keyword-filter",
+          "type": "content",
+          "action": "remove",
+          "keywords": ["spam", "scam"],
+          "caseSensitive": false
+        },
+        {
+          "name": "rate-limit",
+          "type": "user",
+          "action": "flag",
+          "threshold": 10,
+          "timeWindow": 300
+        },
+        {
+          "name": "brigading-detection",
+          "type": "pattern",
+          "action": "alert",
+          "confidence": 0.8
+        }
+      ]
+    },
+    "batchOps": {
+      "enabled": true,
+      "defaultBatchSize": 50,
+      "parallelism": 5,
+      "timeout": 300000,
+      "features": {
+        "preAnalysis": true,
+        "dryRun": true,
+        "progressReporting": true
+      }
+    },
+    "scheduledTasks": {
+      "enabled": true,
+      "tasks": [
+        {
+          "name": "daily-cleanup",
+          "schedule": "0 0 * * *",
+          "workflow": "cleanup-old-threads"
+        },
+        {
+          "name": "weekly-audit",
+          "schedule": "0 0 * * 0",
+          "workflow": "generate-audit-report"
+        },
+        {
+          "name": "monthly-analytics",
+          "schedule": "0 0 1 * *",
+          "workflow": "analytics-summary"
+        }
+      ]
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "emoji",
+    "output": ["console", "file"],
+    "file": {
+      "path": "logs/mcp-integration.log",
+      "maxSize": "10MB",
+      "maxFiles": 5
+    },
+    "emojiMap": {
+      "success": "🌸",
+      "error": "🔥",
+      "mcp": "✨",
+      "quality": "💎",
+      "warning": "⚠️",
+      "transform": "🦋"
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics": {
+      "responseTime": true,
+      "throughput": true,
+      "errorRate": true,
+      "mcpServerHealth": true
+    },
+    "alerts": {
+      "slowResponse": 5000,
+      "highErrorRate": 0.1,
+      "mcpServerDown": true
+    }
+  },
+  "security": {
+    "rateLimit": {
+      "enabled": true,
+      "maxRequests": 100,
+      "perSeconds": 60
+    },
+    "authentication": {
+      "required": true,
+      "method": "oauth2"
+    },
+    "auditLog": {
+      "enabled": true,
+      "path": "logs/audit.log",
+      "includePayload": false
+    }
+  }
+}

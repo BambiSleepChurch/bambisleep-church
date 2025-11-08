@@ -1,0 +1,169 @@
+{
+  "config": {
+    "version": "3.0",
+    "description": "BambiSleep Church - HestiaCP Port Configuration"
+  },
+  "sites": [
+    {
+      "name": "CatGirl Avatar System",
+      "domain": "catgirl.bambisleep.church",
+      "url": "https://catgirl.bambisleep.church",
+      "port": 3000,
+      "repo": "https://github.com/BambiSleepChat/bambisleep-chat-catgirl.git",
+      "description": "Unity 6.2 MCP Control Tower with Universal Banking",
+      "enabled": true
+    },
+    {
+      "name": "Church Main Portal",
+      "domain": "bambisleep.church",
+      "url": "https://bambisleep.church",
+      "port": 3001,
+      "repo": "https://github.com/BambiSleepChat/bambisleep-church.git",
+      "description": "Digital Sanctuary Mission - Main portal",
+      "enabled": true
+    },
+    {
+      "name": "Church Control Tower",
+      "domain": "control.bambisleep.church",
+      "url": "https://control.bambisleep.church",
+      "port": 3002,
+      "repo": "https://github.com/BambiSleepChat/bambisleep-church-catgirl-control-tower.git",
+      "description": "MCP server management & Unity avatar integration",
+      "enabled": true
+    },
+    {
+      "name": "Church MCP Services",
+      "domain": "mcp.bambisleep.church",
+      "url": "https://mcp.bambisleep.church",
+      "port": 3003,
+      "repo": "https://github.com/BambiSleepChat/js-bambisleep-church.git",
+      "description": "Model Context Protocol server orchestration",
+      "enabled": true
+    },
+    {
+      "name": "Chat Platform",
+      "domain": "chat.bambisleep.church",
+      "url": "https://chat.bambisleep.church",
+      "port": 4000,
+      "repo": "https://github.com/BambiSleepChat/bambisleep-chat.git",
+      "description": "Main chat interface and services",
+      "enabled": true
+    },
+    {
+      "name": "Church API Gateway",
+      "domain": "api.bambisleep.church",
+      "url": "https://api.bambisleep.church",
+      "port": 8080,
+      "repo": "https://github.com/BambiSleepChat/bambisleep-catgirl-church.git",
+      "description": "REST API Gateway for church services",
+      "enabled": true
+    },
+    {
+      "name": "Commander Brandynette",
+      "domain": "commander.bambisleep.church",
+      "url": "https://commander.bambisleep.church",
+      "port": 5000,
+      "repo": "https://github.com/BambiSleepChat/commander-brandynette.git",
+      "description": "MCP Agent command interface",
+      "enabled": false
+    },
+    {
+      "name": "Reddit Integration",
+      "domain": "reddit.bambisleep.church",
+      "url": "https://reddit.bambisleep.church",
+      "port": 5001,
+      "repo": "https://github.com/BambiSleepChat/bambisleep-chat-reddit.git",
+      "description": "Reddit Devvit moderation tools",
+      "enabled": false
+    },
+    {
+      "name": "Copilot Instructions",
+      "domain": "copilot.bambisleep.church",
+      "url": "https://copilot.bambisleep.church",
+      "port": 5002,
+      "repo": "https://github.com/BambiSleepChat/copilot-instructions.md.git",
+      "description": "AI agent instruction repository",
+      "enabled": false
+    },
+    {
+      "name": "Analytics Dashboard",
+      "domain": "analytics.bambisleep.church",
+      "url": "https://analytics.bambisleep.church",
+      "port": 8081,
+      "description": "Church analytics and reporting",
+      "enabled": false
+    },
+    {
+      "name": "Media Server",
+      "domain": "media.bambisleep.church",
+      "url": "https://media.bambisleep.church",
+      "port": 6969,
+      "description": "Media streaming service",
+      "enabled": false
+    },
+    {
+      "name": "Cache Service",
+      "domain": "cache.bambisleep.church",
+      "url": "https://cache.bambisleep.church",
+      "port": 9696,
+      "description": "Caching layer for church services",
+      "enabled": false
+    },
+    {
+      "name": "WebSocket Gateway",
+      "domain": "ws.bambisleep.church",
+      "url": "https://ws.bambisleep.church",
+      "port": 7878,
+      "description": "Real-time WebSocket server",
+      "enabled": false
+    },
+    {
+      "name": "Auth Service",
+      "domain": "auth.bambisleep.church",
+      "url": "https://auth.bambisleep.church",
+      "port": 8787,
+      "description": "Authentication microservice",
+      "enabled": false
+    },
+    {
+      "name": "Admin Panel",
+      "domain": "admin.bambisleep.church",
+      "url": "https://admin.bambisleep.church",
+      "port": 8778,
+      "description": "Administration dashboard",
+      "enabled": false
+    },
+    {
+      "name": "Monitoring Service",
+      "domain": "monitor.bambisleep.church",
+      "url": "https://monitor.bambisleep.church",
+      "port": 7887,
+      "description": "Infrastructure monitoring",
+      "enabled": false
+    },
+    {
+      "name": "CDN Origin",
+      "domain": "cdn.bambisleep.church",
+      "url": "https://cdn.bambisleep.church",
+      "port": 9669,
+      "description": "Content delivery network origin",
+      "enabled": false
+    },
+    {
+      "name": "Status Page",
+      "domain": "status.bambisleep.church",
+      "url": "https://status.bambisleep.church",
+      "port": 6996,
+      "description": "Service status monitoring",
+      "enabled": false
+    },
+    {
+      "name": "Docs Portal",
+      "domain": "docs.bambisleep.church",
+      "url": "https://docs.bambisleep.church",
+      "port": 4001,
+      "description": "Documentation portal",
+      "enabled": false
+    }
+  ]
+}

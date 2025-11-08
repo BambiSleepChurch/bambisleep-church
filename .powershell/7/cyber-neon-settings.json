@@ -1,0 +1,171 @@
+{
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "themes": [
+        {
+            "name": "CyberNeonGothWave",
+            "tab": {
+                "background": "#0A0014FF",
+                "showCloseButton": "always",
+                "unfocusedBackground": "#1A0A28FF"
+            },
+            "tabRow": {
+                "background": "#0D001AFF",
+                "unfocusedBackground": "#0D001A99"
+            },
+            "window": {
+                "applicationTheme": "dark",
+                "useMica": false,
+                "useAcrylic": true
+            }
+        }
+    ],
+    "schemes": [
+        {
+            "name": "CyberNeonGothWave",
+            "background": "#0A0014",
+            "foreground": "#00F0FF",
+            "cursorColor": "#FF006E",
+            "selectionBackground": "#FF006E55",
+            "black": "#0A0014",
+            "red": "#FF006E",
+            "green": "#39FF14",
+            "yellow": "#00F0FF",
+            "blue": "#00D9FF",
+            "purple": "#FF10F0",
+            "cyan": "#00FFD4",
+            "white": "#E0F0FF",
+            "brightBlack": "#1A0A28",
+            "brightRed": "#FF1493",
+            "brightGreen": "#7FFF00",
+            "brightYellow": "#00FFFF",
+            "brightBlue": "#87CEEB",
+            "brightPurple": "#FF00FF",
+            "brightCyan": "#00CED1",
+            "brightWhite": "#F0FFFF"
+        },
+        {
+            "name": "IcyGlassNeon",
+            "background": "#05000F",
+            "foreground": "#B0E0FF",
+            "cursorColor": "#00FFFF",
+            "selectionBackground": "#FF10F044",
+            "black": "#000000",
+            "red": "#FF1493",
+            "green": "#39FF14",
+            "yellow": "#00F5FF",
+            "blue": "#1E90FF",
+            "purple": "#FF00FF",
+            "cyan": "#00CED1",
+            "white": "#E6F3FF",
+            "brightBlack": "#2D1B3D",
+            "brightRed": "#FF69B4",
+            "brightGreen": "#ADFF2F",
+            "brightYellow": "#7FFFD4",
+            "brightBlue": "#87CEEB",
+            "brightPurple": "#DA70D6",
+            "brightCyan": "#00FFFF",
+            "brightWhite": "#FFFFFF"
+        }
+    ],
+    "profiles": {
+        "defaults": {
+            "colorScheme": "CyberNeonGothWave",
+            "useAcrylic": true,
+            "acrylicOpacity": 0.75,
+            "backgroundImage": null,
+            "backgroundImageOpacity": 0.2,
+            "backgroundImageStretchMode": "uniformToFill",
+            "cursorShape": "filledBox",
+            "cursorHeight": 25,
+            "font": {
+                "face": "Cascadia Code",
+                "size": 11,
+                "weight": "normal"
+            },
+            "opacity": 85,
+            "padding": "8, 8, 8, 8",
+            "scrollbarState": "visible",
+            "antialiasingMode": "cleartype",
+            "bellStyle": "none",
+            "closeOnExit": "graceful",
+            "snapOnInput": true,
+            "historySize": 9001,
+            "intenseTextStyle": "bright",
+            "experimental.retroTerminalEffect": false
+        },
+        "list": [
+            {
+                "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+                "name": "PowerShell Cyber Neon",
+                "commandline": "F:\\.powershell\\7\\pwsh.exe -NoLogo",
+                "icon": "ms-appx:///ProfileIcons/{574e775e-4f2a-5b96-ac1e-a2962a402336}.png",
+                "colorScheme": "CyberNeonGothWave",
+                "useAcrylic": true,
+                "acrylicOpacity": 0.8,
+                "opacity": 90,
+                "cursorColor": "#FF10F0",
+                "cursorShape": "filledBox",
+                "tabTitle": "⚡ Cyber PowerShell",
+                "bellStyle": "none"
+            },
+            {
+                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "name": "PowerShell Icy Glass",
+                "commandline": "F:\\.powershell\\7\\pwsh.exe -NoLogo",
+                "colorScheme": "IcyGlassNeon",
+                "useAcrylic": true,
+                "acrylicOpacity": 0.7,
+                "opacity": 85,
+                "cursorColor": "#00FFFF",
+                "cursorShape": "underscore",
+                "tabTitle": "❄️ Icy PowerShell",
+                "bellStyle": "none"
+            }
+        ]
+    },
+    "actions": [
+        {
+            "command": "find",
+            "keys": "ctrl+shift+f"
+        },
+        {
+            "command": {
+                "action": "splitPane",
+                "split": "auto",
+                "splitMode": "duplicate"
+            },
+            "keys": "alt+shift+d"
+        },
+        {
+            "command": "paste",
+            "keys": "ctrl+v"
+        },
+        {
+            "command": {
+                "action": "copy",
+                "singleLine": false
+            },
+            "keys": "ctrl+c"
+        },
+        {
+            "command": "closePane",
+            "keys": "ctrl+shift+w"
+        },
+        {
+            "command": {
+                "action": "newTab"
+            },
+            "keys": "ctrl+shift+t"
+        }
+    ],
+    "copyFormatting": "none",
+    "copyOnSelect": false,
+    "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+    "launchMode": "default",
+    "showTabsInTitlebar": true,
+    "showTerminalTitleInTitlebar": true,
+    "tabWidthMode": "equal",
+    "theme": "CyberNeonGothWave",
+    "trimBlockSelection": true,
+    "wordDelimiters": " /\\()\"'-.,:;<>~!@#$%^&*|+=[]{}~?\u2502"
+}

@@ -1,0 +1,42 @@
+# Workspace Information
+# Auto-generated: November 3, 2025
+
+WORKSPACE_ROOT=/mnt/e
+WORKSPACE_NAME="BambiSleepChat Development"
+WORKSPACE_VERSION=1.0.0
+
+# Active Projects
+PROJECTS=(
+  "bambisleep-chat-reddit"
+  "mcp-unified"
+  "catgirl-unity-system"
+  "hestia-port-openener"
+)
+
+# Project Types
+PROJECT_TYPE_bambisleep_chat_reddit="nodejs-typescript"
+PROJECT_TYPE_mcp_unified="nodejs-javascript"
+PROJECT_TYPE_catgirl_unity_system="unity-csharp"
+PROJECT_TYPE_hestia_port_openener="bash"
+
+# Runtime Directories
+RUNTIME_DIRS=(
+  "nodejs"
+  "unity"
+  ".python"
+)
+
+# System Directories (do not modify)
+SYSTEM_DIRS=(
+  "$RECYCLE.BIN"
+  "System Volume Information"
+  "OBSBOT"
+)
+
+# Organization
+ORGANIZATION="BambiSleepChat"
+MAINTAINER="HarleyVader"
+
+# Last Organized
+LAST_ORGANIZED="2025-11-03"
+ORGANIZED_BY="GitHub Copilot AI Agent"

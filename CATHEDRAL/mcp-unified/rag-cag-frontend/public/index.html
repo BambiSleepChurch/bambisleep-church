@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌸 RAG & CAG Frontend</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+    .app { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    h1 { text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; font-size: 2.5rem; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #eee; }
+    .tab { padding: 12px 24px; border: none; background: none; cursor: pointer; font-size: 1rem; font-weight: 600; color: #666; border-bottom: 3px solid transparent; }
+    .tab.active { color: #667eea; border-bottom-color: #667eea; }
+    .section { background: #f8f9fa; border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+    .section h2 { color: #333; margin-bottom: 15px; }
+    .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    input, textarea { flex: 1; padding: 12px 16px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+    input:focus, textarea:focus { outline: none; border-color: #667eea; }
+    textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+    button { padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+    button:active { transform: translateY(0); }
+    .result { margin-top: 20px; padding: 20px; background: white; border-radius: 8px; border-left: 4px solid #667eea; }
+    .result h3 { color: #667eea; margin-bottom: 10px; }
+    .result pre { background: #f8f9fa; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.9rem; white-space: pre-wrap; }
+    .doc-item, .history-item { padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #764ba2; margin-bottom: 15px; }
+    .doc-item h4, .history-item strong { color: #333; margin-bottom: 8px; }
+    .doc-item p, .history-item p { color: #666; line-height: 1.6; }
+    .doc-item small, .history-item small { color: #999; font-size: 0.85rem; }
+    .status { display: inline-block; padding: 4px 12px; background: #28a745; color: white; border-radius: 12px; font-size: 0.85rem; margin-left: 10px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>🌸 RAG & CAG Frontend</h1>
+    <p class="subtitle">Retrieval-Augmented Generation & Context-Augmented Generation <span class="status" id="status">✅ Online</span></p>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('rag')">🔍 RAG Agent</button>
+      <button class="tab" onclick="switchTab('cag')">🎯 CAG Agent</button>
+    </div>
+
+    <!-- RAG TAB -->
+    <div id="rag-tab">
+      <div class="section">
+        <h2>📚 Index Documents</h2>
+        <textarea id="rag-text" placeholder="Enter text to index..."></textarea>
+        <div class="input-group">
+          <input id="rag-source" placeholder="Source (optional)">
+          <button onclick="indexDocument()">📝 Index</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>🔎 Query Documents</h2>
+        <div class="input-group">
+          <input id="rag-query" placeholder="Enter your query..." onkeypress="if(event.key==='Enter')queryDocuments()">
+          <button onclick="queryDocuments()">🔍 Search</button>
+        </div>
+        <div id="rag-result"></div>
+      </div>
+
+      <div class="section">
+        <h2>📄 Indexed Documents (<span id="doc-count">0</span>)</h2>
+        <div id="documents-list"></div>
+      </div>
+    </div>
+
+    <!-- CAG TAB -->
+    <div id="cag-tab" class="hidden">
+      <div class="section">
+        <h2>💬 Generate with Context</h2>
+        <div class="input-group">
+          <input id="cag-query" placeholder="Enter your message..." onkeypress="if(event.key==='Enter')generateCAG()">
+          <button onclick="generateCAG()">🌸 Generate</button>
+        </div>
+        <div id="cag-result"></div>
+      </div>
+
+      <div class="section">
+        <h2>📜 Conversation History (<span id="history-count">0</span>)</h2>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <button onclick="clearAll()" style="background: #6c757d;">🗑️ Clear All Data</button>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+    
+    async function checkHealth() {
+      try {
+        const res = await fetch(`${API}/health`);
+        const data = await res.json();
+        document.getElementById('status').textContent = '✅ Online';
+      } catch (err) {
+        document.getElementById('status').textContent = '❌ Offline';
+        document.getElementById('status').style.background = '#dc3545';
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('rag-tab').classList.toggle('hidden', tab !== 'rag');
+      document.getElementById('cag-tab').classList.toggle('hidden', tab !== 'cag');
+      if(tab === 'rag') loadDocuments();
+      if(tab === 'cag') loadHistory();
+    }
+
+    async function indexDocument() {
+      const text = document.getElementById('rag-text').value;
+      const source = document.getElementById('rag-source').value;
+      if (!text.trim()) return alert('Enter text to index!');
+      
+      const res = await fetch(`${API}/rag/index`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, source })
+      });
+      const data = await res.json();
+      alert(`✅ ${data.message}! Total: ${data.totalDocs}`);
+      document.getElementById('rag-text').value = '';
+      document.getElementById('rag-source').value = '';
+      loadDocuments();
+    }
+
+    async function queryDocuments() {
+      const query = document.getElementById('rag-query').value;
+      if (!query.trim()) return alert('Enter a query!');
+      
+      const res = await fetch(`${API}/rag/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      document.getElementById('rag-result').innerHTML = `
+        <div class="result">
+          <h3>Results</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        </div>
+      `;
+    }
+
+    async function loadDocuments() {
+      const res = await fetch(`${API}/rag/documents`);
+      const data = await res.json();
+      document.getElementById('doc-count').textContent = data.total;
+      document.getElementById('documents-list').innerHTML = data.documents.length === 0 
+        ? '<p>No documents indexed yet. Add some above!</p>'
+        : data.documents.map(doc => `
+          <div class="doc-item">
+            <h4>📄 ${doc.source}</h4>
+            <p>${doc.text}</p>
+            <small>${new Date(doc.indexed).toLocaleString()}</small>
+          </div>
+        `).join('');
+    }
+
+    async function generateCAG() {
+      const query = document.getElementById('cag-query').value;
+      if (!query.trim()) return alert('Enter a message!');
+      
+      const res = await fetch(`${API}/cag/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, contexts: ['user', 'system'] })
+      });
+      const data = await res.json();
+      document.getElementById('cag-result').innerHTML = `
+        <div class="result">
+          <h3>Response</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        </div>
+      `;
+      document.getElementById('cag-query').value = '';
+      loadHistory();
+    }
+
+    async function loadHistory() {
+      const res = await fetch(`${API}/cag/history`);
+      const data = await res.json();
+      document.getElementById('history-count').textContent = data.total;
+      document.getElementById('history-list').innerHTML = data.history.length === 0
+        ? '<p>No conversation history yet. Start chatting above!</p>'
+        : data.history.slice(-10).reverse().map(item => `
+          <div class="history-item">
+            <strong>${item.role === 'user' ? '👤 User' : '🤖 Assistant'}</strong>
+            <p>${item.content}</p>
+            <small>${new Date(item.timestamp).toLocaleString()}</small>
+          </div>
+        `).join('');
+    }
+
+    async function clearAll() {
+      if (!confirm('Clear all data?')) return;
+      await fetch(`${API}/clear`, { method: 'POST' });
+      alert('🗑️ All data cleared!');
+      loadDocuments();
+      loadHistory();
+      document.getElementById('rag-result').innerHTML = '';
+      document.getElementById('cag-result').innerHTML = '';
+    }
+
+    // Init
+    checkHealth();
+    loadDocuments();
+    setInterval(checkHealth, 30000);
+  </script>
+</body>
+</html>
