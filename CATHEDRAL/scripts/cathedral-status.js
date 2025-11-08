@@ -33,6 +33,7 @@ function checkWorkspace(name) {
   const path = join(process.cwd(), name);
   const packageJsonPath = join(path, 'package.json');
   const nodeModulesPath = join(path, 'node_modules');
+  const rootNodeModules = join(process.cwd(), 'node_modules');
   
   if (!existsSync(path)) {
     return { exists: false, installed: false, version: null, hasDeps: false };
@@ -51,9 +52,12 @@ function checkWorkspace(name) {
     }
   }
   
+  // Check both local node_modules and root (for workspaces hoisting)
+  const hasNodeModules = existsSync(nodeModulesPath) || existsSync(rootNodeModules);
+  
   return {
     exists: true,
-    installed: hasDeps ? existsSync(nodeModulesPath) : true,
+    installed: hasDeps ? hasNodeModules : true,
     version,
     hasDeps
   };
