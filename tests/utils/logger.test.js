@@ -5,7 +5,7 @@
 
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { createLogger, logger } from './logger.js';
+import { createLogger, logger } from '../../src/utils/logger.js';
 
 describe('Logger Module', () => {
   describe('createLogger()', () => {

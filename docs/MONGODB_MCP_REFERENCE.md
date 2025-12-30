@@ -7,6 +7,7 @@
 MongoDB is a document-oriented NoSQL database. The official Node.js driver allows applications to connect and perform CRUD operations using Promises or callbacks.
 
 **Supported Connections:**
+
 - Local MongoDB instances
 - MongoDB Atlas (cloud-hosted clusters)
 - Replica sets
@@ -17,7 +18,7 @@ MongoDB is a document-oriented NoSQL database. The official Node.js driver allow
 
 ```bash
 # MongoDB Atlas (recommended for production)
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/bambisleep?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/bambisleepchurch?retryWrites=true&w=majority
 
 # Local MongoDB
 MONGODB_URI=mongodb://localhost:27017/bambisleep

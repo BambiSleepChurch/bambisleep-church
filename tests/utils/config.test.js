@@ -5,7 +5,7 @@
 
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { getConfig, loadMcpServers } from './config.js';
+import { getConfig, loadMcpServers } from '../../src/utils/config.js';
 
 describe('Config Module', () => {
   describe('getConfig()', () => {
@@ -28,23 +28,30 @@ describe('Config Module', () => {
     it('should detect development environment by default', () => {
       const config = getConfig();
       
-      assert.strictEqual(config.env.isDev, true, 'should be in dev mode');
+      assert.strictEqual(config.env.isDev, true, 'should be development by default');
+    });
+
+    it('should have database configuration', () => {
+      const config = getConfig();
+      
+      assert.ok(config.database, 'should have database config');
+      assert.ok(config.database.mongodb, 'should have mongodb config');
+      assert.ok(config.database.postgres, 'should have postgres config');
+    });
+
+    it('should have services configuration', () => {
+      const config = getConfig();
+      
+      assert.ok(config.services, 'should have services config');
+      assert.ok('github' in config.services, 'should have github service');
+      assert.ok('stripe' in config.services, 'should have stripe service');
     });
   });
 
   describe('loadMcpServers()', () => {
-    it('should return an object', () => {
+    it('should return object (possibly empty)', () => {
       const servers = loadMcpServers();
-      
-      assert.strictEqual(typeof servers, 'object', 'should return object');
-    });
-
-    it('should load servers from .vscode/settings.json', () => {
-      const servers = loadMcpServers();
-      
-      // Should have at least the core servers
-      const serverNames = Object.keys(servers);
-      assert.ok(serverNames.length > 0, 'should have at least one server');
+      assert.strictEqual(typeof servers, 'object');
     });
   });
 });

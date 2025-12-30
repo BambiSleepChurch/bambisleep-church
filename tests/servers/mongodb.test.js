@@ -4,8 +4,8 @@
  */
 
 import assert from 'node:assert';
-import { describe, it, before, after } from 'node:test';
-import { mongoClient, mongoHandlers } from './mongodb.js';
+import { after, before, describe, it } from 'node:test';
+import { mongoHandlers } from '../../src/servers/mongodb.js';
 
 describe('MongoDB Atlas Connection', () => {
   let skipTests = false;

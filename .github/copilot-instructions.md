@@ -14,9 +14,12 @@
 ## Commands
 
 ```bash
-npm run dev      # Hot reload with --watch (development)
-npm run start    # Production server
-npm run test     # Node.js built-in test runner
+npm run dev           # Hot reload with --watch (development)
+npm run start         # Production server
+npm run test          # Run all tests
+npm run test:unit     # Unit tests only (fast)
+npm run test:integration  # Integration tests (requires server)
+npm run test:coverage # Run with coverage report
 ```
 
 ## Code Patterns (Required)
@@ -84,11 +87,21 @@ Uses **vanilla ES Modules** with React-like patterns (no build step):
 
 ## Testing
 
+Tests are in the `tests/` directory, mirroring the `src/` structure:
+
+```
+tests/
+├── api/           # API endpoint tests
+├── servers/       # Server wrapper tests
+└── utils/         # Utility module tests
+```
+
 Uses **Node.js built-in test runner** (no external dependencies):
 
 ```javascript
 import assert from "node:assert";
 import { describe, it, beforeEach } from "node:test";
+import { myModule } from "../../src/utils/my-module.js";
 ```
 
 Tests auto-skip when server not running (check `ECONNREFUSED` in catch block).

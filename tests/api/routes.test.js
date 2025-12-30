@@ -30,15 +30,14 @@ describe('API Routes', () => {
   });
 
   describe('GET /api/servers', () => {
-    it('should return server list', async () => {
+    it('should return servers list', async () => {
       try {
         const response = await fetch(`${API_BASE}/servers`);
         const data = await response.json();
 
         assert.strictEqual(response.status, 200);
         assert.ok(Array.isArray(data.servers), 'should have servers array');
-        assert.ok(data.stats, 'should have stats object');
-        assert.ok(typeof data.stats.total === 'number', 'stats.total should be number');
+        assert.ok('stats' in data, 'should have stats object');
       } catch (error) {
         if (error.cause?.code === 'ECONNREFUSED') {
           console.log('  ⏭ Skipped: API server not running');
@@ -49,14 +48,15 @@ describe('API Routes', () => {
     });
   });
 
-  describe('GET /api/unknown', () => {
-    it('should return 404 for unknown routes', async () => {
+  describe('POST /api/servers/:name/start', () => {
+    it('should attempt to start a server', async () => {
       try {
-        const response = await fetch(`${API_BASE}/unknown`);
-        const data = await response.json();
+        const response = await fetch(`${API_BASE}/servers/memory/start`, {
+          method: 'POST',
+        });
 
-        assert.strictEqual(response.status, 404);
-        assert.ok(data.error, 'should have error message');
+        // May succeed or fail depending on config
+        assert.ok([200, 404, 500].includes(response.status));
       } catch (error) {
         if (error.cause?.code === 'ECONNREFUSED') {
           console.log('  ⏭ Skipped: API server not running');

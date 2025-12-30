@@ -41,7 +41,7 @@ class MongoDBClient {
     this.uri = uri;
     this.client = null;
     this.db = null;
-    this.defaultDatabase = this.extractDatabaseFromUri(uri) || process.env.MONGODB_DATABASE || 'bambisleep';
+    this.defaultDatabase = this.extractDatabaseFromUri(uri) || process.env.MONGODB_DATABASE || 'bambisleepchurch';
     this.connected = false;
     this.isAtlas = uri.includes('mongodb+srv://') || uri.includes('.mongodb.net');
   }
