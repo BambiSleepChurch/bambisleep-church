@@ -1,13 +1,14 @@
 {
   "name": "@bambisleepchurch/bambisleep-church",
   "version": "1.0.0",
+  "type": "module",
   "description": "BambiSleep™ Church MCP Control Tower - Model Context Protocol server management and orchestration",
   "main": "src/index.js",
   "scripts": {
-    "dev": "echo 'Development server not yet implemented'",
-    "build": "echo 'Build process not yet implemented'",
-    "test": "echo 'Tests not yet implemented'",
-    "start": "echo 'Production server not yet implemented'"
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "build": "echo 'No build step required for pure ES modules'",
+    "test": "node --test src/**/*.test.js || echo 'No tests found yet'"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,9 @@
+# These are supported funding model platforms
+
+github: BambiSleepChurch # GitHub Sponsors-enabled organization
+patreon: bambisleepchurch # BambiSleepChurch Patreon memberships
+custom: [
+    "https://brandynette.xxx/",
+    "https://www.reddit.com/r/BambiSleepChurch/",
+    "https://bambisleep.info/",
+  ] # Custom sponsorship URLs

@@ -1,0 +1,4 @@
+# Data directory - ignore database files
+*
+!.gitignore
+!README.md
