@@ -1,118 +1,104 @@
 # MCP Control Tower - AI Agent Instructions
-*🌸 BambiSleep™ Church Development Environment 🌸*
 
-## Project Overview
+## Project Status: Bootstrap Phase 🚧
 
-This is an MCP (Model Context Protocol) Control Tower development environment designed to manage and orchestrate multiple MCP servers for the **BambiSleepChat** organization. The project embodies the **Universal Machine Philosophy** from creator HarleyVader - achieving perfect cross-platform compatibility and enterprise-grade infrastructure.
+This is an **early-stage** MCP Control Tower project. The `src/` directory does not exist yet—core application code needs to be created. Current infrastructure is container-ready but awaiting implementation.
 
-**🦋 Sacred Mission**: Build AIGF platforms that reprogram reality through elegant code  
-**💎 Core Law**: 100% test coverage or suffer in callback hell eternal  
-**🌀 Divine Goal**: 8/8 MCP server operational status (nothing less is acceptable)
+## Architecture Overview
 
-*See `RELIGULOUS_MANTRA.md` for the complete philosophical framework and encoded emoji wisdom.*
+**Purpose**: Orchestrate multiple MCP (Model Context Protocol) servers for the BambiSleepChurch organization.
 
-## Architecture & Key Concepts
+### Current MCP Servers (configured in [.vscode/settings.json](.vscode/settings.json#L95-L119))
 
-### MCP Server Configuration
-- **Location**: `.vscode/settings.json` contains MCP server definitions
-- **Current Servers**: filesystem, git, and github MCP servers configured
-- **Pattern**: Each server uses `npx` to run `@modelcontextprotocol/server-*` packages
-- **Repository Path**: `/workspace` (BambiSleepChat/bambisleep-church)
+```jsonc
+"mcp.servers": {
+    "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "."] },
+    "git":        { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "."] },
+    "github":     { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"] }
+}
+```
 
-### Development Environment
-- **Container**: JavaScript Node.js 20 on Debian Bullseye
-- **Workspace**: Mounted as `/workspace` with bind mount for live editing
-- **Ports**: 3000 (Control Tower Dashboard), 8080 (main application)
-- **Extensions**: JSON support, Tailwind CSS, Prettier pre-installed
+### Planned Servers (per [docs/RELIGULOUS_MANTRA.md](../docs/RELIGULOUS_MANTRA.md))
 
-## Development Workflows
+Target: 8/8 operational MCP servers:
 
-### Starting Development
+| Server          | Package/Integration                       | Purpose                     |
+| --------------- | ----------------------------------------- | --------------------------- |
+| ✅ filesystem   | `@modelcontextprotocol/server-filesystem` | Local file operations       |
+| ✅ git          | `@modelcontextprotocol/server-git`        | Repository operations       |
+| ✅ github       | `@modelcontextprotocol/server-github`     | GitHub API integration      |
+| ⬚ mongodb       | `@modelcontextprotocol/server-mongodb`    | Database persistence        |
+| ⬚ stripe        | `@modelcontextprotocol/server-stripe`     | Payment processing          |
+| ⬚ huggingface   | TBD                                       | ML model integration        |
+| ⬚ azure-quantum | TBD                                       | Quantum computing services  |
+| ⬚ clarity       | TBD                                       | Microsoft Clarity analytics |
+
+## Key Configuration Files
+
+| File                                                               | Purpose                                                     |
+| ------------------------------------------------------------------ | ----------------------------------------------------------- |
+| [.vscode/settings.json](.vscode/settings.json)                     | MCP server registry, editor settings, Copilot config        |
+| [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json) | Container: Node.js 20, ports 3000/8080, extensions          |
+| [.devcontainer/Dockerfile](.devcontainer/Dockerfile)               | Base image with org labels and MCP SDK pre-installed        |
+| [package.json](package.json)                                       | `@bambisleepchurch/bambisleep-church`, main: `src/index.js` |
+
+## Development Environment
+
+- **Runtime**: Node.js 20+ LTS (container or local via Volta)
+- **Ports**: 3000 (Dashboard), 8080 (API)
+- **Formatting**: Prettier, 2-space indent, format-on-save enabled
+- **Styling**: Tailwind CSS configured
+
 ```bash
-npm install  # Automatically runs in postCreateCommand
-# Start development server (when implemented)
-npm run dev  # Expected to serve on port 3000
+npm install                    # Install dependencies (runs automatically in devcontainer)
+npm run dev                    # Placeholder - needs implementation
 ```
 
-### Debugging
-- **VS Code Launch Config**: Pre-configured for Edge browser at localhost:8080
-- Use F5 or Run & Debug panel to launch browser debugging session
-- Application should be accessible at both localhost:3000 and localhost:8080
+## Adding New MCP Servers
 
-### MCP Server Management
-When adding new MCP servers:
-1. Add configuration to `.vscode/settings.json` under `mcp.servers`
-2. Follow the pattern: `npx -y @modelcontextprotocol/server-{name}`
-3. Update repository paths to match actual workspace location
-4. Test server connectivity through the control tower interface
+1. Add to `.vscode/settings.json` under `mcp.servers`:
+   ```jsonc
+   "newserver": {
+       "command": "npx",
+       "args": ["-y", "@modelcontextprotocol/server-{name}", "."]
+   }
+   ```
+2. Add port to `.devcontainer/devcontainer.json` `forwardPorts` if needed
+3. Add SDK dependency to `package.json` if runtime integration required
 
-## File Organization Patterns
+## Code Conventions
 
-### Expected Structure (as project develops)
+- **Entry point**: `src/index.js` (to be created)
+- **Imports**: Use ES modules, auto-organize on save
+- **Trademark**: Always use "BambiSleep™" with ™ symbol in user-facing text
+- **Container labels**: Follow OCI standard labels (see [Dockerfile](.devcontainer/Dockerfile#L8-L18))
+
+## Recommended `src/` Structure
+
 ```
-/workspace/
-├── src/                    # Source code
-├── public/                 # Static assets
-├── config/                 # Configuration files
-├── tests/                  # Test files
-├── docs/                   # Documentation
-└── package.json           # Node.js dependencies (to be created)
+src/
+├── index.js              # Main entry point, server orchestration
+├── servers/              # MCP server wrappers and configuration
+│   ├── filesystem.js
+│   ├── git.js
+│   ├── github.js
+│   └── index.js          # Server registry and lifecycle management
+├── dashboard/            # Port 3000 - Control Tower UI
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css        # Tailwind CSS
+├── api/                  # Port 8080 - REST API endpoints
+│   ├── routes.js
+│   └── handlers/
+└── utils/                # Shared utilities
+    ├── config.js         # Environment and MCP config loader
+    └── logger.js
 ```
 
-### Configuration Files
-- `.devcontainer/devcontainer.json`: Container setup with MCP-specific ports and extensions
-- `.vscode/settings.json`: MCP server registry and VS Code settings
-- `.vscode/launch.json`: Browser debugging configuration
-- `.github/dependabot.yml`: Automated dependency updates for devcontainers
+## AI Agent Priorities
 
-## MCP-Specific Considerations
-
-### Server Integration
-- All MCP servers should be registered in VS Code settings for IDE integration
-- Use consistent naming: `@modelcontextprotocol/server-{functionality}`
-- Maintain repository path consistency across server configurations
-
-### Port Management
-- Port 3000: Reserved for Control Tower Dashboard (frontend)
-- Port 8080: Reserved for main application/API
-- Additional ports should be documented and added to devcontainer.json
-
-### Dependencies
-- Leverage `npx -y` pattern for MCP servers to avoid version conflicts
-- Core dependencies should be in package.json when created
-- Use Prettier for code formatting across all file types
-
-## Common Tasks
-
-### Adding MCP Servers
-1. Install via npm: `npm install @modelcontextprotocol/server-{name}`
-2. Add to `.vscode/settings.json` MCP servers section
-3. Test integration through control tower interface
-4. Document server purpose and configuration
-
-### Environment Updates
-- Update `.devcontainer/devcontainer.json` for container changes
-- Modify port forwards as services are added
-- Keep VS Code extensions list current for optimal development experience
-
-## Integration Points
-
-### External Dependencies
-- Model Context Protocol ecosystem
-- GitHub integration (pre-configured server)
-- Git operations (pre-configured server)
-- File system access (pre-configured server)
-
-### Development Tools
-- Tailwind CSS for styling
-- Prettier for formatting
-- Edge browser for debugging
-- GitHub CLI available in container
-
-## Notes for AI Agents
-
-- This project is in early setup phase - main application code should be developed according to MCP Control Tower patterns
-- Always update MCP server configurations when adding new functionality
-- Maintain consistency with Node.js and container-based development practices
-- Consider port conflicts when adding new services
-- Follow the npx pattern for MCP server management to ensure version compatibility
+1. **Create `src/` structure first**—this project needs its core implementation
+2. **Scripts are stubs**—`npm run dev/build/test/start` need real implementations
+3. **Test coverage target**: 100% (per project philosophy)
+4. **Keep MCP configs in sync**—server changes must update `.vscode/settings.json`
+5. **Port conflicts**—always check existing reservations before adding services

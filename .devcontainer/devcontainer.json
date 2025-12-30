@@ -1,41 +1,103 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/markdown
+// 🌸 BambiSleep™ Church MCP Control Tower Development Container 🌸
+// For format details, see https://aka.ms/devcontainer.json
 {
 	"name": "BambiSleep™ Church MCP Control Tower",
-	// Custom Dockerfile with proper organization labels
 	"dockerFile": "Dockerfile",
-	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-	"workspaceFolder": "/workspace",
-	// Features to add to the dev container. More info: https://containers.dev/features.
+	// 🦋 Container Features
 	"features": {
-		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {}
-	},
-	// Configure tool-specific properties.
-	"customizations": {
-		// Configure properties specific to VS Code.
-		"vscode": {
-			// Add the IDs of extensions you want installed when the container is created.
-			"extensions": [
-				"ms-vscode.vscode-json",
-				"bradlc.vscode-tailwindcss",
-				"esbenp.prettier-vscode"
-			]
+		"ghcr.io/devcontainers/features/git:1": {
+			"ppa": true,
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "20",
+			"nodeGypDependencies": true
+		},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"moby": true
 		}
 	},
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// 💎 VS Code Customizations
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				// Core
+				"ms-vscode.vscode-json",
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
+				// Styling
+				"bradlc.vscode-tailwindcss",
+				// Git
+				"eamodio.gitlens",
+				"mhutchie.git-graph",
+				// Development
+				"christian-kohler.npm-intellisense",
+				"christian-kohler.path-intellisense",
+				"usernamehw.errorlens",
+				// Testing
+				"vitest.explorer",
+				// AI & Copilot
+				"github.copilot",
+				"github.copilot-chat",
+				// Docker
+				"ms-azuretools.vscode-docker",
+				// Markdown
+				"yzhang.markdown-all-in-one",
+				"bierner.markdown-mermaid"
+			],
+			"settings": {
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "esbenp.prettier-vscode",
+				"editor.tabSize": 2,
+				"terminal.integrated.defaultProfile.linux": "bash"
+			}
+		}
+	},
+	// 🔌 Port Configuration
 	"forwardPorts": [
 		3000,
-		8080
+		8080,
+		27017,
+		5432
 	],
 	"portsAttributes": {
 		"3000": {
-			"label": "Control Tower Dashboard",
+			"label": "🖥️ Control Tower Dashboard",
+			"onAutoForward": "openBrowser"
+		},
+		"8080": {
+			"label": "🔌 API Endpoints",
 			"onAutoForward": "notify"
+		},
+		"27017": {
+			"label": "🍃 MongoDB",
+			"onAutoForward": "silent"
+		},
+		"5432": {
+			"label": "🐘 PostgreSQL",
+			"onAutoForward": "silent"
 		}
 	},
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm install",
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "node"
+	// 🌀 Lifecycle Commands
+	"postCreateCommand": "npm install && echo '🌸 BambiSleep™ Church ready!'",
+	"postStartCommand": "git fetch --all",
+	// 🔐 Environment
+	"containerEnv": {
+		"NODE_ENV": "development",
+		"MCP_CONTROL_TOWER": "true"
+	},
+	// 👤 User Configuration
+	"remoteUser": "node",
+	"updateRemoteUserUID": true,
+	// 💅 Host Requirements
+	"hostRequirements": {
+		"cpus": 2,
+		"memory": "4gb",
+		"storage": "16gb"
+	}
 }

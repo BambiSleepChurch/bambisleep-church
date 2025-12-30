@@ -15,7 +15,7 @@
     "github.copilot.editor.enableAutoCompletions": true,
     "github.copilot.chat.welcomeMessage": "always",
     "github.copilot.advanced": {
-        "organizationName": "BambiSleepChat"
+        "organizationName": "BambiSleepChurch"
     },
     // Editor Configuration for MCP Development
     "editor.formatOnSave": true,
@@ -71,7 +71,6 @@
     "scss.validate": false,
     // Terminal Configuration
     "terminal.integrated.defaultProfile.linux": "bash",
-    "terminal.integrated.cwd": "/workspace",
     // Debug Configuration
     "debug.allowBreakpointsEverywhere": true,
     "debug.internalConsoleOptions": "openOnSessionStart",
@@ -98,7 +97,7 @@
             "args": [
                 "-y",
                 "@modelcontextprotocol/server-filesystem",
-                "/workspace"
+                "."
             ]
         },
         "git": {
@@ -107,7 +106,7 @@
                 "-y",
                 "@modelcontextprotocol/server-git",
                 "--repository",
-                "/workspace"
+                "."
             ]
         },
         "github": {
