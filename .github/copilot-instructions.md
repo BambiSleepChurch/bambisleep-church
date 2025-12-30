@@ -2,30 +2,30 @@
 
 ## Architecture Overview
 
-**Purpose**: Orchestrate MCP (Model Context Protocol) servers via REST APIs.
+**Purpose**: Orchestrate MCP (Model Context Protocol) servers via REST APIs—a zero-framework Node.js application.
 
 **Dual-Server Design**:
-
 - **Port 3000**: Static dashboard UI (`src/dashboard/server.js`)
 - **Port 8080**: REST API + WebSocket (`src/api/routes.js`, `src/api/websocket.js`)
 
-**Data Flow**: `Dashboard → REST API → MCP Server Wrappers → External Services`
+**Data Flow**: `Dashboard → REST API → Server Handlers → MCP Servers / External Services`
+
+The `ServerRegistry` class (`src/servers/index.js`) manages server lifecycle via `spawn()`. Configs are loaded from `.vscode/settings.json` (JSONC with comments allowed).
 
 ## Commands
 
 ```bash
-npm run dev           # Hot reload with --watch (development)
-npm run start         # Production server
-npm run test          # Run all tests
-npm run test:unit     # Unit tests only (fast)
-npm run test:integration  # Integration tests (requires server)
-npm run test:coverage # Run with coverage report
+npm run dev              # Hot reload with --watch
+npm run start            # Production server
+npm run test             # All tests
+npm run test:unit        # Fast tests (no server)
+npm run test:integration # Requires running server
+npm run test:coverage    # Coverage report
 ```
 
-## Code Patterns (Required)
+## Required Code Patterns
 
 ### File Header (every file)
-
 ```javascript
 /**
  * BambiSleep™ Church MCP Control Tower
@@ -34,131 +34,167 @@ npm run test:coverage # Run with coverage report
 ```
 
 ### Logger Pattern (every module)
-
 ```javascript
-import { createLogger } from "../utils/logger.js";
-const logger = createLogger("module-name"); // Use kebab-case module name
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('module-name'); // kebab-case namespace
 ```
 
-### Server Wrapper Pattern (`src/servers/*.js`)
-
-Export `{name}Handlers` object with methods matching REST endpoints:
-
+### Server Handler Pattern (`src/servers/*.js`)
+Export `{name}Handlers` object—each method maps to a REST endpoint:
 ```javascript
 export const memoryHandlers = {
-  readGraph() { ... },
-  createEntities(entities) { ... },
+  readGraph() { /* ... */ },
+  createEntities(entities) { /* ... */ },
+  searchNodes(query) { /* ... */ },
 };
 ```
 
 ### API Route Pattern (`src/api/routes.js`)
-
-Routes use regex matching (no framework):
-
+Vanilla regex routing (no Express/Koa). Use section comments:
 ```javascript
-const startMatch = path.match(/^\/api\/servers\/([^/]+)\/start$/);
-if (startMatch && method === 'POST') { ... }
+// ============ MEMORY MCP ROUTES ============
+if (path === '/api/memory' && method === 'GET') {
+  return json(res, memoryHandlers.readGraph());
+}
 ```
 
-## Adding New MCP Server Wrappers
+### Frontend Component Pattern (`src/dashboard/js/components/`)
+Pure functions returning HTML strings:
+```javascript
+export function renderServerCard(server, index) {
+  return `<div class="glass-card server-card" data-server="${server.name}">...</div>`;
+}
+```
+
+## Adding New MCP Server Wrapper
 
 1. Create `src/servers/{name}.js` with `{name}Handlers` export
-2. Add routes to `src/api/routes.js` under `// ============ {NAME} MCP ROUTES ============`
+2. Add routes in `src/api/routes.js` under `// ============ {NAME} MCP ROUTES ============`
 3. Import handlers at top of routes.js
-4. Add server config to `.vscode/settings.json` → `mcp.servers`
+4. Add config to `.vscode/settings.json` → `mcp.servers`
 5. Add docs to `docs/{NAME}_MCP_REFERENCE.md`
 
 ## Frontend Architecture (`src/dashboard/js/`)
 
-Uses **vanilla ES Modules** with React-like patterns (no build step):
+| Directory      | Purpose        | Pattern                            |
+|----------------|----------------|------------------------------------|
+| `state/`       | Global state   | `AppState`, `Actions`, `Selectors` |
+| `components/`  | Render funcs   | Return HTML strings                |
+| `effects/`     | Side effects   | `useKeyboard`, `usePolling`        |
+| `services/`    | API calls      | Async fetch wrappers               |
 
-| Directory         | Purpose               | Pattern                                        |
-| ----------------- | --------------------- | ---------------------------------------------- |
-| `state/store.js`  | Global state          | `AppState`, `Actions`, `Selectors`             |
-| `components/*.js` | Pure render functions | Return HTML strings                            |
-| `effects/*.js`    | Side effects          | `useKeyboard`, `usePolling`, `useSubscription` |
-| `services/*.js`   | API/WebSocket         | Async fetch wrappers                           |
-
-### CSS Architecture (`src/dashboard/css/`)
-
-- Uses CSS `@layer` ordering: `base` → `components` → utilities
-- Design tokens in `variables.css` (colors, spacing, typography)
-- Components use BEM-inspired naming: `.component`, `.component-element`, `.component--modifier`
+**CSS** (`src/dashboard/css/`): `@layer base → components → utilities`. Tokens in `variables.css`.
 
 ## Testing
 
-Tests are in the `tests/` directory, mirroring the `src/` structure:
-
-```
-tests/
-├── api/           # API endpoint tests
-├── servers/       # Server wrapper tests
-└── utils/         # Utility module tests
-```
-
-Uses **Node.js built-in test runner** (no external dependencies):
-
+Node.js built-in test runner (no Jest). Integration tests auto-skip when server unavailable:
 ```javascript
-import assert from "node:assert";
-import { describe, it, beforeEach } from "node:test";
-import { myModule } from "../../src/utils/my-module.js";
+import assert from 'node:assert';
+import { describe, it } from 'node:test';
+
+// Auto-skip pattern for integration tests
+try {
+  const response = await fetch(`${API_BASE}/health`);
+} catch (error) {
+  if (error.cause?.code === 'ECONNREFUSED') {
+    console.log('  ⏭ Skipped: API server not running');
+    return;
+  }
+  throw error;
+}
 ```
 
-Tests auto-skip when server not running (check `ECONNREFUSED` in catch block).
+## Key Environment Variables
 
-## Environment Variables
-
-Key variables (see `src/utils/config.js` for all):
-
-| Variable            | Default                                | Purpose                                                |
-| ------------------- | -------------------------------------- | ------------------------------------------------------ |
-| `LOG_LEVEL`         | `info`                                 | Logging verbosity: `error`, `warn`, `info`, `debug`    |
-| `API_PORT`          | `8080`                                 | REST API server port                                   |
-| `DASHBOARD_PORT`    | `3000`                                 | Dashboard UI port                                      |
-| `GITHUB_TOKEN`      | —                                      | GitHub API authentication                              |
-| `STRIPE_API_KEY`    | —                                      | Stripe payment processing                              |
-| `HUGGINGFACE_TOKEN` | —                                      | HuggingFace inference API                              |
-| `MONGODB_URI`       | `mongodb://localhost:27017/bambisleep` | MongoDB connection                                     |
-| `POSTGRES_*`        | localhost defaults                     | PostgreSQL connection (HOST, PORT, USER, PASSWORD, DB) |
+| Variable           | Default | Purpose                    |
+|--------------------|---------|----------------------------|
+| `LOG_LEVEL`        | `info`  | `error`/`warn`/`info`/`debug` |
+| `API_PORT`         | `8080`  | REST API port              |
+| `DASHBOARD_PORT`   | `3000`  | Dashboard UI port          |
+| `GITHUB_TOKEN`     | —       | GitHub API auth            |
+| `STRIPE_API_KEY`   | —       | Stripe payments            |
+| `HUGGINGFACE_TOKEN`| —       | HuggingFace inference      |
 
 ## WebSocket Events (`src/api/websocket.js`)
 
-Real-time updates use typed messages via `MessageTypes`:
+- **Server**: `server:status`, `server:started`, `server:stopped`, `server:error`, `server:log`
+- **System**: `health:update`, `stats:update`
+- **Client**: `subscribe`, `unsubscribe`, `ping`, `pong`
 
+## Rate Limiting (`src/utils/rate-limit.js`)
+
+In-memory sliding window rate limiter. Applied to all API routes except health check:
 ```javascript
-// Server lifecycle events
-"server:status"; // Server status changed
-"server:started"; // Server process started
-"server:stopped"; // Server process stopped
-"server:error"; // Server error occurred
-"server:log"; // Log output from server
+const rateLimit = createRateLimiter({
+  windowMs: 60000,      // 1 minute window
+  maxRequests: 100,     // max per window
+  skipPaths: ['/api/health'],
+});
+```
+Returns `429 Too Many Requests` with `X-RateLimit-*` headers when exceeded.
 
-// System events
-"health:update"; // Health check broadcast
-"stats:update"; // Server stats changed
+## MCP Client Pattern (`src/servers/mcp-client.js`)
 
-// Client commands
-"subscribe"; // Subscribe to server events
-"unsubscribe"; // Unsubscribe from events
-"ping" / "pong"; // Keepalive
+Generic client for invoking MCP server tools via JSON-RPC over stdio:
+```javascript
+const client = new McpToolClient(serverConfig);
+await client.connect();
+const result = await client.callTool('tool_name', { arg: 'value' });
+await client.disconnect();
 ```
 
-Use `broadcast()` to emit to all clients, `sendTo()` for targeted messages.
+## Available Server Handlers
+
+| Handler              | File                          | Key Methods                                    |
+|----------------------|-------------------------------|------------------------------------------------|
+| `memoryHandlers`     | `servers/memory.js`           | `readGraph`, `createEntities`, `searchNodes`   |
+| `githubHandlers`     | `servers/github.js`           | `getRepo`, `listIssues`, `createPR`            |
+| `stripeHandlers`     | `servers/stripe.js`           | `listCustomers`, `createPayment`               |
+| `huggingfaceHandlers`| `servers/huggingface.js`      | `inference`, `listModels`                      |
+| `fetchHandlers`      | `servers/fetch.js`            | `get`, `post`, `convertToMarkdown`             |
+| `sqliteHandlers`     | `servers/sqlite.js`           | `query`, `execute`, `getTables`                |
+| `postgresHandlers`   | `servers/postgres.js`         | `query`, `execute`, `getTables`                |
+| `mongoHandlers`      | `servers/mongodb.js`          | `find`, `insertOne`, `aggregate`               |
+| `puppeteerHandlers`  | `servers/puppeteer.js`        | `screenshot`, `navigate`, `evaluate`           |
+| `thinkingHandlers`   | `servers/sequential-thinking.js` | `think`, `getChain`, `reset`                |
+
+## Docker & DevContainer
+
+**Development** (DevContainer in VS Code):
+```bash
+# Open folder in VS Code → "Reopen in Container"
+# Ports 3000 (Dashboard) and 8080 (API) auto-forwarded
+```
+
+**Production** (Docker Compose):
+```bash
+docker compose up -d              # Start all services (app + MongoDB + Postgres)
+docker compose logs -f app        # Follow app logs
+docker compose down               # Stop and remove containers
+```
+
+**Services in `docker-compose.yml`**:
+- `app` — MCP Control Tower (ports 3000, 8080)
+- `mongodb` — MongoDB 7 (port 27017)
+- `postgres` — PostgreSQL 16 (port 5432)
+
+**Environment**: Set secrets in `.env` or pass via `-e` flags (`GITHUB_TOKEN`, `STRIPE_API_KEY`, etc.)
 
 ## Conventions
 
-- **ES Modules only** (`import`/`export`, never CommonJS)
+- **ES Modules only** (`import`/`export`, never `require`)
 - **2-space indent**, format-on-save
-- **Trademark**: Use "BambiSleep™" with ™ in user-facing text
-- **Config source**: MCP servers from `.vscode/settings.json` (JSONC with comments)
+- **Trademark**: "BambiSleep™" with ™ in user-facing text
+- **No frameworks**: Vanilla Node.js HTTP, vanilla JS frontend
 
 ## Key Files
 
-| Purpose          | Location                                           |
-| ---------------- | -------------------------------------------------- |
-| Entry point      | `src/index.js` (graceful shutdown: SIGINT/SIGTERM) |
-| API routes (40+) | `src/api/routes.js`                                |
-| Server registry  | `src/servers/index.js`                             |
-| MCP config       | `.vscode/settings.json` → `mcp.servers`            |
-| Integration docs | `docs/*_MCP_REFERENCE.md`                          |
-| Project roadmap  | `docs/TODO.md`                                     |
+| Purpose             | Location                              |
+|---------------------|---------------------------------------|
+| Entry point         | `src/index.js`                        |
+| API routes          | `src/api/routes.js`                   |
+| Server registry     | `src/servers/index.js`                |
+| MCP config          | `.vscode/settings.json` → `mcp.servers` |
+| Config loader       | `src/utils/config.js`                 |
+| Integration docs    | `docs/*_MCP_REFERENCE.md`             |
+| Project roadmap     | `docs/TODO.md`                        |

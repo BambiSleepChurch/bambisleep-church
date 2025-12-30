@@ -179,7 +179,9 @@
     "problems.decorations.enabled": true,
     "problems.showCurrentInStatus": true,
     // Markdown Lint Configuration - Disable stylistic rules for RELIGULOUS_MANTRA.md aesthetic
+    // MD024: Duplicate headings are normal in changelogs (Added, Fixed, Changed per version)
     "markdownlint.config": {
+        "MD024": false,
         "MD028": false,
         "MD033": false,
         "MD036": false,

@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **MongoDB Atlas Support** - Optimized connection settings for cloud deployment
+  - Atlas URI detection with automatic configuration
+  - Connection pooling (min: 5, max: 50)
+  - Retry writes and reads enabled
+  - Majority write concern for data durability
+  - `tests/servers/mongodb.test.js` - Connection and CRUD tests
+
+- **Dedicated Tests Directory** - Reorganized test structure
+  - `tests/` directory mirroring `src/` structure
+  - `tests/README.md` - Test documentation and guidelines
+  - Moved 7 test files from `src/**/*.test.js`
+  - Updated npm scripts: `test`, `test:unit`, `test:integration`, `test:coverage`
+
+- **Dashboard Enhancements** (Phase 5 features)
+  - `src/dashboard/js/components/ThemeToggle.js` - Dark/light mode toggle
+  - `src/dashboard/js/components/ActivityFeed.js` - Real-time activity timeline
+  - `src/dashboard/js/components/ConfigManager.js` - Export/import server configs
+  - `src/dashboard/css/components/theme-toggle.css` - Theme toggle styles
+  - `src/dashboard/css/components/activity-feed.css` - Activity feed styles
+  - `src/dashboard/css/components/config-manager.css` - Config manager styles
+
 - **Core `src/` Implementation** - Complete project bootstrap
 
   - `src/index.js` - Main entry point with graceful shutdown (SIGINT/SIGTERM)
@@ -67,7 +88,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated `.github/copilot-instructions.md` - Concise ~60 line version with accurate MCP server list
+- **MongoDB Atlas Integration** - Enhanced `src/servers/mongodb.js`
+  - Added `DEFAULT_OPTIONS` with Atlas-optimized settings
+  - Added `isAtlas()` helper for URI detection
+  - Added `extractDatabaseFromUri()` for proper database selection
+  - Connection options: `retryWrites`, `retryReads`, `w: 'majority'`
+
+- **Test Infrastructure Reorganization**
+  - Moved all tests from `src/**/*.test.js` to `tests/` directory
+  - Updated `package.json` test scripts for new structure
+  - Fixed ServerRegistry test method names (`get`/`getAll`)
+
+- **Dashboard Cleanup**
+  - Removed legacy monolithic `src/dashboard/app.js`
+  - Removed legacy `src/dashboard/styles.css`
+  - Fixed CSS `--warning` variable definition in `layout.css`
+  - Fixed `backdrop-filter` vendor prefix ordering
+  - Moved inline styles to proper CSS classes
+
+- Updated `.github/copilot-instructions.md` - Comprehensive documentation with:
+  - Architecture overview and dual-server design
+  - Code patterns (file headers, logger, server wrappers, routes)
+  - WebSocket events reference
+  - Environment variables table
+  - Test directory structure
+
 - Updated `docs/TODO.md` - Comprehensive progress tracking
 - Configured 9 MCP servers in `.vscode/settings.json`
 
@@ -76,8 +121,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Node.js 20+ LTS with ES modules
 - Port 3000: Dashboard UI
 - Port 8080: REST API
-- Port 27017: MongoDB (reserved)
+- MongoDB Atlas: Cloud-hosted with optimized connection pooling
 - Port 5432: PostgreSQL (reserved)
+
+### Dependencies
+
+- Added `mongodb@^6.12.0` - Official MongoDB driver for Atlas support
 
 ---
 

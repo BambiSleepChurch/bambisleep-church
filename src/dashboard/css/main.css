@@ -12,7 +12,7 @@
 
 /* Fonts & Variables */
 @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=JetBrains+Mono:wght@400;500;700&display=swap');
-@import url('../variables.css');
+@import url('./variables.css');
 
 /* Core Styles */
 @import url('base.css');

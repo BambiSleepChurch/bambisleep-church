@@ -38,14 +38,17 @@ node --test tests/**/*.test.js
 ## Test Categories
 
 ### Unit Tests
+
 - `tests/utils/` - Pure unit tests for utility modules
 - Fast, no external dependencies required
 
 ### Integration Tests
+
 - `tests/api/` - Requires running API server (port 8080)
 - `tests/servers/mongodb.test.js` - Requires MongoDB Atlas connection
 
 ### Skipping Conditions
+
 - API tests skip if server not running (`ECONNREFUSED`)
 - MongoDB tests skip if `MONGODB_URI` not configured for Atlas
 
@@ -54,11 +57,11 @@ node --test tests/**/*.test.js
 Uses Node.js built-in test runner (no external dependencies):
 
 ```javascript
-import assert from 'node:assert';
-import { describe, it, beforeEach } from 'node:test';
+import assert from "node:assert";
+import { describe, it, beforeEach } from "node:test";
 
-describe('Module Name', () => {
-  it('should do something', () => {
+describe("Module Name", () => {
+  it("should do something", () => {
     assert.strictEqual(actual, expected);
   });
 });

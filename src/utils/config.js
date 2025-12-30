@@ -31,7 +31,7 @@ const defaults = {
  * Strip JSONC to valid JSON
  * Handles comments and trailing commas
  */
-function stripJsonc(content) {
+export function stripJsonc(content) {
   let result = '';
   let i = 0;
   let inString = false;
