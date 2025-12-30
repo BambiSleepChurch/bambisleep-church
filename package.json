@@ -36,6 +36,7 @@
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "dependencies": {
+    "mongodb": "^6.21.0",
     "ws": "^8.18.0"
   },
   "engines": {

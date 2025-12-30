@@ -97,16 +97,16 @@ Tests auto-skip when server not running (check `ECONNREFUSED` in catch block).
 
 Key variables (see `src/utils/config.js` for all):
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `LOG_LEVEL` | `info` | Logging verbosity: `error`, `warn`, `info`, `debug` |
-| `API_PORT` | `8080` | REST API server port |
-| `DASHBOARD_PORT` | `3000` | Dashboard UI port |
-| `GITHUB_TOKEN` | — | GitHub API authentication |
-| `STRIPE_API_KEY` | — | Stripe payment processing |
-| `HUGGINGFACE_TOKEN` | — | HuggingFace inference API |
-| `MONGODB_URI` | `mongodb://localhost:27017/bambisleep` | MongoDB connection |
-| `POSTGRES_*` | localhost defaults | PostgreSQL connection (HOST, PORT, USER, PASSWORD, DB) |
+| Variable            | Default                                | Purpose                                                |
+| ------------------- | -------------------------------------- | ------------------------------------------------------ |
+| `LOG_LEVEL`         | `info`                                 | Logging verbosity: `error`, `warn`, `info`, `debug`    |
+| `API_PORT`          | `8080`                                 | REST API server port                                   |
+| `DASHBOARD_PORT`    | `3000`                                 | Dashboard UI port                                      |
+| `GITHUB_TOKEN`      | —                                      | GitHub API authentication                              |
+| `STRIPE_API_KEY`    | —                                      | Stripe payment processing                              |
+| `HUGGINGFACE_TOKEN` | —                                      | HuggingFace inference API                              |
+| `MONGODB_URI`       | `mongodb://localhost:27017/bambisleep` | MongoDB connection                                     |
+| `POSTGRES_*`        | localhost defaults                     | PostgreSQL connection (HOST, PORT, USER, PASSWORD, DB) |
 
 ## WebSocket Events (`src/api/websocket.js`)
 
@@ -114,20 +114,20 @@ Real-time updates use typed messages via `MessageTypes`:
 
 ```javascript
 // Server lifecycle events
-'server:status'   // Server status changed
-'server:started'  // Server process started
-'server:stopped'  // Server process stopped
-'server:error'    // Server error occurred
-'server:log'      // Log output from server
+"server:status"; // Server status changed
+"server:started"; // Server process started
+"server:stopped"; // Server process stopped
+"server:error"; // Server error occurred
+"server:log"; // Log output from server
 
 // System events
-'health:update'   // Health check broadcast
-'stats:update'    // Server stats changed
+"health:update"; // Health check broadcast
+"stats:update"; // Server stats changed
 
 // Client commands
-'subscribe'       // Subscribe to server events
-'unsubscribe'     // Unsubscribe from events
-'ping' / 'pong'   // Keepalive
+"subscribe"; // Subscribe to server events
+"unsubscribe"; // Unsubscribe from events
+"ping" / "pong"; // Keepalive
 ```
 
 Use `broadcast()` to emit to all clients, `sendTo()` for targeted messages.

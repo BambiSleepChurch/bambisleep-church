@@ -6,6 +6,41 @@
 
 MongoDB is a document-oriented NoSQL database. The official Node.js driver allows applications to connect and perform CRUD operations using Promises or callbacks.
 
+**Supported Connections:**
+- Local MongoDB instances
+- MongoDB Atlas (cloud-hosted clusters)
+- Replica sets
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# MongoDB Atlas (recommended for production)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/bambisleep?retryWrites=true&w=majority
+
+# Local MongoDB
+MONGODB_URI=mongodb://localhost:27017/bambisleep
+
+# Optional: Override default database
+MONGODB_DATABASE=bambisleep
+```
+
+### Connection Options (Atlas-optimized)
+
+The wrapper automatically applies optimized settings for Atlas connections:
+
+| Option                     | Value      | Description                    |
+| -------------------------- | ---------- | ------------------------------ |
+| `maxPoolSize`              | `10`       | Max connection pool size       |
+| `minPoolSize`              | `2`        | Min connections to maintain    |
+| `connectTimeoutMS`         | `10000`    | Connection timeout (10s)       |
+| `socketTimeoutMS`          | `45000`    | Socket timeout (45s)           |
+| `serverSelectionTimeoutMS` | `10000`    | Server selection timeout (10s) |
+| `retryWrites`              | `true`     | Enable retryable writes        |
+| `retryReads`               | `true`     | Enable retryable reads         |
+| `w`                        | `majority` | Write concern for data safety  |
+
 ## Connection
 
 ### Connection String Format

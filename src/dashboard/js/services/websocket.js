@@ -3,8 +3,8 @@
  * WebSocket Service - Real-time connection management
  */
 
-import { showToast } from '../components/Toast.js';
 import { addActivity } from '../components/ActivityFeed.js';
+import { showToast } from '../components/Toast.js';
 import { WS_CONFIG, WS_URL } from '../config.js';
 import { Actions } from '../state/store.js';
 

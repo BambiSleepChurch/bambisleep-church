@@ -29,18 +29,15 @@ import {
     importConfigs,
     initModals,
     initSearchBar,
+    initTheme,
     renderActivityFeed,
     renderServerGrid,
     renderToastContainer,
     showToast,
-    updateActivityFeed,
+    toggleTheme,
     updateStatsBar,
     updateSystemInfo,
-    updateWsIndicator,
-    initTheme,
-    toggleTheme,
-    getCurrentTheme,
-    renderThemeToggle,
+    updateWsIndicator
 } from './components/index.js';
 
 // Effects

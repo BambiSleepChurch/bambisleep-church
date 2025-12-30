@@ -2,6 +2,9 @@
  * BambiSleep™ Church MCP Control Tower
  * MongoDB MCP Server Wrapper - Document Database
  * Reference: docs/MONGODB_MCP_REFERENCE.md
+ * 
+ * Supports both local MongoDB and MongoDB Atlas connections.
+ * Set MONGODB_URI env var for Atlas connection strings.
  */
 
 import { createLogger } from '../utils/logger.js';
@@ -9,16 +12,54 @@ import { createLogger } from '../utils/logger.js';
 const logger = createLogger('mongodb');
 
 /**
+ * Default MongoDB connection options optimized for Atlas
+ */
+const DEFAULT_OPTIONS = {
+  // Connection pool settings
+  maxPoolSize: 10,
+  minPoolSize: 2,
+  
+  // Timeouts (ms)
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 10000,
+  
+  // Retry settings
+  retryWrites: true,
+  retryReads: true,
+  
+  // Write concern for data safety
+  w: 'majority',
+};
+
+/**
  * MongoDB client wrapper
  * Requires mongodb package: npm install mongodb
  */
 class MongoDBClient {
-  constructor(uri = process.env.MONGODB_URI || 'mongodb://localhost:27017') {
+  constructor(uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/bambisleep') {
     this.uri = uri;
     this.client = null;
     this.db = null;
-    this.defaultDatabase = process.env.MONGODB_DATABASE || 'bambisleep';
+    this.defaultDatabase = this.extractDatabaseFromUri(uri) || process.env.MONGODB_DATABASE || 'bambisleep';
     this.connected = false;
+    this.isAtlas = uri.includes('mongodb+srv://') || uri.includes('.mongodb.net');
+  }
+
+  /**
+   * Extract database name from MongoDB URI
+   */
+  extractDatabaseFromUri(uri) {
+    try {
+      // Handle mongodb+srv:// and mongodb:// URIs
+      const match = uri.match(/\/([^/?]+)(\?|$)/);
+      if (match && match[1] && !match[1].includes('.mongodb.net')) {
+        return match[1];
+      }
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -40,13 +81,22 @@ class MongoDBClient {
     try {
       const { MongoClient } = await import('mongodb');
       
-      this.client = new MongoClient(this.uri);
+      // Merge default options with any URI params
+      const options = this.isAtlas ? { ...DEFAULT_OPTIONS } : {};
+      
+      this.client = new MongoClient(this.uri, options);
       await this.client.connect();
       this.db = this.client.db(database);
       this.connected = true;
       
-      logger.info(`Connected to MongoDB: ${database}`);
-      return { success: true, database, message: 'Connected to MongoDB' };
+      const connectionType = this.isAtlas ? 'MongoDB Atlas' : 'MongoDB';
+      logger.info(`Connected to ${connectionType}: ${database}`);
+      return { 
+        success: true, 
+        database, 
+        message: `Connected to ${connectionType}`,
+        isAtlas: this.isAtlas,
+      };
     } catch (error) {
       logger.error(`Connection failed: ${error.message}`);
       throw error;
@@ -369,6 +419,8 @@ class MongoDBClient {
       connected: this.connected,
       uri: this.uri.replace(/:[^:@]+@/, ':***@'), // Hide password
       database: this.db?.databaseName || null,
+      isAtlas: this.isAtlas,
+      defaultDatabase: this.defaultDatabase,
     };
   }
 }
