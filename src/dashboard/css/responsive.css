@@ -1,0 +1,120 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Responsive Breakpoints & Media Queries
+ */
+
+/* ========================================================================
+   TABLET (768px and below)
+   ======================================================================== */
+@media (max-width: 768px) {
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .header-title {
+    font-size: var(--text-lg);
+  }
+
+  .stats-bar {
+    display: none;
+  }
+
+  .main-container {
+    padding: var(--space-4);
+  }
+
+  .server-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: stretch;
+  }
+
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-filters {
+    flex-wrap: wrap;
+  }
+
+  .toast-container {
+    left: var(--space-4);
+    right: var(--space-4);
+  }
+
+  .toast {
+    min-width: auto;
+    max-width: none;
+  }
+
+  .ws-label {
+    display: none;
+  }
+
+  .keyboard-hint {
+    display: none;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================================================
+   MOBILE (480px and below)
+   ======================================================================== */
+@media (max-width: 480px) {
+  .header {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .header-title {
+    font-size: var(--text-base);
+  }
+
+  .main-container {
+    padding: var(--space-3);
+  }
+
+  .server-card {
+    padding: var(--space-3);
+  }
+
+  .server-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    margin: var(--space-2);
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+  }
+}
+
+/* ========================================================================
+   LARGE DESKTOP (1600px and above)
+   ======================================================================== */
+@media (min-width: 1600px) {
+  .main-container {
+    max-width: 1600px;
+  }
+
+  .server-grid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  }
+}

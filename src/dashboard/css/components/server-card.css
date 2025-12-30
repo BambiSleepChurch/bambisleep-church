@@ -1,0 +1,101 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Server Card Component
+ */
+
+.server-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--space-4);
+}
+
+.server-card {
+  padding: var(--space-4);
+  position: relative;
+  overflow: hidden;
+}
+
+.server-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--glow-cyan), var(--glow-pink), var(--glow-purple));
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.server-card:hover::before {
+  opacity: 1;
+}
+
+.server-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.server-name {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.server-icon {
+  font-size: var(--text-xl);
+  filter: drop-shadow(0 0 8px var(--glow-cyan));
+}
+
+.server-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-family: var(--font-family-mono);
+  width: 20px;
+  height: 20px;
+  margin-left: var(--space-2);
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+}
+
+.server-card:hover .server-index {
+  opacity: 1;
+}
+
+.server-command {
+  background: rgba(0, 0, 0, 0.4);
+  border: var(--border-width-thin) solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-family-mono);
+  font-size: var(--text-xs);
+  color: var(--nav-alt);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.server-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.server-error {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(255, 51, 119, 0.1);
+  border: var(--border-width-thin) solid var(--error);
+  border-radius: var(--radius-sm);
+  color: var(--error);
+  font-size: var(--text-xs);
+}

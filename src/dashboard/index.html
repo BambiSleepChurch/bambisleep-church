@@ -4,68 +4,88 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🌸 BambiSleep™ MCP Control Tower</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bambi: {
-              pink: '#ff69b4',
-              light: '#ffb6c1',
-              dark: '#db7093',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    .status-running { color: #22c55e; }
-    .status-stopped { color: #6b7280; }
-    .status-error { color: #ef4444; }
-    .status-starting { color: #f59e0b; }
-  </style>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-  <header class="bg-gradient-to-r from-bambi-dark to-bambi-pink p-4 shadow-lg">
-    <div class="container mx-auto flex items-center justify-between">
-      <h1 class="text-2xl font-bold">🌸 BambiSleep™ MCP Control Tower</h1>
-      <div id="stats" class="text-sm opacity-90"></div>
+<body>
+  <!-- App Shell - Components render into these containers -->
+  
+  <header class="header">
+    <div class="main-container" style="padding: 0; display: flex; align-items: center; justify-content: space-between;">
+      <h1 class="header-title">🌸 BambiSleep™ MCP Control Tower</h1>
+      <div class="header-actions">
+        <div id="ws-indicator" class="ws-indicator ws-disconnected" title="WebSocket Status">
+          <span class="ws-dot"></span>
+          <span class="ws-label">Offline</span>
+        </div>
+        <div id="stats" class="stats-bar"></div>
+      </div>
     </div>
   </header>
 
-  <main class="container mx-auto p-6">
-    <section class="mb-8">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-bambi-light">MCP Servers</h2>
-        <button onclick="refreshServers()" 
-                class="bg-bambi-pink hover:bg-bambi-dark px-4 py-2 rounded-lg transition">
-          🔄 Refresh
-        </button>
+  <main class="main-container">
+    <!-- Search/Filter Bar -->
+    <div class="search-bar glass-card">
+      <input type="text" id="server-search" class="search-input" placeholder="🔍 Search servers... (Ctrl+K)" />
+      <div class="search-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="running">Running</button>
+        <button class="filter-btn" data-filter="stopped">Stopped</button>
+        <button class="filter-btn" data-filter="error">Errors</button>
+      </div>
+    </div>
+
+    <section style="margin-bottom: var(--space-10);">
+      <div class="section-header">
+        <h2 class="section-title">⚡ MCP Servers</h2>
+        <div class="section-actions">
+          <button onclick="window.Dashboard.refresh()" class="btn btn-primary" title="Refresh (Ctrl+R)">
+            🔄 Refresh
+          </button>
+        </div>
       </div>
       
-      <div id="servers" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div class="bg-gray-800 rounded-lg p-4 animate-pulse">
-          <div class="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
-          <div class="h-3 bg-gray-700 rounded w-1/2"></div>
+      <div id="servers" class="server-grid">
+        <!-- Loading skeleton -->
+        <div class="glass-card server-card">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+        </div>
+        <div class="glass-card server-card">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+        </div>
+        <div class="glass-card server-card">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
         </div>
       </div>
     </section>
 
     <section>
-      <h2 class="text-xl font-semibold text-bambi-light mb-4">System Info</h2>
-      <div id="system-info" class="bg-gray-800 rounded-lg p-4">
-        <p class="text-gray-400">Loading...</p>
+      <div class="section-header">
+        <h2 class="section-title">📊 System Info</h2>
+      </div>
+      <div id="system-info" class="glass-card">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Status</span>
+            <span class="info-value">Loading...</span>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="fixed bottom-0 w-full bg-gray-800 p-3 text-center text-sm text-gray-400">
-    BambiSleep™ Church MCP Control Tower • 
-    <span id="connection-status" class="text-yellow-500">Connecting...</span>
+  <footer class="footer">
+    <span style="opacity: 0.6;">BambiSleep™ Church MCP Control Tower</span> • 
+    <span id="connection-status" class="connection-connecting">Connecting...</span>
+    <span class="keyboard-hint">Press <kbd>?</kbd> for shortcuts</span>
   </footer>
 
-  <script src="app.js"></script>
+  <!-- Load modular application -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

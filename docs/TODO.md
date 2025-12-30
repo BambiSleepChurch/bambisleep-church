@@ -32,9 +32,13 @@
 
 - [x] Create `src/dashboard/index.html` - main UI
 - [x] Create `src/dashboard/app.js` - frontend logic
-- [ ] Create `src/dashboard/styles.css` - Tailwind CSS styling
+- [x] Create `src/dashboard/styles.css` - Cyber goth design system
+- [x] Create `src/dashboard/variables.css` - CSS design tokens
 - [x] Server status indicators for all MCP servers
-- [ ] Real-time health monitoring
+- [x] Glass morphism components with `backdrop-filter`
+- [x] Responsive layout with mobile breakpoints
+- [ ] Real-time health monitoring (WebSocket)
+- [ ] Server log viewer panel
 
 ### API (Port 8080)
 
@@ -83,11 +87,11 @@ All configured MCP servers now have REST API wrappers:
 
 - [x] Add new servers to `.vscode/settings.json` (9 servers configured)
 - [ ] Add required ports to `.devcontainer/devcontainer.json`
-- [ ] Update environment variables handling
+- [x] Environment variables handling (`src/utils/config.js`, `.env.example`)
 
 ---
 
-## 🧪 Phase 3: Quality & Testing
+## 🔄 Phase 3: Quality & Testing (In Progress)
 
 ### Testing Infrastructure
 
@@ -95,14 +99,17 @@ All configured MCP servers now have REST API wrappers:
 - [x] Write unit tests for server registry (5 tests)
 - [x] Write unit tests for config module (5 tests)
 - [x] Write unit tests for logger module (3 tests)
+- [x] Write unit tests for rate limiter (5 tests)
 - [x] Write integration tests for API endpoints (3 tests)
-- [ ] Achieve 100% test coverage target (currently ~80%)
-- [ ] Add CI/CD pipeline with GitHub Actions
+- [ ] Achieve 100% test coverage target (currently ~85%)
+- [x] Add CI/CD pipeline with GitHub Actions (`.github/workflows/ci.yml`)
+- [ ] Add E2E tests for dashboard with Puppeteer
 
 ### Documentation
 
 - [x] Create README.md with quick start guide
-- [ ] API documentation
+- [x] Create `.github/copilot-instructions.md` for AI agents
+- [ ] API documentation (OpenAPI/Swagger spec)
 - [ ] MCP server configuration guide
 - [ ] Deployment guide
 - [x] MCP Reference Docs (Stripe, MongoDB, Clarity, HuggingFace)
@@ -110,31 +117,97 @@ All configured MCP servers now have REST API wrappers:
 
 ---
 
-## 🚀 Phase 4: Production
+## 🔄 Phase 4: Production Readiness (In Progress)
 
 ### Deployment
 
-- [ ] Docker Compose configuration
-- [ ] Production environment variables
-- [x] Health check endpoints (`/api/health`)
+- [x] Docker Compose configuration (`docker-compose.yml`)
+- [x] Dockerfile (multi-stage, production-ready)
+- [x] Environment variables template (`.env.example`)
+- [x] Health check endpoints (`/api/health` with version & env)
 - [x] Graceful shutdown handling (SIGINT/SIGTERM)
+- [ ] SSL/TLS configuration
+- [x] Rate limiting middleware (`src/utils/rate-limit.js`)
 
 ### Monitoring
 
 - [x] Structured logging (with namespaces and colors)
-- [ ] Metrics collection
+- [x] Rate limit stats endpoint (`/api/stats/rate-limit`)
+- [ ] Metrics collection (Prometheus format)
 - [ ] Alerting setup
+- [ ] Error tracking integration
 
 ---
 
-## 📝 Notes
+## ✅ Phase 5: Enhanced Dashboard (Complete)
 
-- **MCP Server Wrappers**: 10/10 complete
-- **REST API Endpoints**: 40+ endpoints across all services
-- **Test Coverage**: 16 unit tests passing
-- **Runtime**: Node.js 20+ LTS
-- **Ports**: 3000 (Dashboard), 8080 (API), 27017 (MongoDB), 5432 (PostgreSQL)
+### UI Components
+
+- [x] Server detail modal with full config view
+- [x] Live log streaming per server
+- [ ] Memory graph visualization (D3.js/Cytoscape)
+- [ ] API request builder/tester panel
+- [ ] Dark/light theme toggle
+
+### Real-time Features
+
+- [x] WebSocket connection for live updates (`src/api/websocket.js`)
+- [x] WebSocket status indicator (Live/Offline)
+- [x] Server health pulse indicators
+- [x] Toast notifications for status changes
+- [ ] Activity feed timeline
+
+### UX Improvements
+
+- [x] Keyboard shortcuts (Ctrl+R, Ctrl+K, Escape, 1-9, ?)
+- [x] Search/filter servers
+- [x] Status filter buttons (All/Running/Stopped/Errors)
+- [ ] Drag-and-drop server ordering
+- [ ] Export/import server configurations
 
 ---
 
-_Last Updated: December 30, 2025_
+## 🌸 Phase 6: Advanced Features (Next)
+
+### Memory Graph Visualization
+
+- [ ] D3.js or Cytoscape.js integration
+- [ ] Interactive node exploration
+- [ ] Relation path highlighting
+- [ ] Entity search within graph
+
+### API Playground
+
+- [ ] Request builder with all endpoints
+- [ ] Parameter forms with validation
+- [ ] Response viewer with syntax highlighting
+- [ ] Request history & favorites
+
+### Theming
+
+- [ ] Dark/light mode toggle
+- [ ] Custom color theme picker
+- [ ] Persist theme preference
+
+### Server Management
+
+- [ ] Drag-and-drop server ordering
+- [ ] Server groups/categories
+- [ ] Export/import configurations
+- [ ] Bulk operations (start/stop all)
+
+---
+
+## 📝 Progress Summary
+
+| Category            | Status         | Progress             |
+| ------------------- | -------------- | -------------------- |
+| MCP Server Wrappers | ✅ Complete    | 10/10                |
+| REST API Endpoints  | ✅ Complete    | 40+ endpoints        |
+| Dashboard UI        | ✅ Complete    | Cyber goth design    |
+| WebSocket           | ✅ Complete    | Real-time updates    |
+| Unit Tests          | ✅ Complete    | 23+ passing          |
+| CI/CD Pipeline      | ✅ Complete    | GitHub Actions       |
+| Docker              | ✅ Complete    | Compose + Dockerfile |
+| Rate Limiting       | ✅ Complete    | In-memory store      |
+| Documentation       | 🔄 In Progress | 5/7 docs             |

@@ -1,0 +1,123 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Layout - Header, footer, container, grid
+ */
+
+/* ========================================================================
+   HEADER
+   ======================================================================== */
+.header {
+  background: linear-gradient(90deg, var(--nav-color), var(--secondary-color), var(--nav-color));
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  border-bottom: var(--border-width-medium) solid var(--nav-alt);
+  padding: var(--space-4) var(--space-6);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(23, 219, 216, 0.2);
+}
+
+.header-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-wider);
+  text-shadow: 
+    0 0 10px var(--glow-cyan),
+    0 0 20px var(--glow-pink);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* ========================================================================
+   MAIN CONTAINER
+   ======================================================================== */
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+/* ========================================================================
+   SECTION
+   ======================================================================== */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.section-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-wide);
+  text-shadow: 0 0 10px var(--glow-cyan);
+}
+
+.section-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ========================================================================
+   FOOTER
+   ======================================================================== */
+.footer {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: var(--blur-sm);
+  padding: var(--space-4) var(--space-6);
+  text-align: center;
+  font-size: var(--text-sm);
+  border-top: var(--border-width-thin) solid var(--glass-border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ========================================================================
+   CONNECTION STATUS
+   ======================================================================== */
+.connection-connected {
+  color: var(--tertiary-alt);
+}
+
+.connection-disconnected {
+  color: var(--error);
+}
+
+.connection-connecting {
+  color: var(--warning);
+}
+
+/* ========================================================================
+   KEYBOARD HINT
+   ======================================================================== */
+.keyboard-hint {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  opacity: 0.5;
+}
+
+.keyboard-hint kbd {
+  margin: 0 var(--space-1);
+}
+
+kbd {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-family-mono);
+  font-size: var(--text-xs);
+  min-width: 24px;
+  text-align: center;
+}

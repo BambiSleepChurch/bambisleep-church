@@ -1,0 +1,80 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Button Components
+ */
+
+.btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: var(--border-width-thin) solid transparent;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-alt));
+  color: white;
+  border-color: var(--primary-alt);
+  box-shadow: 0 0 10px rgba(21, 170, 181, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(21, 170, 181, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: var(--glass-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--nav-alt);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--tertiary-color), var(--tertiary-alt));
+  color: white;
+  border-color: var(--tertiary-alt);
+  box-shadow: 0 0 10px rgba(175, 225, 175, 0.3);
+}
+
+.btn-success:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(175, 225, 175, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #cc0044, var(--error));
+  color: white;
+  border-color: var(--error);
+  box-shadow: 0 0 10px rgba(255, 51, 119, 0.3);
+}
+
+.btn-danger:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(255, 51, 119, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #cc8800, var(--warning));
+  color: white;
+  border-color: var(--warning);
+  box-shadow: 0 0 10px rgba(255, 173, 51, 0.3);
+}
+
+.btn-warning:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(255, 173, 51, 0.5);
+  transform: translateY(-2px);
+}

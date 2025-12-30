@@ -1,0 +1,32 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Glass Card Component
+ */
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: var(--border-width-thin) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--bubble-shadow);
+  transition: all var(--transition-base);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--primary-alt);
+  box-shadow: 
+    var(--bubble-shadow),
+    0 0 20px rgba(21, 170, 181, 0.3);
+}
+
+/* ========================================================================
+   EMPTY STATE
+   ======================================================================== */
+.empty-state {
+  text-align: center;
+  padding: var(--space-10);
+  opacity: 0.6;
+  font-style: italic;
+}

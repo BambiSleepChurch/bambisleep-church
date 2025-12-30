@@ -1,0 +1,183 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Modal Component
+ */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: var(--blur-sm);
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: var(--border-width-thin) solid var(--glass-border);
+}
+
+.modal-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: var(--text-lg);
+  cursor: pointer;
+  padding: var(--space-2);
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.modal-close:hover {
+  opacity: 1;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.modal-footer {
+  padding: var(--space-4);
+  border-top: var(--border-width-thin) solid var(--glass-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* ========================================================================
+   SERVER DETAIL MODAL
+   ======================================================================== */
+.server-detail-section {
+  margin-bottom: var(--space-4);
+}
+
+.server-detail-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  opacity: 0.6;
+  margin-bottom: var(--space-2);
+}
+
+.server-detail-value {
+  font-family: var(--font-family-mono);
+  font-size: var(--text-sm);
+}
+
+.server-detail-config {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.server-detail-config pre {
+  font-family: var(--font-family-mono);
+  font-size: var(--text-xs);
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--primary-alt);
+}
+
+/* ========================================================================
+   LOG STREAM
+   ======================================================================== */
+.log-stream {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: var(--font-family-mono);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
+
+.log-entry {
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: rgba(255, 255, 255, 0.4);
+  margin-right: var(--space-2);
+}
+
+.log-info { color: var(--primary-alt); }
+.log-warn { color: var(--warning); }
+.log-error { color: var(--error); }
+.log-debug { color: rgba(255, 255, 255, 0.5); }
+
+/* ========================================================================
+   SHORTCUTS MODAL
+   ======================================================================== */
+.shortcuts-help {
+  padding: var(--space-6);
+  max-width: 400px;
+}
+
+.shortcuts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.shortcut span {
+  opacity: 0.7;
+}

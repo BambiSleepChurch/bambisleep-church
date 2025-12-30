@@ -14,9 +14,23 @@ import { puppeteerHandlers } from '../servers/puppeteer.js';
 import { thinkingHandlers } from '../servers/sequential-thinking.js';
 import { sqliteHandlers } from '../servers/sqlite.js';
 import { stripeHandlers } from '../servers/stripe.js';
+import { getConfig } from '../utils/config.js';
 import { createLogger } from '../utils/logger.js';
+import { createRateLimiter, getRateLimitStats } from '../utils/rate-limit.js';
+import { createWebSocketServer, getWebSocketStats } from './websocket.js';
 
 const logger = createLogger('api');
+const config = getConfig();
+
+// WebSocket server instance (initialized in createApiServer)
+let wss = null;
+
+// Initialize rate limiter
+const rateLimit = createRateLimiter({
+  windowMs: config.rateLimit.windowMs,
+  maxRequests: config.rateLimit.maxRequests,
+  skipPaths: ['/api/health'],
+});
 
 /**
  * Parse JSON body from request
@@ -42,8 +56,8 @@ function json(res, data, status = 200) {
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   });
   res.end(JSON.stringify(data));
 }
@@ -52,6 +66,11 @@ function json(res, data, status = 200) {
  * Route handler
  */
 async function handleRequest(req, res) {
+  // Apply rate limiting
+  if (!rateLimit(req, res)) {
+    return; // Rate limited, response already sent
+  }
+
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = url.pathname;
   const method = req.method;
@@ -62,15 +81,30 @@ async function handleRequest(req, res) {
   if (method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     });
     return res.end();
   }
 
   // Health check
   if (path === '/api/health' && method === 'GET') {
-    return json(res, { status: 'ok', timestamp: new Date().toISOString() });
+    return json(res, { 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      env: config.env.nodeEnv,
+    });
+  }
+
+  // Rate limit stats
+  if (path === '/api/stats/rate-limit' && method === 'GET') {
+    return json(res, getRateLimitStats());
+  }
+
+  // WebSocket stats
+  if (path === '/api/stats/websocket' && method === 'GET') {
+    return json(res, getWebSocketStats());
   }
 
   // Get all servers
@@ -727,13 +761,17 @@ async function handleRequest(req, res) {
 }
 
 /**
- * Create and start API server
+ * Create and start API server with WebSocket support
  */
 export function createApiServer(port = 8080, host = '0.0.0.0') {
   const server = createServer(handleRequest);
 
+  // Initialize WebSocket server
+  wss = createWebSocketServer(server);
+
   server.listen(port, host, () => {
     logger.info(`API server running at http://${host}:${port}`);
+    logger.info(`WebSocket server available at ws://${host}:${port}/ws`);
   });
 
   return server;

@@ -114,14 +114,54 @@ export function loadMcpServers() {
  */
 export function getConfig() {
   return {
-    ...defaults,
+    dashboard: {
+      port: parseInt(process.env.DASHBOARD_PORT) || defaults.dashboard.port,
+      host: process.env.DASHBOARD_HOST || defaults.dashboard.host,
+    },
+    api: {
+      port: parseInt(process.env.API_PORT) || defaults.api.port,
+      host: process.env.API_HOST || defaults.api.host,
+    },
     mcp: {
       ...defaults.mcp,
       servers: loadMcpServers(),
     },
+    database: {
+      mongodb: {
+        uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/bambisleep',
+      },
+      postgres: {
+        host: process.env.POSTGRES_HOST || 'localhost',
+        port: parseInt(process.env.POSTGRES_PORT) || 5432,
+        user: process.env.POSTGRES_USER || 'bambisleep',
+        password: process.env.POSTGRES_PASSWORD || 'bambisleep',
+        database: process.env.POSTGRES_DB || 'bambisleep',
+      },
+      sqlite: {
+        path: process.env.SQLITE_PATH || './data/local.db',
+      },
+    },
+    services: {
+      github: { token: process.env.GITHUB_TOKEN || '' },
+      stripe: { 
+        apiKey: process.env.STRIPE_API_KEY || '',
+        webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+      },
+      huggingface: { token: process.env.HUGGINGFACE_TOKEN || '' },
+      clarity: { projectId: process.env.CLARITY_PROJECT_ID || '' },
+    },
+    rateLimit: {
+      windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60000,
+      maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+    },
+    security: {
+      corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:8080').split(','),
+      apiSecretKey: process.env.API_SECRET_KEY || '',
+    },
     env: {
       nodeEnv: process.env.NODE_ENV || 'development',
       isDev: process.env.NODE_ENV !== 'production',
+      logLevel: process.env.LOG_LEVEL || 'info',
     },
   };
 }
