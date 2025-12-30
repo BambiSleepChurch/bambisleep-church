@@ -40,13 +40,42 @@
 
 ## 🔮 Phase 2: MCP Expansion
 
-### Additional MCP Servers (5 remaining for 8/8)
+### Reference Documentation (4/5 Complete)
 
-- [ ] MongoDB server integration (`@modelcontextprotocol/server-mongodb`)
-- [ ] Stripe server integration (`@modelcontextprotocol/server-stripe`)
-- [ ] HuggingFace server integration (research package availability)
+- [x] `docs/STRIPE_MCP_REFERENCE.md` - Stripe API, payments, subscriptions
+- [x] `docs/MONGODB_MCP_REFERENCE.md` - MongoDB driver, CRUD, aggregation
+- [x] `docs/CLARITY_MCP_REFERENCE.md` - Microsoft Clarity analytics, heatmaps
+- [x] `docs/HUGGINGFACE_MCP_REFERENCE.md` - HuggingFace inference & hub APIs
+- [ ] `docs/AZURE_QUANTUM_MCP_REFERENCE.md` - Azure Quantum integration
+
+### Additional MCP Servers (5 remaining for 8/8 core)
+
+- [ ] MongoDB server integration (`@modelcontextprotocol/server-mongodb`) 📄
+- [ ] Stripe server integration (`@modelcontextprotocol/server-stripe`) 📄
+- [ ] HuggingFace server integration (`@huggingface/inference`) 📄
 - [ ] Azure Quantum server integration (research package availability)
-- [ ] Microsoft Clarity server integration (research package availability)
+- [ ] Microsoft Clarity server integration (`@microsoft/clarity`) 📄
+
+> 📄 = Reference documentation available in `docs/`
+
+### Useful MCP Servers (Official @modelcontextprotocol)
+
+**High Priority:**
+
+- [ ] Puppeteer (`@modelcontextprotocol/server-puppeteer`) - Browser automation, screenshots
+- [x] ~~PostgreSQL~~ - Covered by MongoDB 📄
+- [ ] Fetch (`@modelcontextprotocol/server-fetch`) - HTTP requests and API calls
+
+**Medium Priority:**
+
+- [x] ~~SQLite~~ - Covered by MongoDB 📄
+- [ ] Memory (`@modelcontextprotocol/server-memory`) - Knowledge graph persistence
+
+**Low Priority:**
+
+- [ ] Sequential Thinking (`@modelcontextprotocol/server-sequential-thinking`) - Reasoning chains
+
+> 📄 Database operations consolidated under MongoDB - see `docs/MONGODB_MCP_REFERENCE.md`
 
 ### Configuration Updates
 
@@ -72,6 +101,8 @@
 - [ ] API documentation
 - [ ] MCP server configuration guide
 - [ ] Deployment guide
+- [x] MCP Reference Docs (Stripe, MongoDB, Clarity, HuggingFace)
+- [ ] Complete Azure Quantum reference documentation
 
 ---
 

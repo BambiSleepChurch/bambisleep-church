@@ -90,7 +90,7 @@
     "ecl.launchConfiguration": "not found",
     "ecl.targetCluster": {},
     // MCP Server Configuration (Model Context Protocol)
-    // These servers provide filesystem, git, and github integration
+    // Core servers: filesystem, git, github + utility servers
     "mcp.servers": {
         "filesystem": {
             "command": "npx",
@@ -115,6 +115,51 @@
                 "-y",
                 "@modelcontextprotocol/server-github"
             ]
+        },
+        "puppeteer": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-puppeteer"
+            ]
+        },
+        "postgres": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-postgres",
+                "postgresql://localhost:5432/bambisleep"
+            ]
+        },
+        "fetch": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-fetch"
+            ]
+        },
+        "sqlite": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sqlite",
+                "--db-path",
+                "./data/local.db"
+            ]
+        },
+        "memory": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory"
+            ]
+        },
+        "sequential-thinking": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ]
         }
     },
     // Search Configuration
@@ -132,5 +177,14 @@
     },
     // Problems Panel Configuration
     "problems.decorations.enabled": true,
-    "problems.showCurrentInStatus": true
+    "problems.showCurrentInStatus": true,
+    // Markdown Lint Configuration - Disable stylistic rules for RELIGULOUS_MANTRA.md aesthetic
+    "markdownlint.config": {
+        "MD028": false,
+        "MD033": false,
+        "MD036": false,
+        "MD040": false
+    },
+    // Markdown Link Validation - Disabled (VS Code doesn't handle relative paths from subfolders correctly)
+    "markdown.validate.enabled": false
 }
