@@ -27,6 +27,8 @@
 @import url('components/toast.css');
 @import url('components/search.css');
 @import url('components/websocket.css');
+@import url('components/theme.css');
+@import url('components/activity.css');
 
 /* Utilities & Responsive */
 @import url('utilities.css');

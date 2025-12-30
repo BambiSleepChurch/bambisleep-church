@@ -1,0 +1,99 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Theme Styles - Dark/Light mode CSS
+ */
+
+@layer components {
+  /* Theme toggle button */
+  .theme-toggle {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-lg);
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-fast);
+  }
+
+  .theme-toggle:hover {
+    transform: scale(1.1);
+  }
+
+  /* Light theme overrides */
+  [data-theme="light"] {
+    --primary-color: #e8f4f4;
+    --primary-alt: #0d8b94;
+    --secondary-color: #fdf0f8;
+    --secondary-alt: #a30057;
+    --tertiary-color: #f8e0ec;
+    --tertiary-alt: #018870;
+    --button-color: #c70359;
+    --button-alt: #fff5f8;
+    --nav-color: #d6f0f0;
+    --nav-alt: #0fa3a0;
+    --transparent: #c9e8e8;
+    --error: #cc0000;
+    
+    --glass-bg: rgba(0, 0, 0, 0.05);
+    --glass-border: rgba(0, 0, 0, 0.15);
+    --bubble-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme="light"] body {
+    color: #1a1a2e;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--tertiary-color) 100%);
+  }
+
+  [data-theme="light"] .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme="light"] .header,
+  [data-theme="light"] .footer {
+    background: rgba(255, 255, 255, 0.85);
+    color: #1a1a2e;
+  }
+
+  [data-theme="light"] .btn-primary {
+    background: var(--button-color);
+    color: white;
+  }
+
+  [data-theme="light"] .btn-secondary {
+    background: rgba(0, 0, 0, 0.08);
+    color: #1a1a2e;
+  }
+
+  [data-theme="light"] .search-input {
+    background: rgba(255, 255, 255, 0.9);
+    color: #1a1a2e;
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+
+  [data-theme="light"] .search-input::placeholder {
+    color: #666;
+  }
+
+  [data-theme="light"] kbd {
+    background: rgba(0, 0, 0, 0.08);
+    color: #1a1a2e;
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+
+  [data-theme="light"] .server-command {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+
+  [data-theme="light"] .modal-content {
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  [data-theme="light"] .log-stream {
+    background: #1a1a2e;
+    color: #e0e0e0;
+  }
+
+  [data-theme="light"] pre {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+}

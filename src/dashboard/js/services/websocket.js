@@ -4,6 +4,7 @@
  */
 
 import { showToast } from '../components/Toast.js';
+import { addActivity } from '../components/ActivityFeed.js';
 import { WS_CONFIG, WS_URL } from '../config.js';
 import { Actions } from '../state/store.js';
 
@@ -38,6 +39,7 @@ function handleOpen() {
   reconnectAttempts = 0;
   Actions.setWsStatus('connected');
   showToast('success', 'Connected', 'Real-time updates enabled');
+  addActivity('ws:connected', 'WebSocket connected', { level: 'success' });
   
   // Subscribe to channels
   send({ 
@@ -64,16 +66,28 @@ function handleMessage(event) {
       case 'SERVER_STARTED':
         Actions.updateServer(message.payload);
         showToast('success', 'Server Started', `${message.payload.name} is now running`);
+        addActivity('server:started', `${message.payload.name} started`, { 
+          server: message.payload.name, 
+          level: 'success' 
+        });
         break;
         
       case 'SERVER_STOPPED':
         Actions.updateServer(message.payload);
         showToast('info', 'Server Stopped', `${message.payload.name} has stopped`);
+        addActivity('server:stopped', `${message.payload.name} stopped`, { 
+          server: message.payload.name, 
+          level: 'info' 
+        });
         break;
         
       case 'SERVER_ERROR':
         Actions.updateServer(message.payload);
         showToast('error', 'Server Error', `${message.payload.name}: ${message.payload.error}`);
+        addActivity('server:error', `${message.payload.name}: ${message.payload.error}`, { 
+          server: message.payload.name, 
+          level: 'error' 
+        });
         break;
         
       case 'SERVER_LOG':
@@ -85,7 +99,7 @@ function handleMessage(event) {
         break;
         
       case 'HEALTH_UPDATE':
-        // Could update health indicators
+        addActivity('health:update', 'Health check received', { level: 'info' });
         break;
         
       case 'PONG':

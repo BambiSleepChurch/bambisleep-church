@@ -53,8 +53,9 @@ export const AppState = createStore({
   activeModal: null,        // 'server' | 'shortcuts' | null
   selectedServer: null,     // Server name for detail modal
   
-  // Logs
+  // Logs & Activity
   serverLogs: {},           // { serverName: [log entries] }
+  activities: [],           // Activity feed timeline
 });
 
 // ============================================================================
@@ -71,6 +72,7 @@ export const Selectors = {
   activeModal: (state) => state.activeModal,
   selectedServer: (state) => state.selectedServer,
   serverLogs: (state) => state.serverLogs,
+  activities: (state) => state.activities,
   
   // Computed selectors
   stats: (state) => ({

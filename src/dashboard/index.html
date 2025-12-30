@@ -13,9 +13,12 @@
   <!-- App Shell - Components render into these containers -->
   
   <header class="header">
-    <div class="main-container" style="padding: 0; display: flex; align-items: center; justify-content: space-between;">
+    <div class="main-container header-inner">
       <h1 class="header-title">🌸 BambiSleep™ MCP Control Tower</h1>
       <div class="header-actions">
+        <button class="theme-toggle btn btn-secondary" onclick="window.Dashboard.toggleTheme()" title="Toggle theme">
+          🌙
+        </button>
         <div id="ws-indicator" class="ws-indicator ws-disconnected" title="WebSocket Status">
           <span class="ws-dot"></span>
           <span class="ws-label">Offline</span>
@@ -37,10 +40,18 @@
       </div>
     </div>
 
-    <section style="margin-bottom: var(--space-10);">
+    <section class="section">
       <div class="section-header">
         <h2 class="section-title">⚡ MCP Servers</h2>
         <div class="section-actions">
+          <div class="config-actions">
+            <button onclick="window.Dashboard.exportConfigs()" class="btn btn-secondary" title="Export configs">
+              📤 Export
+            </button>
+            <button onclick="window.Dashboard.importConfigs()" class="btn btn-secondary" title="Import configs">
+              📥 Import
+            </button>
+          </div>
           <button onclick="window.Dashboard.refresh()" class="btn btn-primary" title="Refresh (Ctrl+R)">
             🔄 Refresh
           </button>
@@ -77,10 +88,19 @@
         </div>
       </div>
     </section>
+
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">📋 Activity Feed</h2>
+      </div>
+      <div id="activity-feed">
+        <!-- Activity feed renders here -->
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
-    <span style="opacity: 0.6;">BambiSleep™ Church MCP Control Tower</span> • 
+    <span class="footer-brand">BambiSleep™ Church MCP Control Tower</span> • 
     <span id="connection-status" class="connection-connecting">Connecting...</span>
     <span class="keyboard-hint">Press <kbd>?</kbd> for shortcuts</span>
   </footer>

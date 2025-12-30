@@ -16,6 +16,7 @@
 
 .toast {
   background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--blur-md);
   backdrop-filter: var(--blur-md);
   border: var(--border-width-thin) solid var(--glass-border);
   border-radius: var(--radius-md);

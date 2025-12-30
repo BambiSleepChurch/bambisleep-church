@@ -53,13 +53,13 @@ Each component file is:
 ### Import in HTML
 
 ```html
-<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/main.css" />
 ```
 
 ### Import in CSS
 
 ```css
-@import url('components/modal.css');
+@import url("components/modal.css");
 ```
 
 ## Responsive Breakpoints

@@ -21,16 +21,26 @@ import { initWebSocket } from './services/websocket.js';
 
 // Components
 import {
+    addActivity,
+    clearActivityFeed,
     closeAllModals,
+    exportConfigs,
     getModal,
+    importConfigs,
     initModals,
     initSearchBar,
+    renderActivityFeed,
     renderServerGrid,
     renderToastContainer,
     showToast,
+    updateActivityFeed,
     updateStatsBar,
     updateSystemInfo,
     updateWsIndicator,
+    initTheme,
+    toggleTheme,
+    getCurrentTheme,
+    renderThemeToggle,
 } from './components/index.js';
 
 // Effects
@@ -91,6 +101,40 @@ window.Dashboard = {
     if (logStream) {
       logStream.innerHTML = '<div class="log-entry log-info">Logs cleared</div>';
     }
+  },
+
+  // Theme actions
+  toggleTheme() {
+    const newTheme = toggleTheme();
+    showToast('info', 'Theme Changed', `Switched to ${newTheme} mode`);
+    addActivity('theme:changed', `Switched to ${newTheme} mode`);
+    // Update theme toggle button
+    const btn = document.querySelector('.theme-toggle');
+    if (btn) {
+      btn.innerHTML = newTheme === 'dark' ? '🌙' : '☀️';
+      btn.title = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    }
+  },
+
+  // Activity feed actions
+  clearActivityFeed() {
+    clearActivityFeed();
+    showToast('info', 'Cleared', 'Activity feed cleared');
+  },
+
+  // Config export/import
+  exportConfigs() {
+    const servers = AppState.getState().servers;
+    exportConfigs(servers);
+    addActivity('config:exported', `Exported ${servers.length} server configs`);
+  },
+
+  importConfigs() {
+    importConfigs((imported) => {
+      addActivity('config:imported', `Imported ${imported.length} server configs`);
+      // Note: In a full implementation, this would update the server config
+      showToast('info', 'Note', 'Imported configs can be applied via settings.json');
+    });
   },
 
   // Refresh
@@ -178,10 +222,19 @@ function setupSubscriptions() {
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('🌸 BambiSleep™ MCP Control Tower initializing...');
   
+  // Initialize theme system
+  initTheme();
+  
   // Initialize components
   renderToastContainer();
   initModals();
   initSearchBar();
+  
+  // Render activity feed section
+  const activityContainer = document.getElementById('activity-feed');
+  if (activityContainer) {
+    activityContainer.innerHTML = renderActivityFeed([]);
+  }
   
   // Setup state subscriptions
   setupSubscriptions();

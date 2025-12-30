@@ -21,6 +21,7 @@
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
+  -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
 }
 

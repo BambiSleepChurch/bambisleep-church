@@ -8,8 +8,8 @@
    ======================================================================== */
 .header {
   background: linear-gradient(90deg, var(--nav-color), var(--secondary-color), var(--nav-color));
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   border-bottom: var(--border-width-medium) solid var(--nav-alt);
   padding: var(--space-4) var(--space-6);
   position: sticky;
@@ -27,6 +27,13 @@
   text-shadow: 
     0 0 10px var(--glow-cyan),
     0 0 20px var(--glow-pink);
+}
+
+.header-inner {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .header-actions {
@@ -47,6 +54,10 @@
 /* ========================================================================
    SECTION
    ======================================================================== */
+.section {
+  margin-bottom: var(--space-10);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -71,6 +82,7 @@
    ======================================================================== */
 .footer {
   background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
   padding: var(--space-4) var(--space-6);
   text-align: center;
@@ -81,6 +93,10 @@
   align-items: center;
   gap: var(--space-4);
   flex-wrap: wrap;
+}
+
+.footer-brand {
+  opacity: 0.6;
 }
 
 /* ========================================================================
@@ -95,7 +111,7 @@
 }
 
 .connection-connecting {
-  color: var(--warning);
+  color: #ffaa00; /* Warning yellow */
 }
 
 /* ========================================================================
