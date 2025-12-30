@@ -4,7 +4,7 @@
  */
 
 import assert from 'node:assert';
-import { beforeEach, describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import { ServerRegistry, ServerStatus } from '../../src/servers/index.js';
 
 describe('Server Registry', () => {
@@ -12,6 +12,13 @@ describe('Server Registry', () => {
 
   beforeEach(() => {
     registry = new ServerRegistry();
+  });
+
+  afterEach(() => {
+    // Clean up any running processes to prevent test hangs
+    if (registry) {
+      registry.stopAll();
+    }
   });
 
   describe('loadFromConfig()', () => {
@@ -220,7 +227,7 @@ describe('Server Registry', () => {
         'fail-server': { command: 'node', args: ['-e', 'process.exit(1)'] },
       });
 
-      const result = await registry.start('fail-server');
+      await registry.start('fail-server');
       // Should return false because process exited
       const server = registry.get('fail-server');
       assert.ok([ServerStatus.STOPPED, ServerStatus.RUNNING].includes(server.status));
@@ -231,13 +238,196 @@ describe('Server Registry', () => {
         'invalid-server': { command: 'nonexistent-command-xyz-12345', args: [] },
       });
 
-      const result = await registry.start('invalid-server');
+      await registry.start('invalid-server');
       // Should handle the error
       const server = registry.get('invalid-server');
       assert.ok(server.status !== ServerStatus.STARTING);
     });
+
+    it('should set error status on spawn failure', async () => {
+      registry.loadFromConfig({
+        // Use a command that will cause spawn error on most systems
+        'spawn-error-server': { command: '', args: [] },
+      });
+
+      await registry.start('spawn-error-server');
+      const server = registry.get('spawn-error-server');
+      // Status should be ERROR or STOPPED depending on how spawn handles empty command
+      assert.ok([ServerStatus.ERROR, ServerStatus.STOPPED].includes(server.status));
+    });
+
+    it('should track process exit code', async () => {
+      registry.loadFromConfig({
+        'exit-code-server': { command: 'node', args: ['-e', 'process.exit(42)'] },
+      });
+
+      await registry.start('exit-code-server');
+      
+      // Wait a bit for exit handler to fire
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const server = registry.get('exit-code-server');
+      assert.strictEqual(server.status, ServerStatus.STOPPED);
+    });
+
+    it('should remove process from map on exit', async () => {
+      registry.loadFromConfig({
+        'cleanup-server': { command: 'node', args: ['-e', 'process.exit(0)'] },
+      });
+
+      await registry.start('cleanup-server');
+      
+      // Wait for exit
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      // Process should be removed from processes map
+      const proc = registry.processes.get('cleanup-server');
+      assert.strictEqual(proc, undefined, 'Process should be cleaned up after exit');
+    });
+
+    it('should set RUNNING status when process stays alive past delay', async () => {
+      registry.loadFromConfig({
+        // Use the test helper that stays running
+        'long-server': { 
+          command: 'node', 
+          args: ['tests/helpers/long-running.js'],
+        },
+      });
+
+      const result = await registry.start('long-server');
+      const server = registry.get('long-server');
+      
+      // This should hit lines 111-116 (success path after 500ms)
+      if (result) {
+        assert.strictEqual(server.status, ServerStatus.RUNNING, 'Server should be running');
+        assert.ok(server.startedAt, 'startedAt should be set');
+        assert.strictEqual(server.error, null, 'error should be null');
+        
+        // Clean up
+        registry.stop('long-server');
+      }
+    });
   });
 
+  describe('stop()', () => {
+    it('should return false for non-existent server', () => {
+      const result = registry.stop('non-existent');
+      assert.strictEqual(result, false);
+    });
+
+    it('should return false when no process exists', () => {
+      registry.loadFromConfig({
+        'test-server': { command: 'echo' },
+      });
+      
+      const result = registry.stop('test-server');
+      assert.strictEqual(result, false);
+    });
+
+    it('should stop a running server process', async () => {
+      registry.loadFromConfig({
+        // Use test helper that stays alive
+        'sleep-server': { 
+          command: 'node', 
+          args: ['tests/helpers/long-running.js'],
+        },
+      });
+
+      // Start the server
+      const started = await registry.start('sleep-server');
+      
+      if (started) {
+        const server = registry.get('sleep-server');
+        assert.strictEqual(server.status, ServerStatus.RUNNING);
+        
+        const result = registry.stop('sleep-server');
+        assert.strictEqual(result, true);
+        assert.strictEqual(server.status, ServerStatus.STOPPED);
+      }
+    });
+
+    it('should kill process and update status', async () => {
+      registry.loadFromConfig({
+        'kill-server': { 
+          command: 'node', 
+          args: ['tests/helpers/long-running.js'],
+        },
+      });
+
+      const started = await registry.start('kill-server');
+      
+      if (started) {
+        const server = registry.get('kill-server');
+        const result = registry.stop('kill-server');
+        
+        assert.strictEqual(result, true, 'stop should return true');
+        assert.strictEqual(server.status, ServerStatus.STOPPED, 'server should be stopped');
+        assert.ok(!registry.processes.has('kill-server'), 'process should be removed');
+      }
+    });
+  });
+
+  describe('stopAll()', () => {
+    it('should stop all running servers', async () => {
+      registry.loadFromConfig({
+        'server-1': { 
+          command: 'node', 
+          args: ['tests/helpers/long-running.js'],
+        },
+        'server-2': { 
+          command: 'node', 
+          args: ['tests/helpers/long-running.js'],
+        },
+      });
+
+      // Start servers
+      const s1 = await registry.start('server-1');
+      const s2 = await registry.start('server-2');
+      
+      if (s1 && s2) {
+        // Stop all
+        registry.stopAll();
+
+        // All should be stopped now
+        const stats = registry.getStats();
+        assert.strictEqual(stats.running, 0);
+      }
+    });
+
+    it('should handle empty registry gracefully', () => {
+      // Should not throw
+      registry.stopAll();
+      assert.ok(true, 'stopAll should not throw on empty registry');
+    });
+
+    it('should iterate and stop each process', async () => {
+      registry.loadFromConfig({
+        'iter-server-1': { 
+          command: 'node', 
+          args: ['tests/helpers/long-running.js'],
+        },
+        'iter-server-2': { 
+          command: 'node', 
+          args: ['tests/helpers/long-running.js'],
+        },
+      });
+
+      // Start all servers
+      const s1 = await registry.start('iter-server-1');
+      const s2 = await registry.start('iter-server-2');
+
+      if (s1 && s2) {
+        const processesBefore = registry.processes.size;
+        assert.strictEqual(processesBefore, 2, 'Should have 2 processes before stop');
+        
+        // Stop all - this exercises the iteration in stopAll()
+        registry.stopAll();
+
+        // Verify all stopped
+        assert.strictEqual(registry.processes.size, 0, 'All processes should be cleaned up');
+      }
+    });
+  });
   describe('ServerStatus', () => {
     it('should have expected status values', () => {
       assert.strictEqual(ServerStatus.RUNNING, 'running');

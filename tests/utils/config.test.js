@@ -288,5 +288,39 @@ describe('Config Module', () => {
       const servers = loadMcpServers();
       assert.ok(servers !== undefined, 'should return something');
     });
+
+    it('should return empty object when config file does not exist', () => {
+      const servers = loadMcpServers('/nonexistent/path/to/settings.json');
+      assert.deepStrictEqual(servers, {});
+    });
+
+    it('should return empty object when JSON is invalid', async () => {
+      // Create a temp file with invalid JSON
+      const { writeFileSync, unlinkSync } = await import('fs');
+      const { join } = await import('path');
+      const tempPath = join(process.cwd(), 'temp-invalid-config.json');
+      
+      try {
+        writeFileSync(tempPath, '{ invalid json }');
+        const servers = loadMcpServers(tempPath);
+        assert.deepStrictEqual(servers, {});
+      } finally {
+        try { unlinkSync(tempPath); } catch { /* ignore */ }
+      }
+    });
+
+    it('should return empty object when mcp.servers key is missing', async () => {
+      const { writeFileSync, unlinkSync } = await import('fs');
+      const { join } = await import('path');
+      const tempPath = join(process.cwd(), 'temp-no-mcp-config.json');
+      
+      try {
+        writeFileSync(tempPath, '{ "other": "value" }');
+        const servers = loadMcpServers(tempPath);
+        assert.deepStrictEqual(servers, {});
+      } finally {
+        try { unlinkSync(tempPath); } catch { /* ignore */ }
+      }
+    });
   });
 });

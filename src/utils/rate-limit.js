@@ -19,22 +19,52 @@ const store = new Map();
 let cleanupInterval = null;
 
 /**
- * Start cleanup interval for expired entries
+ * Clean up expired entries from the store
+ * @returns {number} Number of entries removed
  */
-function startCleanup() {
-  if (cleanupInterval) return;
-  
-  cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [key, value] of store.entries()) {
-      if (now > value.resetTime) {
-        store.delete(key);
-      }
+export function cleanupExpiredEntries() {
+  const now = Date.now();
+  let removed = 0;
+  for (const [key, value] of store.entries()) {
+    if (now > value.resetTime) {
+      store.delete(key);
+      removed++;
     }
-  }, 60000); // Clean every minute
+  }
+  return removed;
+}
+
+/**
+ * Start cleanup interval for expired entries
+ * @returns {boolean} True if started, false if already running
+ */
+export function startCleanup() {
+  if (cleanupInterval) return false;
+  
+  cleanupInterval = setInterval(cleanupExpiredEntries, 60000); // Clean every minute
   
   // Don't prevent process exit
   cleanupInterval.unref();
+  return true;
+}
+
+/**
+ * Stop cleanup interval (for testing)
+ */
+export function stopCleanup() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Clear all rate limit data (for testing)
+ */
+export function clearStore() {
+  store.clear();
 }
 
 /**

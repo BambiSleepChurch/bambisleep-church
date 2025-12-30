@@ -13,6 +13,7 @@ import { postgresHandlers } from '../servers/postgres.js';
 import { puppeteerHandlers } from '../servers/puppeteer.js';
 import { thinkingHandlers } from '../servers/sequential-thinking.js';
 import { sqliteHandlers } from '../servers/sqlite.js';
+import { storageHandlers } from '../servers/storage.js';
 import { stripeHandlers } from '../servers/stripe.js';
 import { getConfig } from '../utils/config.js';
 import { createLogger } from '../utils/logger.js';
@@ -692,6 +693,123 @@ async function handleRequest(req, res) {
   if (path === '/api/puppeteer/close' && method === 'POST') {
     try {
       const result = await puppeteerHandlers.close();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // ============ STORAGE MCP ROUTES ============
+
+  // GET /api/storage/status - Get storage status
+  if (path === '/api/storage/status' && method === 'GET') {
+    return json(res, storageHandlers.getStatus());
+  }
+
+  // POST /api/storage/connect - Initialize storage
+  if (path === '/api/storage/connect' && method === 'POST') {
+    try {
+      const result = await storageHandlers.connect();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/storage/files - List all files
+  if (path === '/api/storage/files' && method === 'GET') {
+    try {
+      const folder = url.searchParams.get('folder') || 'all';
+      const result = await storageHandlers.listFiles(folder);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/storage/images - List images
+  if (path === '/api/storage/images' && method === 'GET') {
+    try {
+      const result = await storageHandlers.listImages();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/storage/videos - List videos
+  if (path === '/api/storage/videos' && method === 'GET') {
+    try {
+      const result = await storageHandlers.listVideos();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/storage/stats - Get storage statistics
+  if (path === '/api/storage/stats' && method === 'GET') {
+    try {
+      const result = await storageHandlers.getStats();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/storage/upload - Upload file
+  if (path === '/api/storage/upload' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const { filename, content, type, encoding } = body;
+      let result;
+      if (type === 'image') {
+        result = await storageHandlers.uploadImage(filename, content);
+      } else if (type === 'video') {
+        result = await storageHandlers.uploadVideo(filename, content);
+      } else {
+        result = await storageHandlers.uploadFile(filename, content, encoding || 'base64');
+      }
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/storage/file/:folder/:filename - Download file
+  const storageFileMatch = path.match(/^\/api\/storage\/file\/([^/]+)\/([^/]+)$/);
+  if (storageFileMatch && method === 'GET') {
+    try {
+      const folder = storageFileMatch[1];
+      const filename = decodeURIComponent(storageFileMatch[2]);
+      const encoding = url.searchParams.get('encoding') || 'base64';
+      const content = await storageHandlers.downloadFile(filename, folder, encoding);
+      return json(res, { filename, folder, content, encoding });
+    } catch (error) {
+      return json(res, { error: error.message }, 404);
+    }
+  }
+
+  // GET /api/storage/info/:folder/:filename - Get file info
+  const storageInfoMatch = path.match(/^\/api\/storage\/info\/([^/]+)\/([^/]+)$/);
+  if (storageInfoMatch && method === 'GET') {
+    try {
+      const folder = storageInfoMatch[1];
+      const filename = decodeURIComponent(storageInfoMatch[2]);
+      const info = await storageHandlers.getFileInfo(filename, folder);
+      return json(res, info);
+    } catch (error) {
+      return json(res, { error: error.message }, 404);
+    }
+  }
+
+  // DELETE /api/storage/file/:folder/:filename - Delete file
+  const storageDeleteMatch = path.match(/^\/api\/storage\/file\/([^/]+)\/([^/]+)$/);
+  if (storageDeleteMatch && method === 'DELETE') {
+    try {
+      const folder = storageDeleteMatch[1];
+      const filename = decodeURIComponent(storageDeleteMatch[2]);
+      const result = await storageHandlers.deleteFile(filename, folder);
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);

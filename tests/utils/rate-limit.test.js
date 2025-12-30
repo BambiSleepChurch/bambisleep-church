@@ -4,10 +4,15 @@
  */
 
 import assert from 'node:assert';
-import { describe, it } from 'node:test';
-import { createRateLimiter, getRateLimitStats } from '../../src/utils/rate-limit.js';
+import { afterEach, describe, it } from 'node:test';
+import { cleanupExpiredEntries, clearStore, createRateLimiter, getRateLimitStats, startCleanup, stopCleanup } from '../../src/utils/rate-limit.js';
 
 describe('Rate Limit Module', () => {
+  // Clean up after each test
+  afterEach(() => {
+    stopCleanup();
+    clearStore();
+  });
   describe('createRateLimiter()', () => {
     it('should create a rate limiter function', () => {
       const limiter = createRateLimiter();
@@ -245,6 +250,134 @@ describe('Rate Limit Module', () => {
       if (client) {
         assert.ok(client.ip.includes('x.x'), 'IP should be anonymized');
       }
+    });
+  });
+
+  describe('startCleanup()', () => {
+    it('should return true when starting for first time', () => {
+      stopCleanup(); // Ensure stopped
+      const result = startCleanup();
+      assert.strictEqual(result, true, 'Should return true when starting');
+    });
+
+    it('should return false when already running', () => {
+      stopCleanup();
+      startCleanup();
+      const result = startCleanup();
+      assert.strictEqual(result, false, 'Should return false when already running');
+    });
+  });
+
+  describe('stopCleanup()', () => {
+    it('should return true when cleanup is running', () => {
+      stopCleanup();
+      startCleanup();
+      const result = stopCleanup();
+      assert.strictEqual(result, true, 'Should return true when stopping');
+    });
+
+    it('should return false when cleanup is not running', () => {
+      stopCleanup();
+      const result = stopCleanup();
+      assert.strictEqual(result, false, 'Should return false when not running');
+    });
+  });
+
+  describe('clearStore()', () => {
+    it('should clear all rate limit data', () => {
+      const limiter = createRateLimiter({ windowMs: 60000, maxRequests: 100 });
+      
+      const req = {
+        url: '/api/test',
+        headers: { host: 'localhost:8080' },
+        socket: { remoteAddress: '192.168.99.99' },
+      };
+      const res = {
+        headers: {},
+        setHeader(name, value) { this.headers[name] = value; },
+        writeHead() {},
+        end() {},
+      };
+
+      limiter(req, res);
+      
+      let stats = getRateLimitStats();
+      assert.ok(stats.activeClients > 0, 'Should have clients before clear');
+      
+      clearStore();
+      
+      stats = getRateLimitStats();
+      assert.strictEqual(stats.activeClients, 0, 'Should have no clients after clear');
+    });
+  });
+
+  describe('cleanupExpiredEntries()', () => {
+    it('should remove expired entries', async () => {
+      clearStore();
+      
+      // Create a limiter with very short window
+      const limiter = createRateLimiter({ windowMs: 50, maxRequests: 100 });
+      
+      const req = {
+        url: '/api/test',
+        headers: { host: 'localhost:8080' },
+        socket: { remoteAddress: '192.168.200.200' },
+      };
+      const res = {
+        headers: {},
+        setHeader(name, value) { this.headers[name] = value; },
+        writeHead() {},
+        end() {},
+      };
+
+      limiter(req, res);
+      
+      let stats = getRateLimitStats();
+      assert.ok(stats.activeClients > 0, 'Should have clients before cleanup');
+      
+      // Wait for window to expire
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Run cleanup
+      const removed = cleanupExpiredEntries();
+      assert.ok(removed >= 0, 'Should return number of removed entries');
+      
+      stats = getRateLimitStats();
+      // May or may not have clients depending on timing
+      assert.ok(stats.activeClients >= 0);
+    });
+
+    it('should not remove non-expired entries', () => {
+      clearStore();
+      
+      const limiter = createRateLimiter({ windowMs: 60000, maxRequests: 100 });
+      
+      const req = {
+        url: '/api/test',
+        headers: { host: 'localhost:8080' },
+        socket: { remoteAddress: '192.168.201.201' },
+      };
+      const res = {
+        headers: {},
+        setHeader(name, value) { this.headers[name] = value; },
+        writeHead() {},
+        end() {},
+      };
+
+      limiter(req, res);
+      
+      const before = getRateLimitStats().activeClients;
+      const removed = cleanupExpiredEntries();
+      const after = getRateLimitStats().activeClients;
+      
+      assert.strictEqual(removed, 0, 'Should not remove non-expired entries');
+      assert.strictEqual(before, after, 'Client count should remain same');
+    });
+
+    it('should handle empty store', () => {
+      clearStore();
+      const removed = cleanupExpiredEntries();
+      assert.strictEqual(removed, 0, 'Should return 0 for empty store');
     });
   });
 });

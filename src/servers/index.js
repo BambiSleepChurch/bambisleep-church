@@ -138,7 +138,8 @@ export class ServerRegistry {
     }
 
     logger.info(`Stopping server: ${name}`);
-    proc.kill('SIGTERM');
+    // Use SIGKILL on Windows for reliable termination
+    proc.kill(process.platform === 'win32' ? 'SIGKILL' : 'SIGTERM');
     server.status = ServerStatus.STOPPED;
     this.processes.delete(name);
     return true;

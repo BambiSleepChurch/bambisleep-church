@@ -87,11 +87,10 @@ export function stripJsonc(content) {
 
 /**
  * Load MCP server configuration from VS Code settings
+ * @param {string} [configPath] - Optional custom config path (for testing)
  * @returns {Object} MCP servers configuration
  */
-export function loadMcpServers() {
-  const configPath = defaults.mcp.configPath;
-  
+export function loadMcpServers(configPath = defaults.mcp.configPath) {
   if (!existsSync(configPath)) {
     console.warn(`MCP config not found at ${configPath}`);
     return {};
