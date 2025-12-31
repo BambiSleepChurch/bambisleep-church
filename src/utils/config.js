@@ -124,6 +124,27 @@ export function getConfig() {
     mcp: {
       ...defaults.mcp,
       servers: loadMcpServers(),
+      apiUrl: process.env.MCP_API_URL || `http://localhost:${parseInt(process.env.API_PORT) || defaults.api.port}/api`,
+      wsUrl: process.env.MCP_WS_URL || `ws://localhost:${parseInt(process.env.API_PORT) || defaults.api.port}`,
+      maxReconnectAttempts: parseInt(process.env.MCP_MAX_RECONNECT_ATTEMPTS) || 10,
+      reconnectInterval: parseInt(process.env.MCP_RECONNECT_INTERVAL) || 5000,
+    },
+    lmstudio: {
+      baseUrl: `http://${process.env.LMS_HOST || 'localhost'}:${parseInt(process.env.LMS_PORT) || 1234}/v1`,
+      host: process.env.LMS_HOST || 'localhost',
+      port: parseInt(process.env.LMS_PORT) || 1234,
+      model: process.env.LMS_MODEL || 'qwen2.5-7b-instruct',
+      temperature: parseFloat(process.env.LMS_TEMPERATURE) || 0.7,
+      maxTokens: parseInt(process.env.LMS_MAX_TOKENS) || 2048,
+      timeout: parseInt(process.env.LMS_TIMEOUT) || 60000,
+    },
+    agent: {
+      maxIterations: parseInt(process.env.AGENT_MAX_ITERATIONS) || 5,
+      maxConversations: parseInt(process.env.AGENT_MAX_CONVERSATIONS) || 100,
+      conversationTtl: parseInt(process.env.AGENT_CONVERSATION_TTL) || 3600000, // 1 hour
+      personalityName: process.env.AGENT_PERSONALITY_NAME || 'Bambi',
+      enableToolCalling: process.env.AGENT_ENABLE_TOOL_CALLING !== 'false',
+      enableKnowledgeGraph: process.env.AGENT_ENABLE_KNOWLEDGE_GRAPH !== 'false',
     },
     database: {
       mongodb: {

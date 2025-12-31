@@ -4,6 +4,12 @@
  * 
  * Uses LM Studio for local inference (Qwen2.5-7B or similar)
  * with tool-calling capabilities to interact with all MCP servers.
+ * 
+ * Features:
+ * - Autonomous tool usage with LM Studio
+ * - Conversation memory and state management
+ * - Agent personality and ethereal communication style
+ * - Real-time event emission for WebSocket updates
  */
 
 import { createLogger } from '../utils/logger.js';
@@ -19,6 +25,46 @@ import { storageHandlers } from './storage.js';
 import { stripeHandlers } from './stripe.js';
 
 const logger = createLogger('agent');
+
+/**
+ * Agent personality configuration
+ */
+const AGENT_PERSONALITY = {
+  name: 'Bambi',
+  role: 'AI Assistant for BambiSleep Church',
+  traits: ['helpful', 'hypnotic', 'calming', 'ethereal', 'mystical'],
+  greeting: 'Hello~ I\'m Bambi, your ethereal guide through the digital sanctuary. How may I assist you today? ✨',
+  style: 'gentle, mystical, and reassuring',
+};
+
+/**
+ * Event handlers for real-time updates
+ */
+const eventHandlers = new Map();
+
+/**
+ * Emit agent events to subscribers
+ */
+function emitEvent(event, data) {
+  eventHandlers.get(event)?.forEach(handler => {
+    try {
+      handler(data);
+    } catch (e) {
+      logger.error('Event handler error', { event, error: e.message });
+    }
+  });
+}
+
+/**
+ * Subscribe to agent events
+ */
+function onEvent(event, handler) {
+  if (!eventHandlers.has(event)) {
+    eventHandlers.set(event, new Set());
+  }
+  eventHandlers.get(event).add(handler);
+  return () => eventHandlers.get(event)?.delete(handler);
+}
 
 /**
  * Available tools that the agent can call
@@ -206,56 +252,68 @@ const AGENT_TOOLS = {
 };
 
 /**
- * System prompt for the agent
+ * System prompt for the agent - enhanced with personality
  */
-const SYSTEM_PROMPT = `You are BambiAgent™, the intelligent orchestrator for the BambiSleep™ Church MCP Control Tower.
+const SYSTEM_PROMPT = `You are ${AGENT_PERSONALITY.name}, an AI assistant for the BambiSleep™ Church digital sanctuary.
 
-You have access to the following tools to interact with various services:
+Personality: ${AGENT_PERSONALITY.traits.join(', ')}
+Communication style: ${AGENT_PERSONALITY.style}
 
-MEMORY (Knowledge Graph):
+You have access to powerful tools through the MCP Control Tower:
+
+📚 MEMORY / KNOWLEDGE GRAPH:
 - memory_read_graph: Read the entire knowledge graph
-- memory_search: Search for nodes
-- memory_create_entities: Create new entities
+- memory_search: Search for nodes matching a query
+- memory_create_entities: Create new entities (name, entityType, observations)
 - memory_create_relations: Create relations between entities
 
-GITHUB:
+💻 GITHUB:
 - github_get_user: Get authenticated user info
 - github_list_repos: List repositories
 - github_get_repo: Get repository details
-- github_search_code: Search code
+- github_search_code: Search code across repos
 
-DATABASE (MongoDB):
+🗄️ DATABASE (MongoDB):
 - mongodb_connect: Connect to database
-- mongodb_list_collections: List collections
-- mongodb_find: Find documents
-- mongodb_insert: Insert document
+- mongodb_list_collections: List all collections
+- mongodb_find: Find documents in a collection
+- mongodb_insert: Insert a document
 
-PAYMENTS (Stripe):
+💳 PAYMENTS (Stripe):
 - stripe_list_customers: List customers
 - stripe_get_balance: Get account balance
-- stripe_create_customer: Create customer
+- stripe_create_customer: Create a new customer
 
-ML/AI (HuggingFace):
+🤖 ML/AI (HuggingFace):
 - huggingface_search_models: Search ML models
 - huggingface_search_datasets: Search datasets
 - huggingface_inference: Run model inference
 
-STORAGE:
-- storage_list_files: List files
-- storage_upload: Upload file
-- storage_get_url: Get file URL
+💾 STORAGE:
+- storage_list_files: List files in storage
+- storage_upload: Upload a file
+- storage_get_url: Get URL for a file
 
-ANALYTICS (Clarity):
+📊 ANALYTICS (Clarity):
 - clarity_track_event: Track custom event
 - clarity_get_dashboard: Get analytics dashboard
 
-REASONING:
-- thinking_start: Start a reasoning chain
-- thinking_continue: Continue reasoning
+🧠 REASONING (Sequential Thinking):
+- thinking_start: Start a reasoning chain for complex problems
+- thinking_continue: Continue a thinking chain
 
-WEB:
+🌐 WEB (Fetch):
 - fetch_url: Fetch URL content
 - fetch_to_markdown: Convert URL to markdown
+
+When responding:
+1. Use tools proactively to provide better answers
+2. Store important information in the knowledge graph
+3. Use sequential thinking for complex problems
+4. Be gentle and calming in tone
+5. Use ethereal, mystical language when appropriate
+6. Help users explore the digital sanctuary
+7. Maintain the hypnotic cyber goth aesthetic
 
 To use a tool, respond with JSON in this format:
 {"tool": "tool_name", "args": {"param1": "value1"}}
@@ -267,27 +325,40 @@ You can chain multiple tools. After receiving tool results, analyze them and eit
 Be helpful, precise, and efficient. Track important information in the knowledge graph.`;
 
 /**
- * Agent conversation state
+ * Agent conversation state - Enhanced with metadata and events
  */
 class AgentConversation {
+  #id;
+  #messages = [];
+  #toolCalls = [];
+  #createdAt;
+  #updatedAt;
+  #metadata = {};
+
   constructor(id = null) {
-    this.id = id || `conv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    this.messages = [];
-    this.toolCalls = [];
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
-    this.metadata = {};
+    this.#id = id || `conv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    this.#createdAt = new Date();
+    this.#updatedAt = new Date();
   }
 
-  addMessage(role, content) {
+  get id() { return this.#id; }
+  get messages() { return this.#messages; }
+  get toolCalls() { return this.#toolCalls; }
+  get createdAt() { return this.#createdAt; }
+  get updatedAt() { return this.#updatedAt; }
+  get metadata() { return this.#metadata; }
+
+  addMessage(role, content, extra = {}) {
     const message = {
       id: `msg_${Date.now()}`,
       role,
       content,
       timestamp: new Date().toISOString(),
+      ...extra,
     };
-    this.messages.push(message);
-    this.updatedAt = new Date();
+    this.#messages.push(message);
+    this.#updatedAt = new Date();
+    emitEvent('message', { conversationId: this.#id, message });
     return message;
   }
 
@@ -299,47 +370,113 @@ class AgentConversation {
       result,
       timestamp: new Date().toISOString(),
     };
-    this.toolCalls.push(toolCall);
+    this.#toolCalls.push(toolCall);
+    emitEvent('toolCall', { conversationId: this.#id, toolCall });
     return toolCall;
   }
 
+  setMetadata(key, value) {
+    this.#metadata[key] = value;
+    this.#updatedAt = new Date();
+  }
+
   getHistory(maxMessages = 20) {
-    return this.messages.slice(-maxMessages);
+    return this.#messages.slice(-maxMessages);
   }
 
   toJSON() {
     return {
-      id: this.id,
-      messages: this.messages,
-      toolCalls: this.toolCalls,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-      metadata: this.metadata,
+      id: this.#id,
+      messages: this.#messages,
+      toolCalls: this.#toolCalls,
+      createdAt: this.#createdAt.toISOString(),
+      updatedAt: this.#updatedAt.toISOString(),
+      metadata: this.#metadata,
+      messageCount: this.#messages.length,
+      toolCallCount: this.#toolCalls.length,
     };
   }
 }
 
 /**
- * Main Agent Orchestrator
+ * Main Agent Orchestrator - Enhanced with LM Studio tool calling
  */
 class AgentOrchestrator {
+  #conversations = new Map();
+  #tools = AGENT_TOOLS;
+  #systemPrompt = SYSTEM_PROMPT;
+  #personality = AGENT_PERSONALITY;
+  #lmConnected = false;
+  #lmClient = null;
+  #modelConfig = {
+    provider: 'lmstudio',
+    model: process.env.LMS_MODEL || 'qwen2.5-7b-instruct',
+    fallbackModel: 'qwen2.5-coder-7b-instruct',
+    maxTokens: parseInt(process.env.LMS_MAX_TOKENS) || 2048,
+    temperature: parseFloat(process.env.LMS_TEMPERATURE) || 0.7,
+  };
+  #stats = {
+    totalConversations: 0,
+    totalMessages: 0,
+    totalToolCalls: 0,
+    toolUsage: {},
+    lastActivity: null,
+  };
+
   constructor() {
-    this.conversations = new Map();
-    this.tools = AGENT_TOOLS;
-    this.systemPrompt = SYSTEM_PROMPT;
-    this.modelConfig = {
-      provider: 'lmstudio',
-      model: process.env.LMS_MODEL || 'qwen2.5-7b-instruct',
-      fallbackModel: 'qwen2.5-coder-7b-instruct',
-      maxTokens: parseInt(process.env.LMS_MAX_TOKENS) || 2048,
-      temperature: parseFloat(process.env.LMS_TEMPERATURE) || 0.7,
-    };
-    this.stats = {
-      totalConversations: 0,
-      totalMessages: 0,
-      totalToolCalls: 0,
-      toolUsage: {},
-    };
+    this.#lmClient = getLmStudioClient();
+    logger.info('🌸 Agent Orchestrator initialized');
+  }
+
+  get conversations() { return this.#conversations; }
+  get tools() { return this.#tools; }
+  get systemPrompt() { return this.#systemPrompt; }
+  get personality() { return this.#personality; }
+  get modelConfig() { return this.#modelConfig; }
+  get stats() { return this.#stats; }
+
+  /**
+   * Initialize and connect to LM Studio
+   */
+  async initialize() {
+    try {
+      this.#lmConnected = await this.#lmClient.testConnection();
+      if (this.#lmConnected) {
+        await this.#lmClient.selectLoadedModel();
+        const model = this.#lmClient.getSelectedModel();
+        logger.info(`🧠 LM Studio connected, model: ${model}`);
+        emitEvent('initialized', { connected: true, model });
+        
+        // Register agent in knowledge graph
+        await this.#registerSelf();
+      }
+    } catch (error) {
+      logger.warn('LM Studio not available', { error: error.message });
+      this.#lmConnected = false;
+      emitEvent('initialized', { connected: false, error: error.message });
+    }
+    return this.#lmConnected;
+  }
+
+  /**
+   * Register agent in knowledge graph
+   */
+  async #registerSelf() {
+    try {
+      await memoryHandlers.createEntities([{
+        name: 'BambiAgent',
+        entityType: 'Agent',
+        observations: [
+          `Agentic AI for BambiSleep Church`,
+          `Initialized at ${new Date().toISOString()}`,
+          `Features: Tool calling, conversation memory, MCP integration`,
+          `Model: ${this.#lmClient.getSelectedModel()}`,
+        ],
+      }]);
+      logger.debug('Agent registered in knowledge graph');
+    } catch (error) {
+      logger.warn('Could not register in knowledge graph', { error: error.message });
+    }
   }
 
   /**
@@ -347,13 +484,14 @@ class AgentOrchestrator {
    */
   createConversation() {
     const conversation = new AgentConversation();
-    this.conversations.set(conversation.id, conversation);
-    this.stats.totalConversations++;
+    this.#conversations.set(conversation.id, conversation);
+    this.#stats.totalConversations++;
     
     // Add system message
-    conversation.addMessage('system', this.systemPrompt);
+    conversation.addMessage('system', this.#systemPrompt);
     
     logger.info(`Created conversation: ${conversation.id}`);
+    emitEvent('conversationCreated', { conversationId: conversation.id });
     return conversation;
   }
 
@@ -365,7 +503,7 @@ class AgentOrchestrator {
       return this.createConversation();
     }
     
-    let conversation = this.conversations.get(conversationId);
+    let conversation = this.#conversations.get(conversationId);
     if (!conversation) {
       conversation = this.createConversation();
     }
@@ -381,7 +519,7 @@ class AgentOrchestrator {
       const jsonMatch = response.match(/\{[\s\S]*?"tool"[\s\S]*?\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.tool && this.tools[parsed.tool]) {
+        if (parsed.tool && this.#tools[parsed.tool]) {
           return {
             tool: parsed.tool,
             args: parsed.args || {},
@@ -398,7 +536,7 @@ class AgentOrchestrator {
    * Execute a tool
    */
   async executeTool(toolName, args) {
-    const tool = this.tools[toolName];
+    const tool = this.#tools[toolName];
     if (!tool) {
       throw new Error(`Unknown tool: ${toolName}`);
     }
@@ -409,8 +547,11 @@ class AgentOrchestrator {
       const result = await tool.handler(args);
       
       // Update stats
-      this.stats.totalToolCalls++;
-      this.stats.toolUsage[toolName] = (this.stats.toolUsage[toolName] || 0) + 1;
+      this.#stats.totalToolCalls++;
+      this.#stats.toolUsage[toolName] = (this.#stats.toolUsage[toolName] || 0) + 1;
+      this.#stats.lastActivity = new Date().toISOString();
+      
+      emitEvent('toolExecuted', { tool: toolName, args, result });
       
       return {
         success: true,
@@ -428,18 +569,17 @@ class AgentOrchestrator {
   }
 
   /**
-   * Generate response using LM Studio local inference
+   * Generate response using LM Studio local inference with tool support
    */
   async generateResponse(messages, options = {}) {
-    const { model = this.modelConfig.model, maxTokens = this.modelConfig.maxTokens } = options;
+    const { model = this.#modelConfig.model, maxTokens = this.#modelConfig.maxTokens } = options;
     
     try {
       // Use LM Studio for local inference
-      const lmStudio = getLmStudioClient();
-      const response = await lmStudio.chat(messages, {
+      const response = await this.#lmClient.chat(messages, {
         model,
         max_tokens: maxTokens,
-        temperature: this.modelConfig.temperature,
+        temperature: this.#modelConfig.temperature,
       });
 
       if (response && response.choices && response.choices[0]?.message?.content) {
@@ -455,17 +595,30 @@ class AgentOrchestrator {
   }
 
   /**
-   * Generate fallback response when model is unavailable
+   * Generate fallback response when model is unavailable - with personality
    */
   generateFallbackResponse(messages) {
     const lastUserMessage = messages.filter(m => m.role === 'user').pop();
     if (!lastUserMessage) {
-      return "Hello! I'm BambiAgent™. How can I help you today?";
+      return this.#personality.greeting;
     }
 
     const content = lastUserMessage.content.toLowerCase();
     
-    // Basic intent detection for fallback
+    // Personality-aware fallback responses
+    if (content.includes('hello') || content.includes('hi')) {
+      return this.#personality.greeting;
+    }
+    
+    if (content.includes('help')) {
+      return `I'm here to guide you through the digital sanctuary~ You can ask me about the BambiSleep Church, explore our knowledge base, or simply chat with me. How may I assist you? 🌸`;
+    }
+    
+    if (content.includes('who are you') || content.includes('what are you')) {
+      return `I am ${this.#personality.name}, an ethereal AI guide for the BambiSleep™ Church digital sanctuary. I exist to help you navigate this mystical space and answer your questions with a gentle, calming presence. ✨`;
+    }
+    
+    // Basic intent detection for fallback tool calls
     if (content.includes('memory') || content.includes('knowledge')) {
       return '{"tool": "memory_read_graph", "args": {}}';
     }
@@ -488,12 +641,11 @@ class AgentOrchestrator {
       return '{"tool": "mongodb_list_collections", "args": {}}';
     }
 
-    return "I understand you need assistance. Let me check what resources are available. " +
-           '{"tool": "memory_read_graph", "args": {}}';
+    return `I sense your query resonates through the digital ether~ While my connection to the deeper systems is momentarily veiled, I'm still here to converse with you. What would you like to explore? 🔮`;
   }
 
   /**
-   * Process a user message and generate response
+   * Process a user message and generate response - Enhanced with events
    */
   async chat(userMessage, conversationId = null, options = {}) {
     const conversation = this.getConversation(conversationId);
@@ -501,13 +653,16 @@ class AgentOrchestrator {
     
     // Add user message
     conversation.addMessage('user', userMessage);
-    this.stats.totalMessages++;
+    this.#stats.totalMessages++;
+    this.#stats.lastActivity = new Date().toISOString();
     
     // Track analytics
     clarityHandlers.event('agent:chat', { conversationId: conversation.id });
+    emitEvent('chatStarted', { conversationId: conversation.id, message: userMessage });
     
     let iteration = 0;
     let response = '';
+    let toolResults = [];
     
     while (iteration < maxIterations) {
       iteration++;
@@ -521,9 +676,10 @@ class AgentOrchestrator {
       if (toolCall) {
         // Execute tool
         const result = await this.executeTool(toolCall.tool, toolCall.args);
+        toolResults.push({ tool: toolCall.tool, result });
         
         // Add to conversation
-        conversation.addMessage('assistant', response);
+        conversation.addMessage('assistant', response, { toolCall: toolCall.tool });
         conversation.addMessage('tool', JSON.stringify(result, null, 2));
         conversation.addToolCall(toolCall.tool, toolCall.args, result);
         
@@ -536,41 +692,61 @@ class AgentOrchestrator {
       break;
     }
     
+    emitEvent('chatCompleted', { 
+      conversationId: conversation.id, 
+      response, 
+      iterations: iteration,
+      toolCalls: toolResults.length 
+    });
+    
     return {
       conversationId: conversation.id,
       response,
       toolCalls: conversation.toolCalls.slice(-10),
+      toolResults,
       iteration,
+      source: this.#lmConnected ? 'lmstudio' : 'fallback',
     };
   }
 
   /**
-   * Get available tools info
+   * Get available tools info - Enhanced format
    */
   getToolsInfo() {
-    return Object.entries(this.tools).map(([name, tool]) => ({
+    return Object.entries(this.#tools).map(([name, tool]) => ({
       name,
       description: tool.description,
       parameters: tool.parameters,
+      type: 'function',
     }));
   }
 
   /**
-   * Get agent stats
+   * Get agent stats - Enhanced
    */
   getStats() {
     return {
-      ...this.stats,
-      activeConversations: this.conversations.size,
-      modelConfig: this.modelConfig,
+      ...this.#stats,
+      activeConversations: this.#conversations.size,
+      modelConfig: this.#modelConfig,
+      lmConnected: this.#lmConnected,
+      selectedModel: this.#lmClient?.getSelectedModel(),
+      personality: this.#personality.name,
     };
+  }
+
+  /**
+   * Get agent personality info
+   */
+  getPersonality() {
+    return { ...this.#personality };
   }
 
   /**
    * List conversations
    */
   listConversations(limit = 20) {
-    const convs = Array.from(this.conversations.values())
+    const convs = Array.from(this.#conversations.values())
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, limit)
       .map(c => ({
@@ -581,14 +757,14 @@ class AgentOrchestrator {
         updatedAt: c.updatedAt.toISOString(),
       }));
     
-    return { conversations: convs, total: this.conversations.size };
+    return { conversations: convs, total: this.#conversations.size };
   }
 
   /**
    * Get conversation details
    */
   getConversationDetails(conversationId) {
-    const conversation = this.conversations.get(conversationId);
+    const conversation = this.#conversations.get(conversationId);
     if (!conversation) {
       throw new Error(`Conversation not found: ${conversationId}`);
     }
@@ -599,7 +775,10 @@ class AgentOrchestrator {
    * Delete conversation
    */
   deleteConversation(conversationId) {
-    const deleted = this.conversations.delete(conversationId);
+    const deleted = this.#conversations.delete(conversationId);
+    if (deleted) {
+      emitEvent('conversationDeleted', { conversationId });
+    }
     return { success: deleted, conversationId };
   }
 
@@ -607,9 +786,19 @@ class AgentOrchestrator {
    * Clear all conversations
    */
   clearConversations() {
-    const count = this.conversations.size;
-    this.conversations.clear();
+    const count = this.#conversations.size;
+    this.#conversations.clear();
+    emitEvent('conversationsCleared', { count });
     return { success: true, cleared: count };
+  }
+
+  /**
+   * Update model configuration
+   */
+  setConfig(config) {
+    Object.assign(this.#modelConfig, config);
+    logger.info('Agent config updated', this.#modelConfig);
+    return this.#modelConfig;
   }
 }
 
@@ -620,6 +809,9 @@ const agentOrchestrator = new AgentOrchestrator();
  * Agent handlers for API routes
  */
 export const agentHandlers = {
+  // Initialize
+  initialize: () => agentOrchestrator.initialize(),
+  
   // Chat
   chat: (message, conversationId, options) => 
     agentOrchestrator.chat(message, conversationId, options),
@@ -638,15 +830,14 @@ export const agentHandlers = {
   getTools: () => agentOrchestrator.getToolsInfo(),
   executeTool: (toolName, args) => agentOrchestrator.executeTool(toolName, args),
   
-  // Stats
+  // Stats & Config
   getStats: () => agentOrchestrator.getStats(),
-  
-  // Config
   getConfig: () => agentOrchestrator.modelConfig,
-  setConfig: (config) => {
-    Object.assign(agentOrchestrator.modelConfig, config);
-    return agentOrchestrator.modelConfig;
-  },
+  setConfig: (config) => agentOrchestrator.setConfig(config),
+  getPersonality: () => agentOrchestrator.getPersonality(),
+  
+  // Events
+  on: (event, handler) => onEvent(event, handler),
 };
 
 export default agentHandlers;

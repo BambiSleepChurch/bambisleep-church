@@ -1093,6 +1093,21 @@ async function handleRequest(req, res) {
     }
   }
 
+  // GET /api/agent/personality - Get agent personality info
+  if (path === '/api/agent/personality' && method === 'GET') {
+    return json(res, agentHandlers.getPersonality());
+  }
+
+  // POST /api/agent/initialize - Initialize agent and connect to LM Studio
+  if (path === '/api/agent/initialize' && method === 'POST') {
+    try {
+      const connected = await agentHandlers.initialize();
+      return json(res, { success: connected, connected });
+    } catch (error) {
+      return json(res, { error: error.message, connected: false }, 500);
+    }
+  }
+
   // POST /api/agent/conversations - Create new conversation
   if (path === '/api/agent/conversations' && method === 'POST') {
     return json(res, agentHandlers.createConversation());

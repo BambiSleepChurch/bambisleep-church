@@ -9,12 +9,14 @@ This document provides comprehensive documentation for integrating with the Bamb
 ## 📚 Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
-2. [MCP Server Configurations](#mcp-server-configurations)
-3. [Agent API Reference](#agent-api-reference)
-4. [External Agent Integration](#external-agent-integration)
-5. [Related Repositories](#related-repositories)
-6. [Tool Reference](#tool-reference)
-7. [Configuration Guide](#configuration-guide)
+2. [Agent Features](#agent-features)
+3. [MCP Server Configurations](#mcp-server-configurations)
+4. [Agent API Reference](#agent-api-reference)
+5. [LM Studio Integration](#lm-studio-integration)
+6. [External Agent Integration](#external-agent-integration)
+7. [Related Repositories](#related-repositories)
+8. [Tool Reference](#tool-reference)
+9. [Configuration Guide](#configuration-guide)
 
 ---
 
@@ -41,6 +43,7 @@ This document provides comprehensive documentation for integrating with the Bamb
 │  │                      (Port 8080 - REST API)                          │   │
 │  │                      (Port 3000 - Dashboard)                         │   │
 │  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │                      AgentOrchestrator (with LM Studio)              │   │
 │  │  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌─────────┐ ┌─────────────┐  │   │
 │  │  │ Memory  │ │ GitHub  │ │HuggingFace│ │ Stripe  │ │   MongoDB   │  │   │
 │  │  └─────────┘ └─────────┘ └──────────┘ └─────────┘ └─────────────┘  │   │
@@ -58,10 +61,50 @@ This document provides comprehensive documentation for integrating with the Bamb
 | ------------------------------- | ------ | -------------------------------- |
 | MCP Control Tower Dashboard     | 3000   | Admin dashboard UI               |
 | MCP Control Tower API           | 8080   | REST API + WebSocket             |
+| LM Studio                       | 1234   | Local AI inference               |
 | bambisleep-church-agent         | 3333   | External agent with WebGL avatar |
 | bambisleep-church-storage-agent | 3000\* | Storage agent frontend           |
 
 \*Storage agent uses dynamic port when Control Tower is running
+
+---
+
+## ✨ Agent Features
+
+### Agent Personality
+
+The agent has a defined personality with the following traits:
+
+- **Name**: Bambi
+- **Role**: AI Assistant for BambiSleep Church
+- **Traits**: helpful, hypnotic, calming, ethereal, mystical
+- **Style**: gentle, mystical, and reassuring
+
+### LM Studio Integration
+
+The agent integrates with LM Studio for local AI inference:
+
+- **Tool Calling**: OpenAI-compatible function calling
+- **Vision Support**: Image input with vision models (LLaVA, etc.)
+- **Structured Output**: JSON schema-based responses
+- **Streaming**: Real-time response streaming
+- **Embeddings**: Text embedding generation
+
+### Event System
+
+Real-time events emitted during agent operations:
+
+| Event | Description |
+|-------|-------------|
+| `initialized` | Agent connected to LM Studio |
+| `message` | New message added to conversation |
+| `toolCall` | Tool execution requested |
+| `toolExecuted` | Tool execution completed |
+| `chatStarted` | Chat request initiated |
+| `chatCompleted` | Chat response generated |
+| `conversationCreated` | New conversation started |
+| `conversationDeleted` | Conversation removed |
+| `conversationsCleared` | All conversations cleared |
 
 ---
 
@@ -327,6 +370,119 @@ ws.onmessage = (event) => {
   // Handle message types: 'connected', 'heartbeat', 'server:status', etc.
 };
 ```
+
+---
+
+## 🧠 LM Studio Integration
+
+### Overview
+
+The Agent Orchestrator uses LM Studio as the primary AI backend for local inference. LM Studio provides an OpenAI-compatible API that supports:
+
+- Chat completions
+- Tool/function calling
+- Vision (image input)
+- Streaming responses
+- Embeddings
+
+### Configuration
+
+```bash
+# .env configuration
+LMS_HOST=localhost
+LMS_PORT=1234
+LMS_MODEL=qwen2.5-7b-instruct
+LMS_TEMPERATURE=0.7
+LMS_MAX_TOKENS=2048
+LMS_TIMEOUT=60000
+```
+
+### LM Studio Client Features
+
+```javascript
+import { getLmStudioClient, lmstudioHandlers } from './servers/lmstudio.js';
+
+// Get singleton client
+const client = getLmStudioClient();
+
+// Test connection
+const connected = await client.testConnection();
+
+// Chat completion
+const response = await client.chat([
+  { role: 'system', content: 'You are a helpful assistant.' },
+  { role: 'user', content: 'Hello!' }
+]);
+
+// Chat with tools (function calling)
+const tools = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_weather',
+      description: 'Get weather for a location',
+      parameters: {
+        type: 'object',
+        properties: {
+          location: { type: 'string' }
+        },
+        required: ['location']
+      }
+    }
+  }
+];
+const toolResponse = await client.chatWithTools(messages, tools);
+
+// Vision (image input) - requires vision model like LLaVA
+const visionResponse = await client.chatWithImage(
+  'What do you see in this image?',
+  [base64Image],
+  { model: 'llava-1.5-7b' }
+);
+
+// Structured JSON output
+const schema = {
+  name: 'response',
+  schema: {
+    type: 'object',
+    properties: {
+      answer: { type: 'string' },
+      confidence: { type: 'number' }
+    },
+    required: ['answer', 'confidence']
+  }
+};
+const structured = await client.chatStructured(messages, schema);
+
+// Tool execution loop
+const result = await client.executeToolLoop(
+  messages,
+  tools,
+  { get_weather: async (args) => ({ temp: 72, condition: 'sunny' }) },
+  { maxIterations: 5 }
+);
+
+// Streaming
+const fullResponse = await client.chatStream(
+  messages,
+  (chunk, accumulated) => console.log(chunk)
+);
+
+// Embeddings
+const embeddings = await client.embed('Hello world');
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/lmstudio/status` | GET | Get connection status |
+| `/api/lmstudio/models` | GET | List available models |
+| `/api/lmstudio/chat` | POST | Send chat completion |
+| `/api/lmstudio/chat/tools` | POST | Chat with tool calling |
+| `/api/lmstudio/chat/vision` | POST | Chat with image input |
+| `/api/lmstudio/chat/structured` | POST | Chat with JSON schema |
+| `/api/lmstudio/embed` | POST | Generate embeddings |
 
 ---
 

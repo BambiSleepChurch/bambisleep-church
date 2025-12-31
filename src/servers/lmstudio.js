@@ -5,6 +5,13 @@
  * Connects to LM Studio's local server for AI inference.
  * Uses OpenAI-compatible /v1/chat/completions endpoint.
  * 
+ * Features:
+ * - Chat completions with tool calling
+ * - Streaming responses
+ * - Vision/image input (requires vision-enabled model like LLaVA)
+ * - Embeddings generation
+ * - Structured JSON output
+ * 
  * @see https://lmstudio.ai/docs/developer/openai-compat
  */
 
@@ -23,6 +30,18 @@ const DEFAULT_CONFIG = {
   maxTokens: parseInt(process.env.LMS_MAX_TOKENS || '2048', 10),
   timeout: parseInt(process.env.LMS_TIMEOUT || '60000', 10),
 };
+
+/**
+ * Default models to try loading (in priority order)
+ */
+const DEFAULT_MODEL_CANDIDATES = [
+  'qwen3',
+  'qwen2.5',
+  'llama',
+  'mistral',
+  'gemma',
+  'phi',
+];
 
 /**
  * LM Studio Client for local inference
@@ -481,6 +500,251 @@ export class LMStudioClient {
       throw error;
     }
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🖼️ VISION / IMAGE INPUT (requires vision-enabled model like LLaVA)
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Chat with image input (vision model required)
+   * @param {string} text - Text prompt
+   * @param {Array<string>} images - Array of base64 encoded images or data URLs
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Object>} Chat completion response
+   */
+  async chatWithImage(text, images, options = {}) {
+    const model = options.model || this.#selectedModel || this.#model;
+
+    // Build multimodal content array
+    const content = [{ type: 'text', text }];
+
+    // Add each image
+    for (const image of images) {
+      const imageUrl = image.startsWith('data:')
+        ? image
+        : `data:image/jpeg;base64,${image}`;
+      
+      content.push({
+        type: 'image_url',
+        image_url: { url: imageUrl },
+      });
+    }
+
+    const messages = [
+      ...(options.systemPrompt ? [{ role: 'system', content: options.systemPrompt }] : []),
+      { role: 'user', content },
+    ];
+
+    logger.debug('Vision request', { model, imageCount: images.length });
+
+    return this.chat(messages, { ...options, model });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🔧 STRUCTURED OUTPUT & TOOL EXECUTION
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Chat with structured JSON output
+   * @param {Array} messages - Chat messages
+   * @param {Object} schema - JSON schema for response format
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Object>} Parsed JSON response
+   */
+  async chatStructured(messages, schema, options = {}) {
+    const responseFormat = {
+      type: 'json_schema',
+      json_schema: {
+        name: schema.name || 'response',
+        strict: true,
+        schema: schema.schema || schema,
+      },
+    };
+
+    const payload = {
+      model: options.model || this.#selectedModel || this.#model,
+      messages,
+      temperature: options.temperature ?? this.#temperature,
+      max_tokens: options.maxTokens ?? this.#maxTokens,
+      response_format: responseFormat,
+    };
+
+    logger.debug('Structured chat request', { model: payload.model });
+
+    try {
+      const response = await fetch(`${this.#baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(this.#timeout),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error?.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      try {
+        return JSON.parse(content);
+      } catch {
+        logger.warn('Failed to parse structured response as JSON');
+        return { raw: content };
+      }
+    } catch (error) {
+      logger.error('Structured chat failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Execute tool calls and get final response
+   * @param {Array} messages - Original messages
+   * @param {Array} tools - Tool definitions
+   * @param {Object} toolHandlers - Map of tool name to handler function
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Object>} Final response after tool execution
+   */
+  async executeToolLoop(messages, tools, toolHandlers, options = {}) {
+    const maxIterations = options.maxIterations || 5;
+    let currentMessages = [...messages];
+    let iteration = 0;
+
+    while (iteration < maxIterations) {
+      const response = await this.chatWithTools(currentMessages, tools, options);
+      const message = response.choices?.[0]?.message;
+      const toolCalls = message?.tool_calls;
+
+      // If no tool calls, return the final response
+      if (!toolCalls || toolCalls.length === 0) {
+        return {
+          content: message?.content,
+          iterations: iteration + 1,
+          usage: response.usage,
+        };
+      }
+
+      // Add assistant message with tool calls
+      currentMessages.push({
+        role: 'assistant',
+        content: message.content,
+        tool_calls: toolCalls,
+      });
+
+      // Execute each tool call
+      for (const toolCall of toolCalls) {
+        const toolName = toolCall.function.name;
+        const toolArgs = JSON.parse(toolCall.function.arguments || '{}');
+
+        logger.debug(`Executing tool: ${toolName}`, toolArgs);
+
+        let result;
+        try {
+          if (toolHandlers[toolName]) {
+            result = await toolHandlers[toolName](toolArgs);
+          } else {
+            result = { error: `Unknown tool: ${toolName}` };
+          }
+        } catch (error) {
+          result = { error: error.message };
+          logger.error(`Tool ${toolName} failed:`, error.message);
+        }
+
+        // Add tool result
+        currentMessages.push({
+          role: 'tool',
+          tool_call_id: toolCall.id,
+          content: typeof result === 'string' ? result : JSON.stringify(result),
+        });
+      }
+
+      iteration++;
+    }
+
+    logger.warn('Max tool iterations reached');
+    return {
+      content: 'Maximum tool call iterations reached',
+      iterations: maxIterations,
+      error: 'MAX_ITERATIONS',
+    };
+  }
+
+  /**
+   * Auto-load a model from configured or default candidates
+   * @returns {Promise<string|null>} Loaded model ID or null
+   */
+  async autoLoadModel() {
+    // First check if any models are already loaded
+    const loadedModels = await this.listModels();
+    if (loadedModels.length > 0) {
+      // Find one matching our preference
+      const targetModel = this.#model;
+      const matched = loadedModels.find(m =>
+        m.id.toLowerCase().includes(targetModel.toLowerCase())
+      );
+
+      if (matched) {
+        this.#selectedModel = matched.id;
+        logger.info(`Using already loaded model: ${this.#selectedModel}`);
+        return this.#selectedModel;
+      }
+
+      // Use first available
+      this.#selectedModel = loadedModels[0].id;
+      logger.info(`Using first available model: ${this.#selectedModel}`);
+      return this.#selectedModel;
+    }
+
+    // No models loaded - try to JIT load configured model first
+    const candidates = [this.#model, ...DEFAULT_MODEL_CANDIDATES];
+
+    for (const candidate of candidates) {
+      if (await this.loadModel(candidate)) {
+        return this.#selectedModel;
+      }
+    }
+
+    logger.error('Could not auto-load any model. Please load a model in LM Studio.');
+    return null;
+  }
+
+  /**
+   * Attempt to load a model by making a minimal request (JIT loading)
+   * @param {string} modelId - Model identifier to load
+   * @returns {Promise<boolean>} True if model loaded successfully
+   */
+  async loadModel(modelId) {
+    logger.info(`Attempting to load model: ${modelId}`);
+
+    try {
+      // Make a minimal chat request to trigger JIT loading
+      const response = await fetch(`${this.#baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: modelId,
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 1,
+          temperature: 0,
+        }),
+      });
+
+      if (response.ok) {
+        this.#selectedModel = modelId;
+        logger.info(`✅ Model loaded successfully: ${modelId}`);
+        return true;
+      }
+
+      const error = await response.json();
+      logger.warn(`Failed to load model ${modelId}:`, error.error?.message);
+      return false;
+    } catch (error) {
+      logger.error(`Error loading model ${modelId}:`, error.message);
+      return false;
+    }
+  }
 }
 
 // Singleton instance with lazy initialization
@@ -534,6 +798,55 @@ export const lmstudioHandlers = {
   chatWithTools: async (messages, tools, options = {}) => {
     const client = getLmStudioClient();
     return client.chatWithTools(messages, tools, options);
+  },
+
+  /**
+   * Chat with image input (vision)
+   */
+  chatWithImage: async (text, images, options = {}) => {
+    const client = getLmStudioClient();
+    return client.chatWithImage(text, images, options);
+  },
+
+  /**
+   * Chat with structured JSON output
+   */
+  chatStructured: async (messages, schema, options = {}) => {
+    const client = getLmStudioClient();
+    return client.chatStructured(messages, schema, options);
+  },
+
+  /**
+   * Stream chat completion
+   */
+  chatStream: async (messages, onChunk, options = {}) => {
+    const client = getLmStudioClient();
+    return client.chatStream(messages, onChunk, options);
+  },
+
+  /**
+   * Execute tool loop until completion
+   */
+  executeToolLoop: async (messages, tools, toolHandlers, options = {}) => {
+    const client = getLmStudioClient();
+    return client.executeToolLoop(messages, tools, toolHandlers, options);
+  },
+
+  /**
+   * Generate embeddings
+   */
+  embed: async (input, options = {}) => {
+    const client = getLmStudioClient();
+    return client.embed(input, options);
+  },
+
+  /**
+   * Auto-load best available model
+   */
+  autoLoadModel: async () => {
+    const client = getLmStudioClient();
+    const model = await client.autoLoadModel();
+    return { model, success: !!model };
   },
 
   /**
