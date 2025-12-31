@@ -4,7 +4,7 @@
  */
 
 import { API_BASE } from '../config.js';
-import { Actions } from '../state/store.js';
+import { showToast } from './Toast.js';
 
 /**
  * Format tool call for display
@@ -469,7 +469,7 @@ export const AgentChatController = {
     this.render();
     
     // Show toast
-    Actions.addToast({ type: 'info', message: 'Started new conversation' });
+    showToast('info', 'New Conversation', 'Started new conversation');
   },
 
   /**
@@ -568,10 +568,10 @@ export const AgentChatController = {
       if (response.ok) {
         this.state.config = await response.json();
         this.closeModal();
-        Actions.addToast({ type: 'success', message: 'Configuration saved' });
+        showToast('success', 'Saved', 'Configuration saved');
       }
     } catch (error) {
-      Actions.addToast({ type: 'error', message: `Failed to save: ${error.message}` });
+      showToast('error', 'Error', `Failed to save: ${error.message}`);
     }
   },
 
