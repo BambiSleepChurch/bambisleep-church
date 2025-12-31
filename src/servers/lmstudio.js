@@ -876,8 +876,6 @@ export class LMStudioClient {
     
     return scored[0];
   }
-    return null;
-  }
 
   /**
    * JIT load a model by making a minimal request
