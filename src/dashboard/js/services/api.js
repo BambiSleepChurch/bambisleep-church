@@ -6,18 +6,53 @@
 import { API_BASE } from '../config.js';
 import { Actions } from '../state/store.js';
 
+// ============================================================================
+// API HELPERS
+// ============================================================================
+
+/**
+ * Generic API request with error handling
+ * @param {string} path - API path (appended to API_BASE)
+ * @param {Object} options - Fetch options
+ * @param {string} errorMsg - Error message prefix
+ * @returns {Promise<any>} Response JSON
+ */
+async function apiRequest(path, options = {}, errorMsg = 'API request failed') {
+  const response = await fetch(`${API_BASE}${path}`, options);
+  if (!response.ok) throw new Error(`${errorMsg}: ${response.status}`);
+  return response.json();
+}
+
+/**
+ * GET request helper
+ */
+const apiGet = (path, errorMsg) => apiRequest(path, {}, errorMsg);
+
+/**
+ * POST request helper
+ */
+const apiPost = (path, body, errorMsg) => apiRequest(
+  path,
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  },
+  errorMsg
+);
+
+// ============================================================================
+// SERVER MANAGEMENT
+// ============================================================================
+
 /**
  * Fetch all servers from API
  */
 export async function fetchServers() {
   try {
-    const response = await fetch(`${API_BASE}/servers`);
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
-    
-    const data = await response.json();
+    const data = await apiGet('/servers', 'Failed to fetch servers');
     Actions.setServers(data.servers);
     Actions.setApiStatus('connected');
-    
     return data;
   } catch (error) {
     console.error('Failed to fetch servers:', error);

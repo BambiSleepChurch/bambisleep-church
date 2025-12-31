@@ -13,7 +13,7 @@
 
 The `ServerRegistry` class (`src/servers/index.js`) manages server lifecycle via `spawn()`. Configs are loaded from `.vscode/settings.json` (JSONC with comments allowed—uses custom `stripJsonc()` parser in `src/utils/config.js`).
 
-**Key Integrations**: 11 MCP server wrappers + 1 Agent orchestrator (Memory, GitHub, HuggingFace, Stripe, MongoDB, SQLite, Puppeteer, Fetch, Sequential Thinking, Storage, Clarity, Agent).
+**Key Integrations**: 12 MCP server wrappers + 1 Agent orchestrator (Memory, GitHub, HuggingFace, Stripe, MongoDB, SQLite, Puppeteer, Fetch, Sequential Thinking, Storage, Clarity, LM Studio, Agent).
 
 ## Commands
 
@@ -200,6 +200,7 @@ await client.disconnect();
 | `githubHandlers`      | `servers/github.js`              | `getRepo`, `listIssues`, `createPR`               |
 | `stripeHandlers`      | `servers/stripe.js`              | `listCustomers`, `createPayment`                  |
 | `huggingfaceHandlers` | `servers/huggingface.js`         | `inference`, `listModels`                         |
+| `lmstudioHandlers`    | `servers/lmstudio.js`            | `chat`, `chatStream`, `getModels`, `loadModel`    |
 | `fetchHandlers`       | `servers/fetch.js`               | `get`, `post`, `convertToMarkdown`                |
 | `sqliteHandlers`      | `servers/sqlite.js`              | `query`, `execute`, `getTables`                   |
 | `mongoHandlers`       | `servers/mongodb.js`             | `find`, `insertOne`, `aggregate`                  |
