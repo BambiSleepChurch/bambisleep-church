@@ -39,7 +39,6 @@ export const SERVER_ICONS = {
   git: '🔀',
   github: '🐙',
   puppeteer: '🎭',
-  postgres: '🐘',
   fetch: '🌐',
   sqlite: '💾',
   memory: '🧠',

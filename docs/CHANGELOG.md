@@ -48,7 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `src/servers/stripe.js` - Customers, products, payments, subscriptions
   - `src/servers/fetch.js` - HTTP methods, ping, download
   - `src/servers/sqlite.js` - Tables, CRUD, queries
-  - `src/servers/postgres.js` - Connection, queries, transactions
   - `src/servers/mongodb.js` - Document database CRUD & aggregation
   - `src/servers/puppeteer.js` - Browser automation, screenshots, PDF
   - `src/servers/sequential-thinking.js` - Reasoning sessions, branching
@@ -63,7 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/api/stripe/*` - Payment operations
   - `/api/fetch/*` - HTTP request utilities
   - `/api/sqlite/*` - Local database operations
-  - `/api/postgres/*` - PostgreSQL operations
   - `/api/mongodb/*` - MongoDB CRUD & aggregation
   - `/api/puppeteer/*` - Browser automation
   - `/api/thinking/*` - Sequential thinking sessions

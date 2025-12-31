@@ -147,14 +147,6 @@ export class ServerDetailModal extends Modal {
           📊 Stats
         </button>
       `,
-      postgres: `
-        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('postgres', 'connect')">
-          🔌 Connect
-        </button>
-        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('postgres', 'tables')">
-          📋 Tables
-        </button>
-      `,
       stripe: `
         <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('stripe', 'customers')">
           👥 Customers

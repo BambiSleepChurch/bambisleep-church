@@ -59,6 +59,14 @@ function handleMessage(event) {
     const message = JSON.parse(event.data);
     
     switch (message.type) {
+      case 'connected':
+        console.log('✅ WebSocket connection confirmed');
+        break;
+        
+      case 'heartbeat':
+        // Server heartbeat - connection is healthy
+        break;
+        
       case 'SERVER_STATUS':
         Actions.updateServer(message.payload);
         break;

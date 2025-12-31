@@ -1,5 +1,6 @@
 # 🌸 BambiSleep™ Church MCP Control Tower .gitignore 🌸
 
+{}
 # Dependencies
 node_modules/
 package-lock.json

@@ -12,7 +12,6 @@ import { huggingfaceHandlers } from '../servers/huggingface.js';
 import { registry } from '../servers/index.js';
 import { memoryHandlers } from '../servers/memory.js';
 import { mongoHandlers } from '../servers/mongodb.js';
-import { postgresHandlers } from '../servers/postgres.js';
 import { puppeteerHandlers } from '../servers/puppeteer.js';
 import { thinkingHandlers } from '../servers/sequential-thinking.js';
 import { sqliteHandlers } from '../servers/sqlite.js';
@@ -415,50 +414,6 @@ async function handleRequest(req, res) {
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 400);
-    }
-  }
-
-  // ============ POSTGRES MCP ROUTES ============
-
-  // POST /api/postgres/connect - Connect to database
-  if (path === '/api/postgres/connect' && method === 'POST') {
-    try {
-      const result = await postgresHandlers.connect();
-      return json(res, result);
-    } catch (error) {
-      return json(res, { error: error.message }, 500);
-    }
-  }
-
-  // GET /api/postgres/tables - List tables
-  if (path === '/api/postgres/tables' && method === 'GET') {
-    try {
-      const schema = url.searchParams.get('schema') || 'public';
-      const tables = await postgresHandlers.listTables(schema);
-      return json(res, { tables });
-    } catch (error) {
-      return json(res, { error: error.message }, 500);
-    }
-  }
-
-  // GET /api/postgres/stats - Get stats
-  if (path === '/api/postgres/stats' && method === 'GET') {
-    try {
-      const stats = await postgresHandlers.getStats();
-      return json(res, stats);
-    } catch (error) {
-      return json(res, { error: error.message }, 500);
-    }
-  }
-
-  // POST /api/postgres/query - Execute query
-  if (path === '/api/postgres/query' && method === 'POST') {
-    try {
-      const body = await parseBody(req);
-      const result = await postgresHandlers.query(body.sql, body.params || []);
-      return json(res, result);
-    } catch (error) {
-      return json(res, { error: error.message }, 500);
     }
   }
 

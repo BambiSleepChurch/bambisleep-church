@@ -21,25 +21,25 @@ import { initWebSocket } from './services/websocket.js';
 
 // Components
 import {
-    addActivity,
-    AgentChatController,
-    clearActivityFeed,
-    closeAllModals,
-    exportConfigs,
-    getModal,
-    importConfigs,
-    initModals,
-    initSearchBar,
-    initTheme,
-    renderActivityFeed,
-    renderClarityDashboard,
-    renderServerGrid,
-    renderToastContainer,
-    showToast,
-    toggleTheme,
-    updateStatsBar,
-    updateSystemInfo,
-    updateWsIndicator
+  addActivity,
+  AgentChatController,
+  clearActivityFeed,
+  closeAllModals,
+  exportConfigs,
+  getModal,
+  importConfigs,
+  initModals,
+  initSearchBar,
+  initTheme,
+  renderActivityFeed,
+  renderClarityDashboard,
+  renderServerGrid,
+  renderToastContainer,
+  showToast,
+  toggleTheme,
+  updateStatsBar,
+  updateSystemInfo,
+  updateWsIndicator
 } from './components/index.js';
 
 // Effects
@@ -167,11 +167,6 @@ window.Dashboard = {
           else if (action === 'stats') result = await api.fetchMongoDBStats();
           break;
           
-        case 'postgres':
-          if (action === 'connect') result = await api.connectPostgres();
-          else if (action === 'tables') result = await api.fetchPostgresTables();
-          break;
-          
         case 'stripe':
           if (action === 'customers') result = await api.fetchStripeCustomers();
           else if (action === 'balance') result = await api.fetchStripeBalance();
@@ -276,7 +271,7 @@ window.Dashboard = {
       
       // Show loading state
       container.innerHTML = `
-        <div class="glass-card" style="padding: var(--spacing-lg); text-align: center;">
+        <div class="glass-card skeleton-card">
           <div class="loading-spinner"></div>
           <p>Loading analytics...</p>
         </div>
@@ -294,13 +289,97 @@ window.Dashboard = {
       const container = document.getElementById('clarity-container');
       if (container) {
         container.innerHTML = `
-          <div class="glass-card" style="padding: var(--spacing-lg); text-align: center;">
+          <div class="glass-card skeleton-card">
             <p class="error">⚠️ ${error.message}</p>
             <button class="btn btn-outline" onclick="window.Dashboard.refreshClarity()">Retry</button>
           </div>
         `;
       }
       showToast('error', 'Analytics Error', error.message);
+    }
+  },
+
+  // Sidebar toggle
+  toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (window.innerWidth <= 1024) {
+      // Mobile: slide in/out
+      sidebar?.classList.toggle('open');
+      overlay?.classList.toggle('visible');
+    } else {
+      // Desktop: collapse/expand
+      sidebar?.classList.toggle('collapsed');
+    }
+  },
+
+  // Section navigation
+  showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.dashboard-section').forEach(section => {
+      section.style.display = 'none';
+    });
+    
+    // Show selected section
+    const targetSection = document.getElementById(`section-${sectionId}`);
+    if (targetSection) {
+      targetSection.style.display = 'block';
+    }
+    
+    // Update nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    document.querySelector(`.nav-item[data-section="${sectionId}"]`)?.classList.add('active');
+    
+    // Close sidebar on mobile
+    if (window.innerWidth <= 1024) {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar?.classList.remove('open');
+      overlay?.classList.remove('visible');
+    }
+    
+    // Track section change
+    addActivity('navigation', `Navigated to ${sectionId}`);
+  },
+
+  // Show keyboard shortcuts
+  showShortcuts() {
+    this.toggleShortcutsHelp();
+  },
+
+  // Clear activity feed
+  clearActivity() {
+    clearActivityFeed();
+    showToast('info', 'Cleared', 'Activity feed cleared');
+  },
+
+  // Update metrics
+  updateMetrics(stats) {
+    const serverCount = document.getElementById('metric-servers');
+    const connectionCount = document.getElementById('metric-connections');
+    const requestCount = document.getElementById('metric-requests');
+    const uptimeEl = document.getElementById('metric-uptime');
+    const serverBadge = document.getElementById('server-count');
+    
+    if (serverCount) serverCount.textContent = stats?.servers || stats?.total || '0';
+    if (connectionCount) connectionCount.textContent = stats?.connections || '0';
+    if (requestCount) requestCount.textContent = stats?.requests || '0';
+    if (serverBadge) serverBadge.textContent = stats?.servers || stats?.total || '0';
+    
+    if (uptimeEl && stats?.uptime) {
+      const seconds = Math.floor(stats.uptime / 1000);
+      if (seconds < 60) {
+        uptimeEl.textContent = `${seconds}s`;
+      } else if (seconds < 3600) {
+        uptimeEl.textContent = `${Math.floor(seconds / 60)}m`;
+      } else if (seconds < 86400) {
+        uptimeEl.textContent = `${Math.floor(seconds / 3600)}h`;
+      } else {
+        uptimeEl.textContent = `${Math.floor(seconds / 86400)}d`;
+      }
     }
   },
 };
@@ -409,7 +488,9 @@ function setupSubscriptions() {
 
   // Update stats when servers change
   useSubscription(Selectors.servers, () => {
-    updateStatsBar(Selectors.stats(AppState.getState()));
+    const stats = Selectors.stats(AppState.getState());
+    updateStatsBar(stats);
+    window.Dashboard.updateMetrics(stats);
   });
 
   // Update WS indicator when status changes
@@ -450,10 +531,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   initModals();
   initSearchBar();
   
-  // Render activity feed section
+  // Render activity feed sections
   const activityContainer = document.getElementById('activity-feed');
   if (activityContainer) {
     activityContainer.innerHTML = renderActivityFeed([]);
+  }
+  const activityFullContainer = document.getElementById('activity-feed-full');
+  if (activityFullContainer) {
+    activityFullContainer.innerHTML = renderActivityFeed([]);
   }
   
   // Setup state subscriptions
@@ -478,11 +563,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   await refreshData();
   updateSystemInfo();
   
+  // Initialize metrics with initial stats
+  const initialStats = Selectors.stats(AppState.getState());
+  window.Dashboard.updateMetrics(initialStats);
+  
   // Initialize Clarity dashboard
   await window.Dashboard.refreshClarity();
   
   // Initialize Agent Chat
   await AgentChatController.init();
+  
+  // Handle mobile menu button visibility
+  const updateMobileMenuVisibility = () => {
+    const btn = document.querySelector('.mobile-menu-btn');
+    if (btn) {
+      btn.style.display = window.innerWidth <= 1024 ? 'flex' : 'none';
+    }
+  };
+  updateMobileMenuVisibility();
+  window.addEventListener('resize', updateMobileMenuVisibility);
   
   // Fallback polling (30s interval)
   const polling = usePolling(async () => {

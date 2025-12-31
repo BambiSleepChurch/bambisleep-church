@@ -118,3 +118,78 @@
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   }
 }
+/* ========================================================================
+   DASHBOARD LAYOUT RESPONSIVENESS
+   ======================================================================== */
+@media (max-width: 1024px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main"
+      "footer";
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-fixed);
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-sm,
+  .panel-md,
+  .panel-lg,
+  .panel-full {
+    grid-column: span 1;
+  }
+
+  .quick-actions {
+    flex-wrap: wrap;
+  }
+
+  .quick-action-btn {
+    flex: 1 1 calc(50% - var(--space-3));
+    justify-content: center;
+  }
+
+  .header-inner {
+    padding: 0 var(--space-4) !important;
+  }
+
+  .search-bar-compact {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-action-btn {
+    flex: 1 1 100%;
+  }
+
+  .nav-section-title {
+    font-size: 0.65rem;
+  }
+
+  .sidebar {
+    width: 240px;
+  }
+}

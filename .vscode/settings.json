@@ -123,14 +123,6 @@
                 "@modelcontextprotocol/server-puppeteer"
             ]
         },
-        "postgres": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-postgres",
-                "postgresql://localhost:5432/bambisleep"
-            ]
-        },
         "fetch": {
             "command": "npx",
             "args": [

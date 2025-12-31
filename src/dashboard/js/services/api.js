@@ -215,28 +215,6 @@ export async function fetchMongoDBStats() {
 }
 
 // ============================================================================
-// POSTGRESQL API
-// ============================================================================
-
-export async function connectPostgres() {
-  const response = await fetch(`${API_BASE}/postgres/connect`, { method: 'POST' });
-  if (!response.ok) throw new Error('Failed to connect to PostgreSQL');
-  return await response.json();
-}
-
-export async function fetchPostgresTables(schema = 'public') {
-  const response = await fetch(`${API_BASE}/postgres/tables?schema=${schema}`);
-  if (!response.ok) throw new Error('Failed to fetch PostgreSQL tables');
-  return await response.json();
-}
-
-export async function fetchPostgresStats() {
-  const response = await fetch(`${API_BASE}/postgres/stats`);
-  if (!response.ok) throw new Error('Failed to fetch PostgreSQL stats');
-  return await response.json();
-}
-
-// ============================================================================
 // SQLITE API
 // ============================================================================
 

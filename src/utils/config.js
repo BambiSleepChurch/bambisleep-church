@@ -129,13 +129,6 @@ export function getConfig() {
       mongodb: {
         uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/bambisleep',
       },
-      postgres: {
-        host: process.env.POSTGRES_HOST || 'localhost',
-        port: parseInt(process.env.POSTGRES_PORT) || 5432,
-        user: process.env.POSTGRES_USER || 'bambisleep',
-        password: process.env.POSTGRES_PASSWORD || 'bambisleep',
-        database: process.env.POSTGRES_DB || 'bambisleep',
-      },
       sqlite: {
         path: process.env.SQLITE_PATH || './data/local.db',
       },

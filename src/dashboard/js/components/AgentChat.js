@@ -3,6 +3,7 @@
  * Agent Chat Component - AI Orchestrator Frontend
  */
 
+import { API_BASE } from '../config.js';
 import { Actions } from '../state/store.js';
 
 /**
@@ -344,7 +345,7 @@ export const AgentChatController = {
    */
   async loadStats() {
     try {
-      const response = await fetch('/api/agent/stats');
+      const response = await fetch(`${API_BASE}/agent/stats`);
       if (response.ok) {
         this.state.stats = await response.json();
       }
@@ -358,7 +359,7 @@ export const AgentChatController = {
    */
   async loadConfig() {
     try {
-      const response = await fetch('/api/agent/config');
+      const response = await fetch(`${API_BASE}/agent/config`);
       if (response.ok) {
         this.state.config = await response.json();
       }
@@ -372,7 +373,7 @@ export const AgentChatController = {
    */
   async loadTools() {
     try {
-      const response = await fetch('/api/agent/tools');
+      const response = await fetch(`${API_BASE}/agent/tools`);
       if (response.ok) {
         const data = await response.json();
         this.state.tools = data.tools || [];
@@ -408,7 +409,7 @@ export const AgentChatController = {
     this.render();
     
     try {
-      const response = await fetch('/api/agent/chat', {
+      const response = await fetch(`${API_BASE}/agent/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -558,7 +559,7 @@ export const AgentChatController = {
     };
     
     try {
-      const response = await fetch('/api/agent/config', {
+      const response = await fetch(`${API_BASE}/agent/config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),

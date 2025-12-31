@@ -13,7 +13,6 @@ import { githubHandlers } from './github.js';
 import { huggingfaceHandlers } from './huggingface.js';
 import { memoryHandlers } from './memory.js';
 import { mongoHandlers } from './mongodb.js';
-import { postgresHandlers } from './postgres.js';
 import { thinkingHandlers } from './sequential-thinking.js';
 import { storageHandlers } from './storage.js';
 import { stripeHandlers } from './stripe.js';
@@ -100,20 +99,6 @@ const AGENT_TOOLS = {
     description: 'Insert a document into a collection',
     parameters: { collection: 'string', document: 'object - document to insert' },
     handler: (args) => mongoHandlers.insertOne(args.collection, args.document),
-  },
-
-  // PostgreSQL MCP
-  postgres_query: {
-    name: 'postgres_query',
-    description: 'Execute a SQL query on PostgreSQL',
-    parameters: { sql: 'string - SQL query', params: 'array - query parameters' },
-    handler: (args) => postgresHandlers.query(args.sql, args.params),
-  },
-  postgres_list_tables: {
-    name: 'postgres_list_tables',
-    description: 'List all tables in the PostgreSQL database',
-    parameters: { schema: 'string - schema name (default: public)' },
-    handler: (args) => postgresHandlers.getTables(args.schema),
   },
 
   // Stripe MCP
@@ -243,10 +228,6 @@ DATABASE (MongoDB):
 - mongodb_list_collections: List collections
 - mongodb_find: Find documents
 - mongodb_insert: Insert document
-
-DATABASE (PostgreSQL):
-- postgres_query: Execute SQL query
-- postgres_list_tables: List tables
 
 PAYMENTS (Stripe):
 - stripe_list_customers: List customers
@@ -516,11 +497,8 @@ class AgentOrchestrator {
     if (content.includes('file') || content.includes('storage')) {
       return '{"tool": "storage_list_files", "args": {"folder": "all"}}';
     }
-    if (content.includes('database') || content.includes('mongodb')) {
+    if (content.includes('database') || content.includes('mongodb') || content.includes('sql')) {
       return '{"tool": "mongodb_list_collections", "args": {}}';
-    }
-    if (content.includes('sql') || content.includes('postgres')) {
-      return '{"tool": "postgres_list_tables", "args": {"schema": "public"}}';
     }
 
     return "I understand you need assistance. Let me check what resources are available. " +

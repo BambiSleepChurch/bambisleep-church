@@ -149,7 +149,7 @@ describe('Config Module', () => {
       
       assert.ok(config.database, 'should have database config');
       assert.ok(config.database.mongodb, 'should have mongodb config');
-      assert.ok(config.database.postgres, 'should have postgres config');
+      assert.ok(config.database.sqlite, 'should have sqlite config');
     });
 
     it('should have services configuration', () => {
@@ -227,29 +227,6 @@ describe('Config Module', () => {
       
       assert.ok(config.database.sqlite, 'should have sqlite config');
       assert.ok(config.database.sqlite.path, 'should have sqlite path');
-    });
-
-    it('should have postgres configuration', () => {
-      const config = getConfig();
-      
-      assert.ok(config.database.postgres.host, 'should have host');
-      assert.ok(config.database.postgres.port, 'should have port');
-      assert.ok(config.database.postgres.user, 'should have user');
-      assert.ok(config.database.postgres.database, 'should have database');
-    });
-
-    it('should override postgres config from environment', () => {
-      process.env.POSTGRES_HOST = 'custom-host';
-      process.env.POSTGRES_PORT = '5433';
-      process.env.POSTGRES_USER = 'custom-user';
-      process.env.POSTGRES_DB = 'custom-db';
-      
-      const config = getConfig();
-      
-      assert.strictEqual(config.database.postgres.host, 'custom-host');
-      assert.strictEqual(config.database.postgres.port, 5433);
-      assert.strictEqual(config.database.postgres.user, 'custom-user');
-      assert.strictEqual(config.database.postgres.database, 'custom-db');
     });
 
     it('should have huggingface service config', () => {
