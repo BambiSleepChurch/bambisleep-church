@@ -1,0 +1,502 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Clarity Analytics Dashboard Styles
+ */
+
+/* ============================================================================
+   CLARITY DASHBOARD CONTAINER
+   ============================================================================ */
+
+.clarity-dashboard {
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.clarity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.clarity-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.clarity-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.clarity-icon {
+  font-size: 1.75rem;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.clarity-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/* ============================================================================
+   CLARITY GRID LAYOUT
+   ============================================================================ */
+
+.clarity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+}
+
+/* ============================================================================
+   CLARITY STATS ROW
+   ============================================================================ */
+
+.clarity-stats {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.clarity-stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.clarity-stat-card:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  font-size: 1.75rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-brand);
+  border-radius: var(--radius-sm);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-feature-settings: 'tnum' 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================================
+   CLARITY CARDS
+   ============================================================================ */
+
+.clarity-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  transition: border-color var(--transition-fast);
+}
+
+.clarity-card:hover {
+  border-color: var(--color-primary);
+}
+
+.clarity-card h3 {
+  margin: 0 0 var(--spacing-md);
+  font-size: 1rem;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.clarity-card .muted {
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+/* ============================================================================
+   CURRENT SESSION
+   ============================================================================ */
+
+.current-session .session-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.detail-value {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.detail-value code {
+  background: var(--color-surface-alt);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.session-tags {
+  margin-top: var(--spacing-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.tags-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.tag {
+  background: var(--color-primary);
+  color: var(--color-text);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+/* ============================================================================
+   TOP EVENTS & PAGES
+   ============================================================================ */
+
+.events-list,
+.pages-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.event-row,
+.page-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-xs);
+}
+
+.event-rank,
+.page-rank {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  min-width: 24px;
+}
+
+.event-name,
+.page-path {
+  flex: 1;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-count,
+.page-views {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-success);
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ============================================================================
+   RECENT SESSIONS
+   ============================================================================ */
+
+.recent-sessions {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .recent-sessions {
+    grid-column: span 1;
+  }
+}
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.session-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.session-row:hover {
+  background: var(--color-surface-hover);
+  transform: translateX(4px);
+}
+
+.session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-user {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.session-time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.session-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.meta-item {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.session-duration {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+/* ============================================================================
+   EVENT TIMELINE
+   ============================================================================ */
+
+.event-timeline {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .event-timeline {
+    grid-column: span 1;
+  }
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-left: var(--spacing-sm);
+  border-left: 2px solid var(--color-border);
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  position: relative;
+  margin-left: calc(-1 * var(--spacing-sm) - 8px);
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  border: 2px solid var(--color-background);
+}
+
+.timeline-item.pageview::before {
+  background: var(--color-info);
+}
+
+.timeline-item.click::before {
+  background: var(--color-success);
+}
+
+.timeline-item.error::before {
+  background: var(--color-error);
+}
+
+.timeline-item.custom::before {
+  background: var(--color-warning);
+}
+
+.timeline-icon {
+  font-size: 1rem;
+  width: 24px;
+  text-align: center;
+}
+
+.timeline-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-event {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.timeline-time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ============================================================================
+   QUICK ACTIONS
+   ============================================================================ */
+
+.clarity-quick-actions {
+  grid-column: 1 / -1;
+  background: var(--gradient-brand);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+}
+
+.clarity-quick-actions h4 {
+  margin: 0 0 var(--spacing-sm);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+/* ============================================================================
+   STATUS BADGE
+   ============================================================================ */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.connected {
+  background: rgba(var(--success-rgb), 0.2);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.status-badge.disconnected {
+  background: rgba(var(--error-rgb), 0.2);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--color-primary));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px var(--color-primary));
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR STYLING
+   ============================================================================ */
+
+.sessions-list::-webkit-scrollbar,
+.timeline::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sessions-list::-webkit-scrollbar-track,
+.timeline::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: var(--radius-xs);
+}
+
+.sessions-list::-webkit-scrollbar-thumb,
+.timeline::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-xs);
+}
+
+.sessions-list::-webkit-scrollbar-thumb:hover,
+.timeline::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}

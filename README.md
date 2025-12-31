@@ -69,34 +69,15 @@ npm test
 | -------------------------- | ----------------------------------- |
 | `npm run dev`              | Development server with hot reload  |
 | `npm run start`            | Production server                   |
-| `npm test`                 | Run all tests (197 tests)           |
+| `npm test`                 | Run all tests (228 tests)           |
 | `npm run test:unit`        | Fast unit tests only                |
 | `npm run test:integration` | Integration tests (server required) |
 | `npm run test:coverage`    | Coverage report (84%+)              |
-
-### 🎀 Using DevContainer
-
-Open in VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for the full ✨ pink experience ✨
-
-### 🐳 Docker Deployment
-
-```bash
-# Start all services (app + MongoDB + PostgreSQL)
-docker compose up -d
-
-# View logs
-docker compose logs -f app
-
-# Stop services
-docker compose down
-```
 
 **Ports:**
 
 - **3000**: Control Tower Dashboard 🖥️
 - **8080**: REST API + WebSocket 🔌
-- **27017**: MongoDB (containerized)
-- **5432**: PostgreSQL (containerized)
 
 ---
 
@@ -104,7 +85,6 @@ docker compose down
 
 ```
 🌸 bambisleep-church/
-├── 💅 .devcontainer/        # DevContainer configuration
 ├── 🤖 .github/              # AI agent instructions & CI/CD
 │   └── copilot-instructions.md
 ├── ⚙️ .vscode/              # Editor & MCP server config
@@ -148,8 +128,6 @@ docker compose down
 │   ├── api/                 # Integration tests
 │   ├── servers/             # Server handler tests
 │   └── utils/               # Unit tests
-├── 🐳 docker-compose.yml
-├── 🐳 Dockerfile
 └── 📦 package.json
 ```
 
@@ -196,7 +174,7 @@ _See [docs/RELIGULOUS_MANTRA.md](docs/RELIGULOUS_MANTRA.md) for the complete phi
 Node.js built-in test runner (no Jest/Mocha required):
 
 ```bash
-# Run all 197 tests
+# Run all 228 tests
 npm test
 
 # Unit tests only (fast, no server needed)

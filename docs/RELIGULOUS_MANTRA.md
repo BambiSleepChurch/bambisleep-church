@@ -75,7 +75,6 @@ _Extracted from real commit history and architecture patterns_
 
 ```bash
 # CYCLONE: systemctl restart bambisleepchurch.service
-# SPARKLES: docker-compose up -d --scale mcp=8
 # NAIL_POLISH: npm run lint -- --fix --production
 # UNICORN: volta pin node@20-lts
 ```

@@ -396,22 +396,6 @@ MONGODB_USER=myUser                       # Username (optional)
 MONGODB_PASSWORD=myPassword               # Password (optional)
 ```
 
-### Docker (Local Development)
-
-```bash
-# Run MongoDB container
-docker run -d \
-  --name mongodb \
-  -p 27017:27017 \
-  -e MONGO_INITDB_ROOT_USERNAME=root \
-  -e MONGO_INITDB_ROOT_PASSWORD=password \
-  -v mongodb_data:/data/db \
-  mongo:7
-
-# Connection string for containerized MongoDB
-mongodb://root:password@localhost:27017/?authSource=admin
-```
-
 ### Error Handling
 
 ```javascript

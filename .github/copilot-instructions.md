@@ -13,6 +13,8 @@
 
 The `ServerRegistry` class (`src/servers/index.js`) manages server lifecycle via `spawn()`. Configs are loaded from `.vscode/settings.json` (JSONC with comments allowed—uses custom `stripJsonc()` parser in `src/utils/config.js`).
 
+**Key Integrations**: 12 MCP server wrappers + 1 Agent orchestrator (Memory, GitHub, HuggingFace, Stripe, MongoDB, PostgreSQL, SQLite, Puppeteer, Fetch, Sequential Thinking, Storage, Clarity, Agent).
+
 ## Commands
 
 ```bash
@@ -121,7 +123,9 @@ const server = Selectors.serverByName("memory")(state);
 
 ## Testing
 
-Node.js built-in test runner (no Jest/Mocha). Integration tests auto-skip when server unavailable:
+Node.js built-in test runner (no Jest/Mocha). **228 tests, 84%+ coverage**.
+
+Integration tests auto-skip when server unavailable:
 
 ```javascript
 import assert from "node:assert";
@@ -139,18 +143,23 @@ try {
 }
 ```
 
-**Test locations**: `tests/utils/*.test.js` (unit), `tests/api/*.test.js` (integration)
+**Test locations**: `tests/utils/*.test.js` (unit), `tests/api/*.test.js` (integration), `tests/servers/*.test.js` (server handlers)
 
 ## Key Environment Variables
 
-| Variable            | Default | Purpose                       |
-| ------------------- | ------- | ----------------------------- |
-| `LOG_LEVEL`         | `info`  | `error`/`warn`/`info`/`debug` |
-| `API_PORT`          | `8080`  | REST API port                 |
-| `DASHBOARD_PORT`    | `3000`  | Dashboard UI port             |
-| `GITHUB_TOKEN`      | —       | GitHub API auth               |
-| `STRIPE_API_KEY`    | —       | Stripe payments               |
-| `HUGGINGFACE_TOKEN` | —       | HuggingFace inference         |
+| Variable             | Default                     | Purpose                              |
+| -------------------- | --------------------------- | ------------------------------------ |
+| `LOG_LEVEL`          | `info`                      | `error`/`warn`/`info`/`debug`        |
+| `API_PORT`           | `8080`                      | REST API port                        |
+| `DASHBOARD_PORT`     | `3000`                      | Dashboard UI port                    |
+| `MONGODB_URI`        | `mongodb://localhost:27017` | MongoDB connection (Atlas supported) |
+| `GITHUB_TOKEN`       | —                           | GitHub API auth                      |
+| `STRIPE_API_KEY`     | —                           | Stripe payments                      |
+| `HUGGINGFACE_TOKEN`  | —                           | HuggingFace inference                |
+| `STORAGE_DIR`        | `./data/storage`            | Local file storage root              |
+| `CLARITY_PROJECT_ID` | `utux7nv0pm`                | Microsoft Clarity project ID         |
+
+**MongoDB Atlas**: Set `MONGODB_URI` to `mongodb+srv://...` connection string. The client auto-detects Atlas and applies optimized connection pooling.
 
 ## WebSocket Events (`src/api/websocket.js`)
 
@@ -185,43 +194,21 @@ await client.disconnect();
 
 ## Available Server Handlers
 
-| Handler               | File                             | Key Methods                                  |
-| --------------------- | -------------------------------- | -------------------------------------------- |
-| `memoryHandlers`      | `servers/memory.js`              | `readGraph`, `createEntities`, `searchNodes` |
-| `githubHandlers`      | `servers/github.js`              | `getRepo`, `listIssues`, `createPR`          |
-| `stripeHandlers`      | `servers/stripe.js`              | `listCustomers`, `createPayment`             |
-| `huggingfaceHandlers` | `servers/huggingface.js`         | `inference`, `listModels`                    |
-| `fetchHandlers`       | `servers/fetch.js`               | `get`, `post`, `convertToMarkdown`           |
-| `sqliteHandlers`      | `servers/sqlite.js`              | `query`, `execute`, `getTables`              |
-| `postgresHandlers`    | `servers/postgres.js`            | `query`, `execute`, `getTables`              |
-| `mongoHandlers`       | `servers/mongodb.js`             | `find`, `insertOne`, `aggregate`             |
-| `puppeteerHandlers`   | `servers/puppeteer.js`           | `screenshot`, `navigate`, `evaluate`         |
-| `thinkingHandlers`    | `servers/sequential-thinking.js` | `think`, `getChain`, `reset`                 |
-
-## Docker & DevContainer
-
-**Development** (DevContainer in VS Code):
-
-```bash
-# Open folder in VS Code → "Reopen in Container"
-# Ports 3000 (Dashboard) and 8080 (API) auto-forwarded
-```
-
-**Production** (Docker Compose):
-
-```bash
-docker compose up -d              # Start all services (app + MongoDB + Postgres)
-docker compose logs -f app        # Follow app logs
-docker compose down               # Stop and remove containers
-```
-
-**Services in `docker-compose.yml`**:
-
-- `app` — MCP Control Tower (ports 3000, 8080)
-- `mongodb` — MongoDB 7 (port 27017)
-- `postgres` — PostgreSQL 16 (port 5432)
-
-**Environment**: Set secrets in `.env` or pass via `-e` flags (`GITHUB_TOKEN`, `STRIPE_API_KEY`, etc.)
+| Handler               | File                             | Key Methods                                       |
+| --------------------- | -------------------------------- | ------------------------------------------------- |
+| `memoryHandlers`      | `servers/memory.js`              | `readGraph`, `createEntities`, `searchNodes`      |
+| `githubHandlers`      | `servers/github.js`              | `getRepo`, `listIssues`, `createPR`               |
+| `stripeHandlers`      | `servers/stripe.js`              | `listCustomers`, `createPayment`                  |
+| `huggingfaceHandlers` | `servers/huggingface.js`         | `inference`, `listModels`                         |
+| `fetchHandlers`       | `servers/fetch.js`               | `get`, `post`, `convertToMarkdown`                |
+| `sqliteHandlers`      | `servers/sqlite.js`              | `query`, `execute`, `getTables`                   |
+| `postgresHandlers`    | `servers/postgres.js`            | `query`, `execute`, `getTables`                   |
+| `mongoHandlers`       | `servers/mongodb.js`             | `find`, `insertOne`, `aggregate`                  |
+| `puppeteerHandlers`   | `servers/puppeteer.js`           | `screenshot`, `navigate`, `evaluate`              |
+| `thinkingHandlers`    | `servers/sequential-thinking.js` | `think`, `getChain`, `reset`                      |
+| `storageHandlers`     | `servers/storage.js`             | `listFiles`, `uploadFile`, `deleteFile`, `getUrl` |
+| `clarityHandlers`     | `servers/clarity.js`             | `init`, `identify`, `event`, `getDashboardData`   |
+| `agentHandlers`       | `servers/agent.js`               | `chat`, `executeTool`, `getTools`, `getStats`     |
 
 ## Conventions
 
@@ -232,12 +219,13 @@ docker compose down               # Stop and remove containers
 
 ## Key Files
 
-| Purpose          | Location                                |
-| ---------------- | --------------------------------------- |
-| Entry point      | `src/index.js`                          |
-| API routes       | `src/api/routes.js`                     |
-| Server registry  | `src/servers/index.js`                  |
-| MCP config       | `.vscode/settings.json` → `mcp.servers` |
-| Config loader    | `src/utils/config.js`                   |
-| Integration docs | `docs/*_MCP_REFERENCE.md`               |
-| Project roadmap  | `docs/TODO.md`                          |
+| Purpose            | Location                                |
+| ------------------ | --------------------------------------- |
+| Entry point        | `src/index.js`                          |
+| API routes         | `src/api/routes.js`                     |
+| Server registry    | `src/servers/index.js`                  |
+| Agent orchestrator | `src/servers/agent.js`                  |
+| MCP config         | `.vscode/settings.json` → `mcp.servers` |
+| Config loader      | `src/utils/config.js`                   |
+| Integration docs   | `docs/*_MCP_REFERENCE.md`               |
+| Project roadmap    | `docs/TODO.md`                          |

@@ -87,7 +87,6 @@ All configured MCP servers now have REST API wrappers:
 ### Configuration Updates
 
 - [x] Add new servers to `.vscode/settings.json` (9 servers configured)
-- [x] Add required ports to `.devcontainer/devcontainer.json`
 - [x] Environment variables handling (`src/utils/config.js`, `.env.example`)
 
 ---
@@ -130,8 +129,6 @@ All configured MCP servers now have REST API wrappers:
 
 ### Deployment
 
-- [x] Docker Compose configuration (`docker-compose.yml`)
-- [x] Dockerfile (multi-stage, production-ready)
 - [x] Environment variables template (`.env.example`)
 - [x] Health check endpoints (`/api/health` with version & env)
 - [x] Graceful shutdown handling (SIGINT/SIGTERM)
@@ -177,34 +174,110 @@ All configured MCP servers now have REST API wrappers:
 
 ---
 
-## 🌸 Phase 6: Advanced Features (Next)
+## 🚀 Phase 6: Agentic Frontend Rendering (Current)
 
-### Memory Graph Visualization
+### Overview
 
-- [ ] D3.js or Cytoscape.js integration
-- [ ] Interactive node exploration
-- [ ] Relation path highlighting
-- [ ] Entity search within graph
+Enable BambiAgent™ to dynamically generate and render frontend components, allowing users to interact with AI-generated interfaces in real-time.
 
-### API Playground
+### Core Infrastructure
 
-- [ ] Request builder with all endpoints
-- [ ] Parameter forms with validation
-- [ ] Response viewer with syntax highlighting
-- [ ] Request history & favorites
+- [ ] **Component Registry** - Dynamic component registration system
+  - `src/dashboard/js/components/DynamicRenderer.js` - Runtime component factory
+  - Component schema validation (props, events, children)
+  - Sandboxed execution for agent-generated code
 
-### Theming
+- [ ] **Agent UI Tools** - New tools in `src/servers/agent.js`
+  - `ui_render_component` - Render a component by type with props
+  - `ui_create_form` - Generate interactive forms from schema
+  - `ui_create_table` - Render data tables with sorting/filtering
+  - `ui_create_chart` - Generate visualizations (Chart.js integration)
+  - `ui_show_modal` - Display modal dialogs with custom content
+  - `ui_update_element` - Update existing DOM elements
+  - `ui_remove_element` - Remove components from the DOM
 
-- [x] Dark/light mode toggle
-- [ ] Custom color theme picker
-- [ ] Persist theme preference
+- [ ] **Agent Workspace Panel** - Dedicated rendering area
+  - `src/dashboard/js/components/AgentWorkspace.js` - Container for dynamic content
+  - Split-pane layout: Chat | Workspace
+  - Component history/undo stack
+  - Export generated components to static HTML
 
-### Server Management
+### Interactive Components
 
-- [ ] Drag-and-drop server ordering
-- [ ] Server groups/categories
-- [x] Export/import configurations
-- [ ] Bulk operations (start/stop all)
+- [ ] **Form Builder** - Agent can create forms dynamically
+  - Text inputs, selects, checkboxes, date pickers
+  - Validation rules from natural language
+  - Submit handlers that call agent tools
+
+- [ ] **Data Visualization**
+  - Tables with agent-populated data
+  - Charts from MongoDB/PostgreSQL queries
+  - Real-time updating dashboards
+
+- [ ] **Card Layouts** - Agent generates information cards
+  - GitHub repo cards from `github_get_repo`
+  - User profile cards from `github_get_user`
+  - Stripe customer/payment cards
+
+- [ ] **Interactive Wizards** - Multi-step flows
+  - Agent guides user through complex operations
+  - Conditional branching based on user input
+  - Progress tracking and state persistence
+
+### Agent Capabilities
+
+- [ ] **Context-Aware Rendering** - Agent remembers rendered state
+  - Track active components in conversation context
+  - Reference previous renderings in follow-up messages
+  - Update existing components vs creating new ones
+
+- [ ] **User Interaction Handling**
+  - Button clicks trigger agent tool calls
+  - Form submissions send data to agent
+  - Agent responds with updated UI
+
+- [ ] **Template Library** - Pre-built component patterns
+  - CRUD interfaces for any collection
+  - Search/filter panels
+  - Dashboard layouts
+  - Data entry forms
+
+### Security & Sandboxing
+
+- [ ] **Safe Rendering** - Prevent XSS and injection
+  - HTML sanitization for agent output
+  - CSP-compliant dynamic rendering
+  - No eval() or Function() constructors
+
+- [ ] **Rate Limiting** - Prevent UI spam
+  - Max components per conversation
+  - Render throttling
+  - Memory usage limits
+
+---
+
+## 🔮 Phase 7: Advanced Agent Features (Next)
+
+### Memory & Persistence
+
+- [ ] Long-term memory with Knowledge Graph
+- [ ] User preference learning
+- [ ] Conversation summarization
+- [ ] Cross-session context retention
+
+### Multi-Modal Support
+
+- [ ] Image generation tool (HuggingFace Stable Diffusion)
+- [ ] Audio playback for responses
+- [ ] File upload/download handling
+- [ ] Drag-and-drop interface elements
+
+### Collaboration Features
+
+- [ ] Shared agent workspaces
+- [ ] Export/import agent sessions
+- [ ] Component sharing library
+- [ ] Team dashboards
 
 ---
 
@@ -215,17 +288,62 @@ All configured MCP servers now have REST API wrappers:
 | MCP Server Wrappers | ✅ Complete    | 11/11                |
 | REST API Endpoints  | ✅ Complete    | 50+ endpoints        |
 | Dashboard UI        | ✅ Complete    | Cyber goth design    |
+| Agent Orchestrator  | ✅ Complete    | 30+ tools            |
+| Agent Chat UI       | ✅ Complete    | Full conversation UI |
 | WebSocket           | ✅ Complete    | Real-time updates    |
 | Unit Tests          | ✅ Complete    | 228 tests, 84%+ cov  |
-| Test Organization   | ✅ Complete    | Dedicated tests/ dir |
-| CI/CD Pipeline      | ✅ Complete    | GitHub Actions       |
-| Docker              | ✅ Complete    | Compose + Dockerfile |
-| Rate Limiting       | ✅ Complete    | In-memory store      |
-| Production Ready    | ✅ Complete    | Graceful shutdown    |
-| MongoDB Atlas       | ✅ Complete    | Cloud-optimized      |
-| Theme Toggle        | ✅ Complete    | Dark/Light modes     |
-| Activity Feed       | ✅ Complete    | Timeline component   |
-| Config Export       | ✅ Complete    | JSON import/export   |
-| Storage Server      | ✅ Complete    | File hosting         |
-| Documentation       | 🔄 In Progress | 7/9 docs             |
-| Advanced Features   | 🔜 Next        | Phase 6              |
+| Agentic Rendering   | 🔄 In Progress | Phase 6              |
+| Advanced Agent      | 🔜 Next        | Phase 7              |
+
+---
+
+## 🎯 Phase 6 Milestones
+
+| Milestone                  | Target     | Status      |
+| -------------------------- | ---------- | ----------- |
+| Component Registry         | Week 1     | 🔜 Planned  |
+| Agent UI Tools (4 core)    | Week 2     | 🔜 Planned  |
+| Agent Workspace Panel      | Week 2     | 🔜 Planned  |
+| Form Builder               | Week 3     | 🔜 Planned  |
+| Data Visualization         | Week 3     | 🔜 Planned  |
+| Security Sandboxing        | Week 4     | 🔜 Planned  |
+| Integration Testing        | Week 4     | 🔜 Planned  |
+
+---
+
+## 🛠️ Technical Notes
+
+### Agent UI Tool Schema
+
+```javascript
+// Example: ui_render_component tool
+{
+  name: 'ui_render_component',
+  description: 'Render a UI component in the agent workspace',
+  parameters: {
+    type: 'string - component type (card, table, form, chart)',
+    props: 'object - component properties',
+    target: 'string - container selector (optional)',
+    id: 'string - unique component ID for updates'
+  },
+  handler: (args) => workspaceHandlers.render(args)
+}
+```
+
+### Component Schema Example
+
+```javascript
+// Agent generates this JSON, renderer creates DOM
+{
+  type: 'card',
+  id: 'repo-card-1',
+  props: {
+    title: 'bambisleep-church',
+    subtitle: 'BambiSleepChurch/bambisleep-church',
+    badges: ['Node.js', 'MCP', 'AI'],
+    actions: [
+      { label: 'View Issues', tool: 'github_list_issues', args: { owner: '...', repo: '...' } }
+    ]
+  }
+}
+```

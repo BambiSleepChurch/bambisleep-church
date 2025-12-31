@@ -114,6 +114,114 @@ export class ServerDetailModal extends Modal {
   }
 
   /**
+   * Get server-specific quick actions
+   */
+  getServerActions(server) {
+    const name = server.name?.toLowerCase();
+    
+    const actionSets = {
+      memory: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('memory', 'readGraph')">
+          📊 View Graph
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('memory', 'search')">
+          🔍 Search
+        </button>
+      `,
+      github: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('github', 'user')">
+          👤 My Profile
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('github', 'repos')">
+          📦 My Repos
+        </button>
+      `,
+      mongodb: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('mongodb', 'connect')">
+          🔌 Connect
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('mongodb', 'collections')">
+          📚 Collections
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('mongodb', 'stats')">
+          📊 Stats
+        </button>
+      `,
+      postgres: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('postgres', 'connect')">
+          🔌 Connect
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('postgres', 'tables')">
+          📋 Tables
+        </button>
+      `,
+      stripe: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('stripe', 'customers')">
+          👥 Customers
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('stripe', 'balance')">
+          💰 Balance
+        </button>
+      `,
+      huggingface: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('huggingface', 'models')">
+          🤖 Search Models
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('huggingface', 'datasets')">
+          📊 Search Datasets
+        </button>
+      `,
+      storage: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('storage', 'files')">
+          📁 List Files
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('storage', 'stats')">
+          📊 Stats
+        </button>
+      `,
+      puppeteer: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('puppeteer', 'status')">
+          📊 Status
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('puppeteer', 'launch')">
+          🚀 Launch
+        </button>
+      `,
+      sqlite: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('sqlite', 'tables')">
+          📋 Tables
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('sqlite', 'stats')">
+          📊 Stats
+        </button>
+      `,
+      'sequential-thinking': `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('thinking', 'sessions')">
+          📋 Sessions
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('thinking', 'stats')">
+          📊 Stats
+        </button>
+      `,
+      thinking: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('thinking', 'sessions')">
+          📋 Sessions
+        </button>
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('thinking', 'stats')">
+          📊 Stats
+        </button>
+      `,
+      fetch: `
+        <button class="btn btn-secondary" onclick="window.Dashboard.serverAction('fetch', 'ping')">
+          🔔 Ping URL
+        </button>
+      `,
+    };
+    
+    return actionSets[name] || '';
+  }
+
+  /**
    * Show server details
    */
   showServer(server) {
@@ -122,6 +230,7 @@ export class ServerDetailModal extends Modal {
     const { SERVER_ICONS, STATUS_ICONS } = window.DashboardConfig || {};
     const icon = SERVER_ICONS?.[server.name] || '⚙️';
     const statusIcon = STATUS_ICONS?.[server.status] || '?';
+    const serverActions = this.getServerActions(server);
     
     this.setTitle(`${icon} ${server.name}`);
     
@@ -143,6 +252,22 @@ export class ServerDetailModal extends Modal {
       <div class="server-detail-section">
         <div class="server-detail-label">Arguments</div>
         <div class="server-detail-value">${(server.config?.args || []).join(' ') || 'None'}</div>
+      </div>
+      
+      ${serverActions ? `
+        <div class="server-detail-section">
+          <div class="server-detail-label">Quick Actions</div>
+          <div class="server-actions-grid">
+            ${serverActions}
+          </div>
+        </div>
+      ` : ''}
+      
+      <div class="server-detail-section">
+        <div class="server-detail-label">Action Result</div>
+        <div class="server-action-result" id="server-action-result-${server.name}">
+          <em>Run an action to see results...</em>
+        </div>
       </div>
       
       ${server.config?.env ? `

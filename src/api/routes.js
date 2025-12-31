@@ -4,11 +4,14 @@
  */
 
 import { createServer } from 'http';
+import { agentHandlers } from '../servers/agent.js';
+import { clarityHandlers } from '../servers/clarity.js';
 import { fetchHandlers } from '../servers/fetch.js';
 import { githubHandlers } from '../servers/github.js';
 import { huggingfaceHandlers } from '../servers/huggingface.js';
 import { registry } from '../servers/index.js';
 import { memoryHandlers } from '../servers/memory.js';
+import { mongoHandlers } from '../servers/mongodb.js';
 import { postgresHandlers } from '../servers/postgres.js';
 import { puppeteerHandlers } from '../servers/puppeteer.js';
 import { thinkingHandlers } from '../servers/sequential-thinking.js';
@@ -872,6 +875,222 @@ async function handleRequest(req, res) {
   // GET /api/thinking/stats - Get thinking stats
   if (path === '/api/thinking/stats' && method === 'GET') {
     return json(res, thinkingHandlers.getStats());
+  }
+
+  // ============ CLARITY ANALYTICS MCP ROUTES ============
+
+  // POST /api/clarity/init - Initialize Clarity
+  if (path === '/api/clarity/init' && method === 'POST') {
+    return json(res, clarityHandlers.init());
+  }
+
+  // GET /api/clarity/info - Get Clarity info
+  if (path === '/api/clarity/info' && method === 'GET') {
+    return json(res, clarityHandlers.getInfo());
+  }
+
+  // GET /api/clarity/dashboard - Get dashboard data
+  if (path === '/api/clarity/dashboard' && method === 'GET') {
+    return json(res, clarityHandlers.getDashboardData());
+  }
+
+  // POST /api/clarity/identify - Identify user
+  if (path === '/api/clarity/identify' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = clarityHandlers.identify(
+        body.customId,
+        body.customSessionId,
+        body.customPageId,
+        body.friendlyName
+      );
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // POST /api/clarity/tag - Set custom tag
+  if (path === '/api/clarity/tag' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = clarityHandlers.setTag(body.key, body.value);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // POST /api/clarity/event - Track custom event
+  if (path === '/api/clarity/event' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = clarityHandlers.event(body.eventName, body.data || {});
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // POST /api/clarity/pageview - Track page view
+  if (path === '/api/clarity/pageview' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = clarityHandlers.pageView(body.path, body.data || {});
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // POST /api/clarity/upgrade - Upgrade session
+  if (path === '/api/clarity/upgrade' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = clarityHandlers.upgrade(body.reason);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // POST /api/clarity/consent - Set consent
+  if (path === '/api/clarity/consent' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = clarityHandlers.consent(body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // GET /api/clarity/sessions - List sessions
+  if (path === '/api/clarity/sessions' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit')) || 20;
+    const offset = parseInt(url.searchParams.get('offset')) || 0;
+    return json(res, clarityHandlers.listSessions({ limit, offset }));
+  }
+
+  // GET /api/clarity/sessions/:id - Get session by ID
+  const claritySessionMatch = path.match(/^\/api\/clarity\/sessions\/([^/]+)$/);
+  if (claritySessionMatch && method === 'GET') {
+    try {
+      const result = clarityHandlers.getSession(claritySessionMatch[1]);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 404);
+    }
+  }
+
+  // GET /api/clarity/events - Get event history
+  if (path === '/api/clarity/events' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit')) || 50;
+    const eventType = url.searchParams.get('type');
+    return json(res, clarityHandlers.getEventHistory({ limit, eventType }));
+  }
+
+  // GET /api/clarity/top-events - Get top events
+  if (path === '/api/clarity/top-events' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit')) || 10;
+    return json(res, clarityHandlers.getTopEvents(limit));
+  }
+
+  // GET /api/clarity/top-pages - Get top pages
+  if (path === '/api/clarity/top-pages' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit')) || 10;
+    return json(res, clarityHandlers.getTopPages(limit));
+  }
+
+  // POST /api/clarity/reset - Reset analytics data
+  if (path === '/api/clarity/reset' && method === 'POST') {
+    return json(res, clarityHandlers.reset());
+  }
+
+  // ============ AGENT ORCHESTRATOR ROUTES ============
+
+  // POST /api/agent/chat - Send message to agent
+  if (path === '/api/agent/chat' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await agentHandlers.chat(
+        body.message,
+        body.conversationId,
+        body.options || {}
+      );
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // GET /api/agent/tools - List available tools
+  if (path === '/api/agent/tools' && method === 'GET') {
+    return json(res, { tools: agentHandlers.getTools() });
+  }
+
+  // POST /api/agent/tools/execute - Execute a tool directly
+  if (path === '/api/agent/tools/execute' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await agentHandlers.executeTool(body.tool, body.args || {});
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // GET /api/agent/stats - Get agent statistics
+  if (path === '/api/agent/stats' && method === 'GET') {
+    return json(res, agentHandlers.getStats());
+  }
+
+  // GET /api/agent/config - Get agent configuration
+  if (path === '/api/agent/config' && method === 'GET') {
+    return json(res, agentHandlers.getConfig());
+  }
+
+  // POST /api/agent/config - Update agent configuration
+  if (path === '/api/agent/config' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = agentHandlers.setConfig(body);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 400);
+    }
+  }
+
+  // POST /api/agent/conversations - Create new conversation
+  if (path === '/api/agent/conversations' && method === 'POST') {
+    return json(res, agentHandlers.createConversation());
+  }
+
+  // GET /api/agent/conversations - List conversations
+  if (path === '/api/agent/conversations' && method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit')) || 20;
+    return json(res, agentHandlers.listConversations(limit));
+  }
+
+  // DELETE /api/agent/conversations - Clear all conversations
+  if (path === '/api/agent/conversations' && method === 'DELETE') {
+    return json(res, agentHandlers.clearConversations());
+  }
+
+  // GET /api/agent/conversations/:id - Get conversation by ID
+  const agentConvMatch = path.match(/^\/api\/agent\/conversations\/([^/]+)$/);
+  if (agentConvMatch && method === 'GET') {
+    try {
+      const result = agentHandlers.getConversation(agentConvMatch[1]);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 404);
+    }
+  }
+
+  // DELETE /api/agent/conversations/:id - Delete conversation
+  if (agentConvMatch && method === 'DELETE') {
+    return json(res, agentHandlers.deleteConversation(agentConvMatch[1]));
   }
 
   // 404 for unknown routes

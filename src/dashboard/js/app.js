@@ -22,6 +22,7 @@ import { initWebSocket } from './services/websocket.js';
 // Components
 import {
     addActivity,
+    AgentChatController,
     clearActivityFeed,
     closeAllModals,
     exportConfigs,
@@ -31,6 +32,7 @@ import {
     initSearchBar,
     initTheme,
     renderActivityFeed,
+    renderClarityDashboard,
     renderServerGrid,
     renderToastContainer,
     showToast,
@@ -134,14 +136,235 @@ window.Dashboard = {
     });
   },
 
+  // Server-specific actions
+  async serverAction(serverType, action) {
+    const resultEl = document.querySelector(`[id^="server-action-result"]`);
+    if (resultEl) resultEl.innerHTML = '<em>Loading...</em>';
+
+    try {
+      let result;
+      
+      // Import API functions dynamically
+      const api = await import('./services/api.js');
+      
+      switch (serverType) {
+        case 'memory':
+          if (action === 'readGraph') result = await api.fetchMemoryGraph();
+          else if (action === 'search') {
+            const query = prompt('Search query:');
+            if (query) result = await api.searchMemory(query);
+          }
+          break;
+          
+        case 'github':
+          if (action === 'user') result = await api.fetchGitHubUser();
+          else if (action === 'repos') result = await api.fetchGitHubRepos();
+          break;
+          
+        case 'mongodb':
+          if (action === 'connect') result = await api.connectMongoDB();
+          else if (action === 'collections') result = await api.fetchMongoDBCollections();
+          else if (action === 'stats') result = await api.fetchMongoDBStats();
+          break;
+          
+        case 'postgres':
+          if (action === 'connect') result = await api.connectPostgres();
+          else if (action === 'tables') result = await api.fetchPostgresTables();
+          break;
+          
+        case 'stripe':
+          if (action === 'customers') result = await api.fetchStripeCustomers();
+          else if (action === 'balance') result = await api.fetchStripeBalance();
+          break;
+          
+        case 'huggingface':
+          if (action === 'models') {
+            const query = prompt('Search models:') || 'llama';
+            result = await api.searchHuggingFaceModels(query);
+          } else if (action === 'datasets') {
+            const query = prompt('Search datasets:') || 'text';
+            result = await api.searchHuggingFaceDatasets(query);
+          }
+          break;
+          
+        case 'storage':
+          if (action === 'files') result = await api.fetchStorageFiles();
+          else if (action === 'stats') result = await api.fetchStorageStats();
+          break;
+          
+        case 'puppeteer':
+          if (action === 'status') result = await api.fetchPuppeteerStatus();
+          else if (action === 'launch') result = await api.launchPuppeteer();
+          break;
+          
+        case 'sqlite':
+          if (action === 'tables') result = await api.fetchSQLiteTables();
+          else if (action === 'stats') result = await api.fetchSQLiteStats();
+          break;
+          
+        case 'thinking':
+          if (action === 'sessions') result = await api.fetchThinkingSessions();
+          else if (action === 'stats') result = await api.fetchThinkingStats();
+          break;
+          
+        case 'fetch':
+          if (action === 'ping') {
+            const url = prompt('URL to ping:');
+            if (url) result = await api.pingUrl(url);
+          }
+          break;
+          
+        case 'clarity':
+          if (action === 'init') result = await api.initClarity();
+          else if (action === 'dashboard') result = await api.fetchClarityDashboard();
+          else if (action === 'identify') {
+            const userId = prompt('User ID:');
+            const friendlyName = prompt('Friendly name (optional):');
+            if (userId) result = await api.identifyClarityUser(userId, { friendlyName });
+          }
+          else if (action === 'tag') {
+            const key = prompt('Tag key:');
+            const value = prompt('Tag value:');
+            if (key && value) result = await api.setClarityTag(key, value);
+          }
+          else if (action === 'event') {
+            const eventName = prompt('Event name:');
+            if (eventName) result = await api.trackClarityEvent(eventName);
+          }
+          else if (action === 'sessions') result = await api.fetchClaritySessions();
+          else if (action === 'events') result = await api.fetchClarityEvents();
+          else if (action === 'top-events') result = await api.fetchClarityTopEvents();
+          else if (action === 'top-pages') result = await api.fetchClarityTopPages();
+          else if (action === 'upgrade') {
+            const reason = prompt('Upgrade reason:') || 'user_request';
+            result = await api.upgradeClaritySession(reason);
+          }
+          else if (action === 'reset') {
+            if (confirm('Reset all analytics data?')) {
+              result = await api.resetClarity();
+            }
+          }
+          break;
+        
+        default:
+          result = { error: 'Unknown server type' };
+      }
+      
+      if (resultEl && result) {
+        resultEl.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+      }
+      
+      addActivity(`${serverType}:${action}`, `Executed ${action} on ${serverType}`);
+      showToast('success', 'Action Complete', `${serverType}:${action}`);
+      
+    } catch (error) {
+      if (resultEl) resultEl.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+      showToast('error', 'Action Failed', error.message);
+    }
+  },
+
   // Refresh
   async refresh() {
     await refreshData();
+  },
+
+  // Clarity Analytics
+  async refreshClarity() {
+    try {
+      const container = document.getElementById('clarity-container');
+      if (!container) return;
+      
+      // Show loading state
+      container.innerHTML = `
+        <div class="glass-card" style="padding: var(--spacing-lg); text-align: center;">
+          <div class="loading-spinner"></div>
+          <p>Loading analytics...</p>
+        </div>
+      `;
+      
+      // Fetch dashboard data
+      const api = await import('./services/api.js');
+      const data = await api.fetchClarityDashboard();
+      
+      // Render dashboard
+      container.innerHTML = renderClarityDashboard(data);
+      
+      addActivity('clarity:refreshed', 'Analytics dashboard refreshed');
+    } catch (error) {
+      const container = document.getElementById('clarity-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="glass-card" style="padding: var(--spacing-lg); text-align: center;">
+            <p class="error">⚠️ ${error.message}</p>
+            <button class="btn btn-outline" onclick="window.Dashboard.refreshClarity()">Retry</button>
+          </div>
+        `;
+      }
+      showToast('error', 'Analytics Error', error.message);
+    }
   },
 };
 
 // Also expose config for components
 window.DashboardConfig = Config;
+
+// Global Clarity action handler (used by ClarityDashboard component)
+window.clarityAction = async function(action) {
+  const api = await import('./services/api.js');
+  
+  try {
+    switch (action) {
+      case 'refresh':
+        await window.Dashboard.refreshClarity();
+        break;
+        
+      case 'identify':
+        const userId = prompt('Enter user ID:');
+        const friendlyName = prompt('Friendly name (optional):');
+        if (userId) {
+          await api.identifyClarityUser(userId, { friendlyName });
+          showToast('success', 'User Identified', userId);
+          addActivity('clarity:identify', `Identified user: ${userId}`);
+          await window.Dashboard.refreshClarity();
+        }
+        break;
+        
+      case 'tag':
+        const key = prompt('Tag key:');
+        const value = prompt('Tag value:');
+        if (key && value) {
+          await api.setClarityTag(key, value);
+          showToast('success', 'Tag Set', `${key}=${value}`);
+          addActivity('clarity:tag', `Set tag: ${key}=${value}`);
+          await window.Dashboard.refreshClarity();
+        }
+        break;
+        
+      case 'event':
+        const eventName = prompt('Event name:');
+        if (eventName) {
+          await api.trackClarityEvent(eventName);
+          showToast('success', 'Event Tracked', eventName);
+          addActivity('clarity:event', `Tracked event: ${eventName}`);
+          await window.Dashboard.refreshClarity();
+        }
+        break;
+        
+      case 'upgrade':
+        const reason = prompt('Upgrade reason:') || 'important_session';
+        await api.upgradeClaritySession(reason);
+        showToast('success', 'Session Upgraded', reason);
+        addActivity('clarity:upgrade', `Upgraded session: ${reason}`);
+        await window.Dashboard.refreshClarity();
+        break;
+        
+      default:
+        console.warn('Unknown clarity action:', action);
+    }
+  } catch (error) {
+    showToast('error', 'Clarity Action Failed', error.message);
+  }
+};
 
 // ============================================================================
 // RENDERING
@@ -254,6 +477,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initial data fetch
   await refreshData();
   updateSystemInfo();
+  
+  // Initialize Clarity dashboard
+  await window.Dashboard.refreshClarity();
+  
+  // Initialize Agent Chat
+  await AgentChatController.init();
   
   // Fallback polling (30s interval)
   const polling = usePolling(async () => {

@@ -4,6 +4,8 @@
  */
 
 export * from './ActivityFeed.js';
+export * from './AgentChat.js';
+export * from './ClarityDashboard.js';
 export * from './ConfigActions.js';
 export * from './Modal.js';
 export * from './SearchBar.js';

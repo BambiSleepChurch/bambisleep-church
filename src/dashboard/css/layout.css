@@ -137,3 +137,55 @@ kbd {
   min-width: 24px;
   text-align: center;
 }
+
+/* ========================================================================
+   INTEGRATIONS GRID (11 MCP Servers)
+   ======================================================================== */
+.integrations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.integration-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.integration-item:hover {
+  background: rgba(255, 105, 180, 0.1);
+  border-color: var(--primary-alt);
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+}
+
+.integration-item[data-active="true"] {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: var(--success);
+}
+
+.integration-icon {
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.integration-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: white;
+}
+
+.integration-desc {
+  font-size: var(--text-xs);
+  opacity: 0.6;
+  text-align: center;
+}

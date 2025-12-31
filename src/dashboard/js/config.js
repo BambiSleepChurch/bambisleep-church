@@ -44,10 +44,12 @@ export const SERVER_ICONS = {
   sqlite: '💾',
   memory: '🧠',
   'sequential-thinking': '🔗',
+  thinking: '💭',
   mongodb: '🍃',
   stripe: '💳',
   huggingface: '🤗',
   clarity: '📊',
+  storage: '📁',
   default: '⚙️',
 };
 
