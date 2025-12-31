@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Agent Personality System** - Bambi AI assistant with ethereal traits
+
+  - Agent personality configuration (name, role, traits, greeting, style)
+  - Personality-aware fallback responses when LM Studio unavailable
+  - Agent self-registration in knowledge graph on initialization
+  - Real-time event emission system (`emitEvent`, `onEvent`)
+  - Private class fields for proper encapsulation
+
+- **LM Studio Enhancements** - Advanced local AI inference capabilities
+
+  - `chatWithImage()` - Vision input for image analysis (LLaVA, etc.)
+  - `chatStructured()` - JSON schema-based structured output
+  - `executeToolLoop()` - Autonomous tool calling until completion
+  - `autoLoadModel()` - Auto-load best model from candidates
+  - `loadModel()` - JIT model loading via minimal request
+  - Default model candidates: qwen3, qwen2.5, llama, mistral, gemma, phi
+
+- **Agent API Routes** - New endpoints for agent management
+
+  - `GET /api/agent/personality` - Get agent personality info
+  - `POST /api/agent/initialize` - Initialize agent and connect to LM Studio
+
+- **Configuration Expansion** - Extended `src/utils/config.js`
+
+  - `lmstudio` section: baseUrl, host, port, model, temperature, maxTokens, timeout
+  - `agent` section: maxIterations, maxConversations, conversationTtl, personalityName
+  - `mcp` section: apiUrl, wsUrl, maxReconnectAttempts, reconnectInterval
+
 - **MongoDB Atlas Support** - Optimized connection settings for cloud deployment
 
   - Atlas URI detection with automatic configuration
