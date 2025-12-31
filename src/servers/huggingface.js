@@ -14,7 +14,7 @@ const HF_INFERENCE_API = 'https://router.huggingface.co';
  * HuggingFace API client
  */
 class HuggingFaceClient {
-  constructor(token = process.env.HF_ACCESS_TOKEN) {
+  constructor(token = process.env.HUGGINGFACE_TOKEN || process.env.HF_ACCESS_TOKEN) {
     this.token = token;
     this.headers = {
       'Content-Type': 'application/json',
