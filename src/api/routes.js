@@ -3,9 +3,9 @@
  * API Routes
  */
 
+import { readdir, readFile } from 'fs/promises';
 import { createServer } from 'http';
-import { readFile, stat, readdir } from 'fs/promises';
-import { dirname, join, extname } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { agentHandlers } from '../servers/agent.js';
 import { clarityHandlers } from '../servers/clarity.js';
