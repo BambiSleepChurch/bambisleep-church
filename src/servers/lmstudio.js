@@ -77,6 +77,7 @@ const DEFAULT_MODEL_CANDIDATES = [
 export class LMStudioClient {
   #config;
   #baseUrl;
+  #apiV0Url; // REST API v0 base URL
   #model;
   #temperature;
   #maxTokens;
@@ -84,6 +85,7 @@ export class LMStudioClient {
   #connected = false;
   #loadedModel = null;
   #availableModels = [];
+  #downloadedModels = []; // All downloaded models (loaded + not loaded)
 
   constructor(configOverride = {}) {
     // Get configuration from centralized config, with overrides
@@ -91,6 +93,8 @@ export class LMStudioClient {
     this.#config = { ...defaultConfig, ...configOverride };
     
     this.#baseUrl = this.#config.baseUrl || `http://${this.#config.host}:${this.#config.port}/v1`;
+    // REST API v0 endpoint for model management
+    this.#apiV0Url = this.#baseUrl.replace('/v1', '/api/v0');
     this.#model = this.#config.model;
     this.#temperature = this.#config.temperature;
     this.#maxTokens = this.#config.maxTokens;
@@ -151,8 +155,9 @@ export class LMStudioClient {
   }
 
   /**
-   * List available models from LM Studio
-   * @returns {Promise<Array>} List of available models
+   * List loaded models from LM Studio (OpenAI-compatible endpoint)
+   * Only returns models currently loaded in memory
+   * @returns {Promise<Array>} List of loaded models
    */
   async listModels() {
     try {
@@ -170,6 +175,38 @@ export class LMStudioClient {
       return this.#availableModels;
     } catch (error) {
       logger.error('Failed to list models:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * List ALL downloaded models from LM Studio (REST API v0)
+   * Returns both loaded and not-loaded models with state info
+   * @returns {Promise<Array>} List of all downloaded models
+   */
+  async listDownloadedModels() {
+    try {
+      const response = await fetch(`${this.#apiV0Url}/models`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to list downloaded models: ${response.status}`);
+      }
+
+      const data = await response.json();
+      this.#downloadedModels = data.data || [];
+      
+      logger.debug('[LmStudio] Downloaded models:', {
+        total: this.#downloadedModels.length,
+        loaded: this.#downloadedModels.filter(m => m.state === 'loaded').length,
+        notLoaded: this.#downloadedModels.filter(m => m.state === 'not-loaded').length,
+      });
+      
+      return this.#downloadedModels;
+    } catch (error) {
+      logger.error('Failed to list downloaded models:', error.message);
       throw error;
     }
   }
@@ -713,7 +750,8 @@ export class LMStudioClient {
   }
 
   /**
-   * Auto-load a model from configured or default candidates
+   * Auto-load a model from downloaded models using JIT loading
+   * Uses REST API v0 to discover downloaded models, then JIT loads the best match
    * @returns {Promise<string|null>} Loaded model ID or null
    */
   async autoLoadModel() {
@@ -732,57 +770,102 @@ export class LMStudioClient {
         return this.#loadedModel;
       }
 
-      // Use first available
+      // Use first available loaded model
       this.#loadedModel = loadedModels[0].id;
       logger.info(`Using first available model: ${this.#loadedModel}`);
       return this.#loadedModel;
     }
 
-    // No models loaded - try to JIT load configured model first
-    const candidates = [this.#model, ...DEFAULT_MODEL_CANDIDATES];
+    // No models loaded - check downloaded models via REST API v0
+    try {
+      const downloadedModels = await this.listDownloadedModels();
+      
+      if (downloadedModels.length === 0) {
+        logger.error('No models downloaded in LM Studio. Please download a model first.');
+        return null;
+      }
 
-    for (const candidate of candidates) {
-      if (await this.loadModel(candidate)) {
+      // Filter to LLM models only (not embeddings)
+      const llmModels = downloadedModels.filter(m => m.type === 'llm' || m.type === 'vlm');
+      
+      if (llmModels.length === 0) {
+        logger.error('No LLM models downloaded. Please download an LLM model in LM Studio.');
+        return null;
+      }
+
+      logger.info(`Found ${llmModels.length} downloaded LLM model(s), attempting JIT load...`);
+
+      // Try to find a model matching our configured preference
+      const targetModel = this.#model;
+      const candidates = [targetModel, ...DEFAULT_MODEL_CANDIDATES];
+
+      for (const candidate of candidates) {
+        const matchedModel = llmModels.find(m =>
+          m.id.toLowerCase().includes(candidate.toLowerCase())
+        );
+
+        if (matchedModel) {
+          logger.info(`Found matching model: ${matchedModel.id} (state: ${matchedModel.state})`);
+          if (await this.loadModel(matchedModel.id)) {
+            return this.#loadedModel;
+          }
+        }
+      }
+
+      // Fallback: try to load the first available LLM model
+      const firstModel = llmModels[0];
+      logger.info(`Trying first available model: ${firstModel.id}`);
+      if (await this.loadModel(firstModel.id)) {
         return this.#loadedModel;
       }
+
+    } catch (error) {
+      logger.error('Failed to discover downloaded models:', error.message);
     }
 
-    logger.error('Could not auto-load any model. Please load a model in LM Studio.');
+    logger.error('Could not auto-load any model. Please ensure LM Studio has models downloaded.');
     return null;
   }
 
   /**
-   * Attempt to load a model by making a minimal request (JIT loading)
+   * JIT load a model by making a minimal request
+   * LM Studio will automatically load the model if it's downloaded
    * @param {string} modelId - Model identifier to load
    * @returns {Promise<boolean>} True if model loaded successfully
    */
   async loadModel(modelId) {
-    logger.info(`Attempting to load model: ${modelId}`);
+    logger.info(`JIT loading model: ${modelId}`);
 
     try {
       // Make a minimal chat request to trigger JIT loading
+      // LM Studio will auto-load the model if it's downloaded
       const response = await fetch(`${this.#baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: modelId,
-          messages: [{ role: 'user', content: 'test' }],
+          messages: [{ role: 'user', content: 'Hi' }],
           max_tokens: 1,
           temperature: 0,
         }),
+        signal: AbortSignal.timeout(120000), // 2 min timeout for model loading
       });
 
       if (response.ok) {
         this.#loadedModel = modelId;
-        logger.info(`✅ Model loaded successfully: ${modelId}`);
+        logger.info(`✅ Model JIT loaded successfully: ${modelId}`);
         return true;
       }
 
       const error = await response.json();
-      logger.warn(`Failed to load model ${modelId}:`, error.error?.message);
+      logger.warn(`Failed to JIT load model ${modelId}:`, error.error?.message);
       return false;
     } catch (error) {
-      logger.error(`Error loading model ${modelId}:`, error.message);
+      if (error.name === 'TimeoutError') {
+        logger.error(`Model loading timeout for ${modelId} (model may be too large)`);
+      } else {
+        logger.error(`Error loading model ${modelId}:`, error.message);
+      }
       return false;
     }
   }
@@ -818,12 +901,27 @@ export const lmstudioHandlers = {
   },
 
   /**
-   * List available models
+   * List loaded models (OpenAI-compatible endpoint)
    */
   listModels: async () => {
     const client = getLmStudioClient();
     const models = await client.listModels();
     return { models, count: models.length };
+  },
+
+  /**
+   * List ALL downloaded models (REST API v0)
+   * Includes both loaded and not-loaded models
+   */
+  listDownloadedModels: async () => {
+    const client = getLmStudioClient();
+    const models = await client.listDownloadedModels();
+    return { 
+      models, 
+      count: models.length,
+      loaded: models.filter(m => m.state === 'loaded').length,
+      notLoaded: models.filter(m => m.state === 'not-loaded').length,
+    };
   },
 
   /**
