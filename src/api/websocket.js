@@ -120,21 +120,26 @@ export function emitStatsUpdate(stats) {
 function handleMessage(client, data) {
   try {
     const message = JSON.parse(data);
+    const messageType = message.type?.toUpperCase();
     
-    switch (message.type) {
-      case MessageTypes.PING:
-        sendTo(client, { type: MessageTypes.PONG, timestamp: Date.now() });
+    switch (messageType) {
+      case 'PING':
+        sendTo(client, { type: 'PONG', timestamp: Date.now() });
         break;
         
-      case MessageTypes.SUBSCRIBE:
+      case 'SUBSCRIBE':
         client.subscriptions = client.subscriptions || new Set();
         if (message.channel) {
           client.subscriptions.add(message.channel);
           logger.debug(`Client subscribed to ${message.channel}`);
         }
+        if (message.channels && Array.isArray(message.channels)) {
+          message.channels.forEach(ch => client.subscriptions.add(ch));
+          logger.debug(`Client subscribed to ${message.channels.join(', ')}`);
+        }
         break;
         
-      case MessageTypes.UNSUBSCRIBE:
+      case 'UNSUBSCRIBE':
         if (client.subscriptions && message.channel) {
           client.subscriptions.delete(message.channel);
           logger.debug(`Client unsubscribed from ${message.channel}`);
