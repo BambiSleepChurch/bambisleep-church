@@ -18,8 +18,8 @@
  * @see https://lmstudio.ai/docs/developer/openai-compat
  */
 
-import { createLogger } from '../utils/logger.js';
 import { getConfig } from '../utils/config.js';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('lmstudio');
 

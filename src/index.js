@@ -3,6 +3,8 @@
  * Main Entry Point
  */
 
+import 'dotenv/config';
+
 import { createApiServer } from './api/routes.js';
 import { createDashboardServer } from './dashboard/server.js';
 import { registry } from './servers/index.js';
