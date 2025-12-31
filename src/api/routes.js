@@ -4,6 +4,9 @@
  */
 
 import { createServer } from 'http';
+import { readFile, stat, readdir } from 'fs/promises';
+import { dirname, join, extname } from 'path';
+import { fileURLToPath } from 'url';
 import { agentHandlers } from '../servers/agent.js';
 import { clarityHandlers } from '../servers/clarity.js';
 import { fetchHandlers } from '../servers/fetch.js';
@@ -301,10 +304,40 @@ async function handleRequest(req, res) {
     }
   }
 
-  // GET /api/lmstudio/models - List available models
+  // GET /api/lmstudio/status - Get connection status and config
+  if (path === '/api/lmstudio/status' && method === 'GET') {
+    try {
+      const result = lmstudioHandlers.getStatus();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/lmstudio/server - Get full server status
+  if (path === '/api/lmstudio/server' && method === 'GET') {
+    try {
+      const result = await lmstudioHandlers.getServerStatus();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/lmstudio/models - List loaded models
   if (path === '/api/lmstudio/models' && method === 'GET') {
     try {
       const result = await lmstudioHandlers.listModels();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/lmstudio/models/downloaded - List all downloaded models
+  if (path === '/api/lmstudio/models/downloaded' && method === 'GET') {
+    try {
+      const result = await lmstudioHandlers.listDownloadedModels();
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
@@ -315,6 +348,61 @@ async function handleRequest(req, res) {
   if (path === '/api/lmstudio/model/loaded' && method === 'GET') {
     try {
       const result = await lmstudioHandlers.selectLoadedModel();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/model/select - Select a loaded model
+  if (path === '/api/lmstudio/model/select' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.selectLoadedModel(body.modelName);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/model/load - Load a specific model
+  if (path === '/api/lmstudio/model/load' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.loadModel(body.modelId, body.options || {});
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/model/unload - Unload a model
+  if (path === '/api/lmstudio/model/unload' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.unloadModel(body.modelId);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/model/autoload - Auto-load best available model
+  if (path === '/api/lmstudio/model/autoload' && method === 'POST') {
+    try {
+      const result = await lmstudioHandlers.autoLoadModel();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/lmstudio/model/:id/info - Get model info
+  const lmModelInfoMatch = path.match(/^\/api\/lmstudio\/model\/([^/]+)\/info$/);
+  if (lmModelInfoMatch && method === 'GET') {
+    try {
+      const modelId = decodeURIComponent(lmModelInfoMatch[1]);
+      const result = await lmstudioHandlers.getModelInfo(modelId);
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
@@ -332,6 +420,17 @@ async function handleRequest(req, res) {
     }
   }
 
+  // POST /api/lmstudio/chat/v0 - Chat using REST API v0 with enhanced stats
+  if (path === '/api/lmstudio/chat/v0' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.chatV0(body.messages, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
   // POST /api/lmstudio/chat/tools - Chat with tool calling
   if (path === '/api/lmstudio/chat/tools' && method === 'POST') {
     try {
@@ -343,11 +442,33 @@ async function handleRequest(req, res) {
     }
   }
 
+  // POST /api/lmstudio/chat/image - Chat with image input (vision)
+  if (path === '/api/lmstudio/chat/image' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.chatWithImage(body.text, body.images, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/chat/structured - Chat with structured JSON output
+  if (path === '/api/lmstudio/chat/structured' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.chatStructured(body.messages, body.schema, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
   // POST /api/lmstudio/complete - Text completion
   if (path === '/api/lmstudio/complete' && method === 'POST') {
     try {
       const body = await parseBody(req);
-      const result = await lmstudioHandlers.complete(body.prompt, body.options);
+      const result = await lmstudioHandlers.completeV0(body.prompt, body.options);
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
@@ -359,6 +480,50 @@ async function handleRequest(req, res) {
     try {
       const body = await parseBody(req);
       const result = await lmstudioHandlers.embed(body.input, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/embeddings - Get multiple embeddings
+  if (path === '/api/lmstudio/embeddings' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.getEmbeddings(body.texts, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/similar - Find similar texts
+  if (path === '/api/lmstudio/similar' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.findSimilar(body.query, body.candidates, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/describe - Describe a single image
+  if (path === '/api/lmstudio/describe' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.describeImage(body.image, body.prompt, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/analyze - Analyze multiple images
+  if (path === '/api/lmstudio/analyze' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.analyzeImages(body.images, body.question, body.options);
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
@@ -439,11 +604,66 @@ async function handleRequest(req, res) {
 
   // ============ FETCH MCP ROUTES ============
 
-  // POST /api/fetch - Make HTTP request
+  // POST /api/fetch - Make HTTP GET request
   if (path === '/api/fetch' && method === 'POST') {
     try {
       const body = await parseBody(req);
       const result = await fetchHandlers.get(body.url, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/fetch/post - Make HTTP POST request
+  if (path === '/api/fetch/post' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await fetchHandlers.post(body.url, body.body, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/fetch/put - Make HTTP PUT request
+  if (path === '/api/fetch/put' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await fetchHandlers.put(body.url, body.body, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/fetch/patch - Make HTTP PATCH request
+  if (path === '/api/fetch/patch' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await fetchHandlers.patch(body.url, body.body, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/fetch/delete - Make HTTP DELETE request
+  if (path === '/api/fetch/delete' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await fetchHandlers.delete(body.url, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/fetch/head - Make HTTP HEAD request
+  if (path === '/api/fetch/head' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await fetchHandlers.head(body.url, body.options);
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
@@ -458,6 +678,28 @@ async function handleRequest(req, res) {
         return json(res, { error: 'Missing url parameter' }, 400);
       }
       const result = await fetchHandlers.ping(targetUrl);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/fetch/download - Download file as base64
+  if (path === '/api/fetch/download' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await fetchHandlers.downloadBase64(body.url);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/fetch/feed - Fetch RSS/Atom feed
+  if (path === '/api/fetch/feed' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await fetchHandlers.fetchFeed(body.url);
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
@@ -750,6 +992,149 @@ async function handleRequest(req, res) {
   if (path === '/api/puppeteer/close' && method === 'POST') {
     try {
       const result = await puppeteerHandlers.close();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/click - Click element
+  if (path === '/api/puppeteer/click' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await puppeteerHandlers.click(body.selector, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/type - Type text
+  if (path === '/api/puppeteer/type' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await puppeteerHandlers.type(body.selector, body.text, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/evaluate - Execute JavaScript
+  if (path === '/api/puppeteer/evaluate' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await puppeteerHandlers.evaluate(body.script);
+      return json(res, { success: true, result });
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/puppeteer/content - Get page content
+  if (path === '/api/puppeteer/content' && method === 'GET') {
+    try {
+      const content = await puppeteerHandlers.getContent();
+      return json(res, { success: true, content });
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/content - Get page content with selector
+  if (path === '/api/puppeteer/content' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      let content;
+      if (body.selector) {
+        content = await puppeteerHandlers.getText(body.selector);
+      } else {
+        content = await puppeteerHandlers.getContent();
+      }
+      return json(res, { success: true, content });
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/pdf - Generate PDF
+  if (path === '/api/puppeteer/pdf' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await puppeteerHandlers.pdf(body);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/wait - Wait for selector
+  if (path === '/api/puppeteer/wait' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await puppeteerHandlers.waitForSelector(body.selector, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/viewport - Set viewport size
+  if (path === '/api/puppeteer/viewport' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await puppeteerHandlers.setViewport(body.width, body.height);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/puppeteer/cookies - Get cookies
+  if (path === '/api/puppeteer/cookies' && method === 'GET') {
+    try {
+      const cookies = await puppeteerHandlers.getCookies();
+      return json(res, { cookies });
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/puppeteer/cookies - Set cookies
+  if (path === '/api/puppeteer/cookies' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await puppeteerHandlers.setCookies(body.cookies);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // DELETE /api/puppeteer/cookies - Clear cookies
+  if (path === '/api/puppeteer/cookies' && method === 'DELETE') {
+    try {
+      const result = await puppeteerHandlers.clearCookies();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/puppeteer/console - Get console logs
+  if (path === '/api/puppeteer/console' && method === 'GET') {
+    try {
+      const logs = puppeteerHandlers.getConsoleLogs();
+      return json(res, { logs });
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // DELETE /api/puppeteer/console - Clear console logs
+  if (path === '/api/puppeteer/console' && method === 'DELETE') {
+    try {
+      const result = puppeteerHandlers.clearConsoleLogs();
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
@@ -1059,6 +1444,56 @@ async function handleRequest(req, res) {
   // POST /api/clarity/reset - Reset analytics data
   if (path === '/api/clarity/reset' && method === 'POST') {
     return json(res, clarityHandlers.reset());
+  }
+
+  // ============ DOCUMENTATION ROUTES ============
+
+  // GET /api/docs - List documentation files
+  if (path === '/api/docs' && method === 'GET') {
+    try {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
+      const docsDir = join(__dirname, '..', '..', 'docs');
+      
+      const files = await readdir(docsDir);
+      const docs = files
+        .filter(f => f.endsWith('.md'))
+        .map(f => ({
+          name: f.replace('.md', ''),
+          filename: f,
+          path: `/api/docs/${encodeURIComponent(f)}`,
+        }));
+      return json(res, { docs });
+    } catch (error) {
+      return json(res, { error: error.message, docs: [] }, 500);
+    }
+  }
+
+  // GET /api/docs/:filename - Get specific documentation file
+  const docsMatch = path.match(/^\/api\/docs\/([^/]+\.md)$/);
+  if (docsMatch && method === 'GET') {
+    try {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
+      const docsDir = join(__dirname, '..', '..', 'docs');
+      
+      const filename = decodeURIComponent(docsMatch[1]);
+      const filePath = join(docsDir, filename);
+      
+      // Security: prevent directory traversal
+      if (!filePath.startsWith(docsDir)) {
+        return json(res, { error: 'Forbidden' }, 403);
+      }
+      
+      const content = await readFile(filePath, 'utf-8');
+      return json(res, {
+        filename,
+        name: filename.replace('.md', ''),
+        content,
+      });
+    } catch (error) {
+      return json(res, { error: 'Document not found' }, 404);
+    }
   }
 
   // ============ AGENT ORCHESTRATOR ROUTES ============
