@@ -12,10 +12,15 @@
  * - Embeddings generation with similarity search
  * - Structured JSON output
  * - Auto model selection and JIT loading
+ * - REST API v0 with enhanced stats (tokens/sec, TTFT)
+ * - TTL (Time-To-Live) for auto model unloading
+ * - Model info (arch, quantization, context length)
  * 
  * Based on bambisleep-church-agent LmStudioClient implementation.
  * 
  * @see https://lmstudio.ai/docs/developer/openai-compat
+ * @see https://lmstudio.ai/docs/developer/rest/endpoints
+ * @see https://lmstudio.ai/docs/cli
  */
 
 import { getConfig } from '../utils/config.js';
@@ -236,6 +241,31 @@ export class LMStudioClient {
   }
 
   /**
+   * Get detailed info about a specific model (REST API v0)
+   * @param {string} modelId - Model identifier
+   * @returns {Promise<Object>} Model info with arch, quantization, context length, etc.
+   */
+  async getModelInfo(modelId) {
+    try {
+      const response = await fetch(`${this.#apiV0Url}/models/${encodeURIComponent(modelId)}`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get model info: ${response.status}`);
+      }
+
+      const data = await response.json();
+      logger.debug('[LmStudio] Model info:', data);
+      return data;
+    } catch (error) {
+      logger.error(`Failed to get model info for ${modelId}:`, error.message);
+      throw error;
+    }
+  }
+
+  /**
    * Select a loaded model (or use the first available)
    * Auto-selects model matching configured model name
    * @param {string} [modelName] - Optional model name to search for
@@ -307,6 +337,11 @@ export class LMStudioClient {
       stream: options.stream ?? false,
     };
 
+    // Add TTL for JIT-loaded models (seconds until auto-unload when idle)
+    if (options.ttl !== undefined) {
+      payload.ttl = options.ttl;
+    }
+
     // Add tools if provided
     if (options.tools && options.tools.length > 0) {
       payload.tools = options.tools;
@@ -321,6 +356,7 @@ export class LMStudioClient {
     logger.debug('[LmStudio] Chat request:', { 
       model, 
       messageCount: messages.length,
+      ttl: options.ttl,
     });
 
     try {
@@ -354,6 +390,131 @@ export class LMStudioClient {
       }
       
       logger.error('[LmStudio] Chat completion error:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Chat using REST API v0 with enhanced stats
+   * Returns tokens_per_second, time_to_first_token, model_info, runtime
+   * 
+   * @param {Array<{role: string, content: string}>} messages - Chat messages
+   * @param {Object} options - Additional options (ttl, temperature, maxTokens, etc.)
+   * @returns {Promise<Object>} Response with enhanced stats
+   * 
+   * @example
+   * ```javascript
+   * const response = await client.chatV0([
+   *   { role: 'user', content: 'Hello!' }
+   * ], { ttl: 300 }); // Auto-unload after 5 min idle
+   * 
+   * console.log(response.stats.tokens_per_second);
+   * console.log(response.stats.time_to_first_token);
+   * console.log(response.model_info.arch);
+   * ```
+   */
+  async chatV0(messages, options = {}) {
+    if (!this.#loadedModel) {
+      await this.selectLoadedModel();
+    }
+
+    const model = options.model || this.#loadedModel || this.#model;
+    const temperature = options.temperature ?? this.#temperature;
+    const maxTokens = options.maxTokens ?? this.#maxTokens;
+
+    const payload = {
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      stream: options.stream ?? false,
+    };
+
+    // TTL for JIT-loaded models (seconds)
+    if (options.ttl !== undefined) {
+      payload.ttl = options.ttl;
+    }
+
+    // Stop sequences
+    if (options.stop) {
+      payload.stop = options.stop;
+    }
+
+    logger.debug('[LmStudio] REST API v0 chat request:', { model, ttl: options.ttl });
+
+    try {
+      const response = await fetch(`${this.#apiV0Url}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(this.#timeout),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`REST API v0 chat failed: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      this.#connected = true;
+
+      // Log enhanced stats
+      if (data.stats) {
+        logger.info('[LmStudio] Stats:', {
+          tokensPerSecond: data.stats.tokens_per_second?.toFixed(2),
+          ttft: data.stats.time_to_first_token,
+          generationTime: data.stats.generation_time,
+        });
+      }
+
+      return data;
+    } catch (error) {
+      if (error.name === 'TimeoutError') {
+        throw new Error('LM Studio REST API v0 request timed out');
+      }
+      logger.error('[LmStudio] REST API v0 error:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Text completion using REST API v0 with enhanced stats
+   * @param {string} prompt - Text prompt
+   * @param {Object} options - Additional options
+   * @returns {Promise<Object>} Response with text and stats
+   */
+  async completeV0(prompt, options = {}) {
+    const model = options.model || this.#loadedModel || this.#model;
+    const temperature = options.temperature ?? this.#temperature;
+    const maxTokens = options.maxTokens ?? this.#maxTokens;
+
+    const payload = {
+      model,
+      prompt,
+      temperature,
+      max_tokens: maxTokens,
+      stream: false,
+    };
+
+    if (options.ttl !== undefined) payload.ttl = options.ttl;
+    if (options.stop) payload.stop = options.stop;
+
+    try {
+      const response = await fetch(`${this.#apiV0Url}/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(this.#timeout),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`REST API v0 completion failed: ${response.status} - ${errorText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      logger.error('[LmStudio] REST API v0 completion error:', error.message);
       throw error;
     }
   }
@@ -883,27 +1044,37 @@ export class LMStudioClient {
    * @param {string} modelId - Model identifier to load
    * @returns {Promise<boolean>} True if model loaded successfully
    */
-  async loadModel(modelId) {
-    logger.info(`JIT loading model: ${modelId}`);
+  async loadModel(modelId, options = {}) {
+    const { ttl, gpu, contextLength, identifier } = options;
+    
+    logger.info(`JIT loading model: ${modelId}`, { ttl, gpu, contextLength, identifier });
 
     try {
+      // Build payload with optional load parameters
+      const payload = {
+        model: identifier || modelId, // Use custom identifier if provided
+        messages: [{ role: 'user', content: 'Hi' }],
+        max_tokens: 1,
+        temperature: 0,
+      };
+
+      // Add TTL for auto-unload after idle (seconds)
+      if (ttl !== undefined) {
+        payload.ttl = ttl;
+      }
+
       // Make a minimal chat request to trigger JIT loading
       // LM Studio will auto-load the model if it's downloaded
       const response = await fetch(`${this.#baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: modelId,
-          messages: [{ role: 'user', content: 'Hi' }],
-          max_tokens: 1,
-          temperature: 0,
-        }),
-        signal: AbortSignal.timeout(120000), // 2 min timeout for model loading
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(180000), // 3 min timeout for model loading
       });
 
       if (response.ok) {
-        this.#loadedModel = modelId;
-        logger.info(`✅ Model JIT loaded successfully: ${modelId}`);
+        this.#loadedModel = identifier || modelId;
+        logger.info(`✅ Model JIT loaded successfully: ${this.#loadedModel}`);
         return true;
       }
 
@@ -917,6 +1088,66 @@ export class LMStudioClient {
         logger.error(`Error loading model ${modelId}:`, error.message);
       }
       return false;
+    }
+  }
+
+  /**
+   * Unload a model from memory
+   * Note: LM Studio doesn't have a direct unload API, but TTL can be used
+   * @param {string} [modelId] - Model to unload (optional, uses current if not specified)
+   * @returns {Promise<boolean>} True if operation completed
+   */
+  async unloadModel(modelId = null) {
+    const targetModel = modelId || this.#loadedModel;
+    
+    if (!targetModel) {
+      logger.warn('No model to unload');
+      return false;
+    }
+
+    // LM Studio doesn't have a direct REST API for unloading
+    // The recommended approach is to use TTL or the CLI (lms unload)
+    logger.info(`Model unloading requires LM Studio CLI: lms unload ${targetModel}`);
+    logger.info('Or set a TTL when loading: loadModel(modelId, { ttl: 300 })');
+    
+    // Clear local state
+    if (this.#loadedModel === targetModel) {
+      this.#loadedModel = null;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Get server health/status
+   * @returns {Promise<Object>} Server status info
+   */
+  async getServerStatus() {
+    try {
+      // Check if server is responding
+      const connected = await this.testConnection();
+      const models = await this.listDownloadedModels();
+      
+      const loadedModels = models.filter(m => m.state === 'loaded');
+      
+      return {
+        connected,
+        loadedModelCount: loadedModels.length,
+        downloadedModelCount: models.length,
+        loadedModels: loadedModels.map(m => ({
+          id: m.id,
+          type: m.type,
+          arch: m.arch,
+          quantization: m.quantization,
+          maxContextLength: m.max_context_length,
+        })),
+        currentModel: this.#loadedModel,
+      };
+    } catch (error) {
+      return {
+        connected: false,
+        error: error.message,
+      };
     }
   }
 }
@@ -989,6 +1220,23 @@ export const lmstudioHandlers = {
   chat: async (messages, options = {}) => {
     const client = getLmStudioClient();
     return client.chat(messages, options);
+  },
+
+  /**
+   * Chat using REST API v0 with enhanced stats
+   * Returns tokens_per_second, time_to_first_token, model_info
+   */
+  chatV0: async (messages, options = {}) => {
+    const client = getLmStudioClient();
+    return client.chatV0(messages, options);
+  },
+
+  /**
+   * Text completion using REST API v0 with enhanced stats
+   */
+  completeV0: async (prompt, options = {}) => {
+    const client = getLmStudioClient();
+    return client.completeV0(prompt, options);
   },
 
   /**
@@ -1102,12 +1350,39 @@ export const lmstudioHandlers = {
   },
 
   /**
-   * Attempt to load a specific model
+   * Attempt to load a specific model with options
+   * @param {string} modelId - Model identifier
+   * @param {Object} options - Load options (ttl, gpu, contextLength, identifier)
    */
-  loadModel: async (modelId) => {
+  loadModel: async (modelId, options = {}) => {
     const client = getLmStudioClient();
-    const success = await client.loadModel(modelId);
+    const success = await client.loadModel(modelId, options);
+    return { modelId, success, options };
+  },
+
+  /**
+   * Unload a model from memory
+   */
+  unloadModel: async (modelId = null) => {
+    const client = getLmStudioClient();
+    const success = await client.unloadModel(modelId);
     return { modelId, success };
+  },
+
+  /**
+   * Get detailed info about a specific model
+   */
+  getModelInfo: async (modelId) => {
+    const client = getLmStudioClient();
+    return client.getModelInfo(modelId);
+  },
+
+  /**
+   * Get server status with loaded models info
+   */
+  getServerStatus: async () => {
+    const client = getLmStudioClient();
+    return client.getServerStatus();
   },
 
   /**
