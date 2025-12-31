@@ -54,14 +54,14 @@ This document provides comprehensive documentation for integrating with the Bamb
 
 ### Port Allocations
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| MCP Control Tower Dashboard | 3000 | Admin dashboard UI |
-| MCP Control Tower API | 8080 | REST API + WebSocket |
-| bambisleep-church-agent | 3333 | External agent with WebGL avatar |
-| bambisleep-church-storage-agent | 3000* | Storage agent frontend |
+| Service                         | Port   | Purpose                          |
+| ------------------------------- | ------ | -------------------------------- |
+| MCP Control Tower Dashboard     | 3000   | Admin dashboard UI               |
+| MCP Control Tower API           | 8080   | REST API + WebSocket             |
+| bambisleep-church-agent         | 3333   | External agent with WebGL avatar |
+| bambisleep-church-storage-agent | 3000\* | Storage agent frontend           |
 
-*Storage agent uses dynamic port when Control Tower is running
+\*Storage agent uses dynamic port when Control Tower is running
 
 ---
 
@@ -79,13 +79,13 @@ Add to `.vscode/settings.json`:
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]
     },
-    
+
     // Git Operations
     "git": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "."]
     },
-    
+
     // GitHub Integration
     "github": {
       "command": "npx",
@@ -94,31 +94,36 @@ Add to `.vscode/settings.json`:
         "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
       }
     },
-    
+
     // Browser Automation
     "puppeteer": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
     },
-    
+
     // HTTP Fetch
     "fetch": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-fetch"]
     },
-    
+
     // SQLite Database
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "./data/local.db"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "--db-path",
+        "./data/local.db"
+      ]
     },
-    
+
     // Knowledge Graph Memory
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"]
     },
-    
+
     // Sequential Thinking / Reasoning
     "sequential-thinking": {
       "command": "npx",
@@ -223,23 +228,23 @@ http://localhost:8080/api
 
 #### Chat
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/agent/chat` | POST | Send message to agent |
-| `/api/agent/tools` | GET | List available tools |
-| `/api/agent/tools/execute` | POST | Execute a tool directly |
-| `/api/agent/stats` | GET | Get agent statistics |
-| `/api/agent/config` | GET | Get agent configuration |
-| `/api/agent/config` | POST | Update agent configuration |
+| Endpoint                   | Method | Description                |
+| -------------------------- | ------ | -------------------------- |
+| `/api/agent/chat`          | POST   | Send message to agent      |
+| `/api/agent/tools`         | GET    | List available tools       |
+| `/api/agent/tools/execute` | POST   | Execute a tool directly    |
+| `/api/agent/stats`         | GET    | Get agent statistics       |
+| `/api/agent/config`        | GET    | Get agent configuration    |
+| `/api/agent/config`        | POST   | Update agent configuration |
 
 #### Conversations
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/agent/conversations` | POST | Create new conversation |
-| `/api/agent/conversations` | GET | List all conversations |
-| `/api/agent/conversations` | DELETE | Clear all conversations |
-| `/api/agent/conversations/:id` | GET | Get conversation by ID |
+| Endpoint                       | Method | Description                  |
+| ------------------------------ | ------ | ---------------------------- |
+| `/api/agent/conversations`     | POST   | Create new conversation      |
+| `/api/agent/conversations`     | GET    | List all conversations       |
+| `/api/agent/conversations`     | DELETE | Clear all conversations      |
+| `/api/agent/conversations/:id` | GET    | Get conversation by ID       |
 | `/api/agent/conversations/:id` | DELETE | Delete specific conversation |
 
 ### Request/Response Examples
@@ -305,14 +310,16 @@ const response = await fetch('http://localhost:8080/api/agent/tools/execute', {
 Connect to `ws://localhost:8080/ws` for real-time updates.
 
 ```javascript
-const ws = new WebSocket('ws://localhost:8080/ws');
+const ws = new WebSocket("ws://localhost:8080/ws");
 
 ws.onopen = () => {
   // Subscribe to agent events
-  ws.send(JSON.stringify({
-    type: 'SUBSCRIBE',
-    channels: ['agent']
-  }));
+  ws.send(
+    JSON.stringify({
+      type: "SUBSCRIBE",
+      channels: ["agent"],
+    })
+  );
 };
 
 ws.onmessage = (event) => {
@@ -346,13 +353,13 @@ MCP_WS_URL=ws://localhost:8080
 
 ```javascript
 // From bambisleep-church-agent/src/services/mcp-client.js
-import { McpClient } from './mcp-client.js';
+import { McpClient } from "./mcp-client.js";
 
 const mcpClient = new McpClient({
-  apiUrl: 'http://localhost:8080/api',
-  wsUrl: 'ws://localhost:8080',
+  apiUrl: "http://localhost:8080/api",
+  wsUrl: "ws://localhost:8080",
   maxReconnectAttempts: 10,
-  reconnectInterval: 5000
+  reconnectInterval: 5000,
 });
 
 // Connect WebSocket for real-time updates
@@ -360,12 +367,14 @@ await mcpClient.connectWebSocket();
 
 // Use MCP tools
 const memory = await mcpClient.readMemory();
-const models = await mcpClient.searchModels('tiny agent', { limit: 5 });
-await mcpClient.createEntities([{
-  name: 'BambiAgent',
-  entityType: 'Agent',
-  observations: ['Agentic AI for BambiSleep Church']
-}]);
+const models = await mcpClient.searchModels("tiny agent", { limit: 5 });
+await mcpClient.createEntities([
+  {
+    name: "BambiAgent",
+    entityType: "Agent",
+    observations: ["Agentic AI for BambiSleep Church"],
+  },
+]);
 ```
 
 ### bambisleep-church-storage-agent Integration
@@ -387,10 +396,25 @@ Browser → Express/WebSocket Server → MCP Client → Storage MCP Server → F
 
 ```javascript
 // WebSocket actions
-ws.send(JSON.stringify({ action: 'list_files', payload: { folder: 'all' } }));
-ws.send(JSON.stringify({ action: 'upload', payload: { filename: 'image.png', content: '<base64>', type: 'image' } }));
-ws.send(JSON.stringify({ action: 'delete', payload: { filename: 'file.png', folder: 'IMAGES' } }));
-ws.send(JSON.stringify({ action: 'start_stream', payload: { source: 'rtmp://server/app/stream', type: 'rtmp' } }));
+ws.send(JSON.stringify({ action: "list_files", payload: { folder: "all" } }));
+ws.send(
+  JSON.stringify({
+    action: "upload",
+    payload: { filename: "image.png", content: "<base64>", type: "image" },
+  })
+);
+ws.send(
+  JSON.stringify({
+    action: "delete",
+    payload: { filename: "file.png", folder: "IMAGES" },
+  })
+);
+ws.send(
+  JSON.stringify({
+    action: "start_stream",
+    payload: { source: "rtmp://server/app/stream", type: "rtmp" },
+  })
+);
 ```
 
 ---
@@ -399,75 +423,75 @@ ws.send(JSON.stringify({ action: 'start_stream', payload: { source: 'rtmp://serv
 
 ### Memory MCP Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `memory_read_graph` | Read entire knowledge graph | — |
-| `memory_search` | Search nodes | `query: string` |
-| `memory_create_entities` | Create entities | `entities: array` |
-| `memory_create_relations` | Create relations | `relations: array` |
+| Tool                      | Description                 | Parameters         |
+| ------------------------- | --------------------------- | ------------------ |
+| `memory_read_graph`       | Read entire knowledge graph | —                  |
+| `memory_search`           | Search nodes                | `query: string`    |
+| `memory_create_entities`  | Create entities             | `entities: array`  |
+| `memory_create_relations` | Create relations            | `relations: array` |
 
 ### GitHub MCP Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `github_get_user` | Get authenticated user | — |
-| `github_list_repos` | List repositories | `per_page, page` |
-| `github_get_repo` | Get repo details | `owner, repo` |
-| `github_search_code` | Search code | `query` |
+| Tool                 | Description            | Parameters       |
+| -------------------- | ---------------------- | ---------------- |
+| `github_get_user`    | Get authenticated user | —                |
+| `github_list_repos`  | List repositories      | `per_page, page` |
+| `github_get_repo`    | Get repo details       | `owner, repo`    |
+| `github_search_code` | Search code            | `query`          |
 
 ### MongoDB Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `mongodb_connect` | Connect to database | `database` |
-| `mongodb_list_collections` | List collections | — |
-| `mongodb_find` | Find documents | `collection, query, limit` |
-| `mongodb_insert` | Insert document | `collection, document` |
+| Tool                       | Description         | Parameters                 |
+| -------------------------- | ------------------- | -------------------------- |
+| `mongodb_connect`          | Connect to database | `database`                 |
+| `mongodb_list_collections` | List collections    | —                          |
+| `mongodb_find`             | Find documents      | `collection, query, limit` |
+| `mongodb_insert`           | Insert document     | `collection, document`     |
 
 ### Stripe Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `stripe_list_customers` | List customers | `limit, email` |
-| `stripe_get_balance` | Get balance | — |
-| `stripe_create_customer` | Create customer | `email, name` |
+| Tool                     | Description     | Parameters     |
+| ------------------------ | --------------- | -------------- |
+| `stripe_list_customers`  | List customers  | `limit, email` |
+| `stripe_get_balance`     | Get balance     | —              |
+| `stripe_create_customer` | Create customer | `email, name`  |
 
 ### HuggingFace Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `huggingface_search_models` | Search ML models | `query, limit, task` |
-| `huggingface_search_datasets` | Search datasets | `query, limit` |
-| `huggingface_inference` | Run inference | `model, inputs` |
+| Tool                          | Description      | Parameters           |
+| ----------------------------- | ---------------- | -------------------- |
+| `huggingface_search_models`   | Search ML models | `query, limit, task` |
+| `huggingface_search_datasets` | Search datasets  | `query, limit`       |
+| `huggingface_inference`       | Run inference    | `model, inputs`      |
 
 ### Storage Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `storage_list_files` | List files | `folder` |
-| `storage_upload` | Upload file | `filename, content, folder` |
-| `storage_get_url` | Get file URL | `filename` |
+| Tool                 | Description  | Parameters                  |
+| -------------------- | ------------ | --------------------------- |
+| `storage_list_files` | List files   | `folder`                    |
+| `storage_upload`     | Upload file  | `filename, content, folder` |
+| `storage_get_url`    | Get file URL | `filename`                  |
 
 ### Clarity Analytics Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `clarity_track_event` | Track event | `eventName, data` |
-| `clarity_get_dashboard` | Get dashboard | — |
+| Tool                    | Description   | Parameters        |
+| ----------------------- | ------------- | ----------------- |
+| `clarity_track_event`   | Track event   | `eventName, data` |
+| `clarity_get_dashboard` | Get dashboard | —                 |
 
 ### Sequential Thinking Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `thinking_start` | Start thinking chain | `thought, totalThoughts` |
-| `thinking_continue` | Continue chain | `sessionId, thought, thoughtNumber` |
+| Tool                | Description          | Parameters                          |
+| ------------------- | -------------------- | ----------------------------------- |
+| `thinking_start`    | Start thinking chain | `thought, totalThoughts`            |
+| `thinking_continue` | Continue chain       | `sessionId, thought, thoughtNumber` |
 
 ### Fetch Tools
 
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `fetch_url` | Fetch URL content | `url` |
-| `fetch_to_markdown` | Fetch as markdown | `url` |
+| Tool                | Description       | Parameters |
+| ------------------- | ----------------- | ---------- |
+| `fetch_url`         | Fetch URL content | `url`      |
+| `fetch_to_markdown` | Fetch as markdown | `url`      |
 
 ---
 
@@ -494,40 +518,120 @@ npm run dev
 
 ### Agent Model Configuration
 
-The agent orchestrator supports configuring the AI model:
+The agent orchestrator uses **LM Studio** for local AI inference with OpenAI-compatible API:
+
+#### LM Studio Setup
+
+1. Download and install [LM Studio](https://lmstudio.ai)
+2. Load a model with tool-calling support (recommended: Qwen2.5-7B-Instruct)
+3. Start the local server (default: `http://localhost:1234`)
+4. Configure environment variables:
+
+```bash
+LMS_HOST=localhost
+LMS_PORT=1234
+LMS_MODEL=qwen2.5-7b-instruct
+LMS_TEMPERATURE=0.7
+LMS_MAX_TOKENS=2048
+LMS_TIMEOUT=60000
+```
+
+#### Model Configuration
+
+The agent can be configured via environment variables or API:
 
 ```javascript
 // POST /api/agent/config
 {
-  "provider": "huggingface",
-  "model": "Qwen/Qwen2.5-0.5B-Instruct",  // Tiny model for local inference
-  "fallbackModel": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "provider": "lmstudio",
+  "model": "qwen2.5-7b-instruct",  // Local model loaded in LM Studio
+  "fallbackModel": "qwen2.5-coder-7b-instruct",
   "maxTokens": 2048,
   "temperature": 0.7
 }
 ```
 
-### Recommended Models
+### Recommended Models for LM Studio
 
-| Model | Size | Use Case |
-|-------|------|----------|
-| `Qwen/Qwen2.5-0.5B-Instruct` | 0.5B | General chat, tool calling |
-| `Qwen/Qwen2.5-Coder-0.5B-Instruct` | 0.5B | Code generation |
-| `microsoft/Phi-3-mini-4k-instruct` | 3.8B | Enhanced reasoning |
-| `HuggingFaceTB/SmolLM-135M-Instruct` | 135M | Ultra-lightweight |
+| Model                      | Size | Use Case                         | Tool Calling |
+| -------------------------- | ---- | -------------------------------- | ------------ |
+| `qwen2.5-7b-instruct`      | 7B   | General chat, tool calling       | ✅ Native    |
+| `qwen2.5-coder-7b-instruct`| 7B   | Code generation with tools       | ✅ Native    |
+| `llama-3.1-8b-instruct`    | 8B   | Enhanced reasoning               | ✅ Native    |
+| `mistral-7b-instruct-v0.3` | 7B   | Fast inference                   | ✅ Native    |
+| `phi-3-mini-4k-instruct`   | 3.8B | Compact with good performance    | ⚠️ Limited   |
+
+> **Note**: Qwen2.5, Llama-3.1, and Mistral models have native tool-calling support in LM Studio.
+
+### LM Studio API Endpoints
+
+The Control Tower exposes LM Studio capabilities via REST API:
+
+```bash
+# Test connection
+GET /api/lmstudio/health
+
+# List available models
+GET /api/lmstudio/models
+
+# Get loaded model
+GET /api/lmstudio/model/loaded
+
+# Chat completion
+POST /api/lmstudio/chat
+{
+  "messages": [{"role": "user", "content": "Hello!"}],
+  "options": {"temperature": 0.7}
+}
+
+# Chat with tool calling
+POST /api/lmstudio/chat/tools
+{
+  "messages": [...],
+  "tools": [{...}],
+  "options": {...}
+}
+
+# Text completion
+POST /api/lmstudio/complete
+{
+  "prompt": "Once upon a time",
+  "options": {"max_tokens": 100}
+}
+
+# Generate embeddings
+POST /api/lmstudio/embed
+{
+  "input": "Text to embed",
+  "options": {"model": "nomic-embed-text"}
+}
+```
+
+### Legacy HuggingFace Support
+
+For cloud-based inference, HuggingFace is still supported:
+
+```bash
+HUGGINGFACE_TOKEN=hf_...
+```
+
+Recommended tiny models for HuggingFace:
+- `Qwen/Qwen2.5-0.5B-Instruct` (0.5B)
+- `Qwen/Qwen2.5-Coder-0.5B-Instruct` (0.5B)
+- `HuggingFaceTB/SmolLM-135M-Instruct` (135M)
 
 ---
 
 ## 📦 Related Repositories
 
-| Repository | Description | Status |
-|------------|-------------|--------|
-| [bambisleep-church](https://github.com/BambiSleepChurch/bambisleep-church) | MCP Control Tower | 🟢 Active |
-| [bambisleep-church-agent](https://github.com/BambiSleepChurch/bambisleep-church-agent) | WebGL Avatar Agent | 🟢 Active |
-| [bambisleep-church-storage-agent](https://github.com/BambiSleepChurch/bambisleep-church-storage-agent) | Storage Agent | 🟢 Active |
-| [bambisleep-church-storage](https://github.com/BambiSleepChurch/bambisleep-church-storage) | Storage MCP Server | 🟢 Active |
-| [llm-toolshed-mcp-server](https://github.com/BambiSleepChurch/llm-toolshed-mcp-server) | RAG/CAG Knowledge Base | 🟡 Beta |
-| [bambisleep-data](https://github.com/BambiSleepChurch/bambisleep-data) | Knowledge Base Data | 📚 Data |
+| Repository                                                                                             | Description            | Status    |
+| ------------------------------------------------------------------------------------------------------ | ---------------------- | --------- |
+| [bambisleep-church](https://github.com/BambiSleepChurch/bambisleep-church)                             | MCP Control Tower      | 🟢 Active |
+| [bambisleep-church-agent](https://github.com/BambiSleepChurch/bambisleep-church-agent)                 | WebGL Avatar Agent     | 🟢 Active |
+| [bambisleep-church-storage-agent](https://github.com/BambiSleepChurch/bambisleep-church-storage-agent) | Storage Agent          | 🟢 Active |
+| [bambisleep-church-storage](https://github.com/BambiSleepChurch/bambisleep-church-storage)             | Storage MCP Server     | 🟢 Active |
+| [llm-toolshed-mcp-server](https://github.com/BambiSleepChurch/llm-toolshed-mcp-server)                 | RAG/CAG Knowledge Base | 🟡 Beta   |
+| [bambisleep-data](https://github.com/BambiSleepChurch/bambisleep-data)                                 | Knowledge Base Data    | 📚 Data   |
 
 ---
 
@@ -559,6 +663,6 @@ MIT License - See [LICENSE](../LICENSE) for details.
 
 ---
 
-✨ *Built with hypnotic precision for the digital sanctuary* ✨
+✨ _Built with hypnotic precision for the digital sanctuary_ ✨
 
 **BambiSleepChurch™** | [GitHub](https://github.com/BambiSleepChurch) | [bambisleep.info](https://bambisleep.info/)

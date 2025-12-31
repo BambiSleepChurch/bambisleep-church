@@ -2,7 +2,7 @@
  * BambiSleep™ Church MCP Control Tower
  * Agentic Orchestrator - Main AI Agent with Tool Calling
  * 
- * Uses tiny models (Qwen2.5-0.5B or similar) for local inference
+ * Uses LM Studio for local inference (Qwen2.5-7B or similar)
  * with tool-calling capabilities to interact with all MCP servers.
  */
 
@@ -11,6 +11,7 @@ import { clarityHandlers } from './clarity.js';
 import { fetchHandlers } from './fetch.js';
 import { githubHandlers } from './github.js';
 import { huggingfaceHandlers } from './huggingface.js';
+import { getLmStudioClient } from './lmstudio.js';
 import { memoryHandlers } from './memory.js';
 import { mongoHandlers } from './mongodb.js';
 import { thinkingHandlers } from './sequential-thinking.js';
@@ -327,11 +328,11 @@ class AgentOrchestrator {
     this.tools = AGENT_TOOLS;
     this.systemPrompt = SYSTEM_PROMPT;
     this.modelConfig = {
-      provider: 'huggingface',
-      model: 'Qwen/Qwen2.5-0.5B-Instruct',
-      fallbackModel: 'Qwen/Qwen2.5-Coder-0.5B-Instruct',
-      maxTokens: 2048,
-      temperature: 0.7,
+      provider: 'lmstudio',
+      model: process.env.LMS_MODEL || 'qwen2.5-7b-instruct',
+      fallbackModel: 'qwen2.5-coder-7b-instruct',
+      maxTokens: parseInt(process.env.LMS_MAX_TOKENS) || 2048,
+      temperature: parseFloat(process.env.LMS_TEMPERATURE) || 0.7,
     };
     this.stats = {
       totalConversations: 0,
@@ -427,36 +428,22 @@ class AgentOrchestrator {
   }
 
   /**
-   * Generate response using HuggingFace inference
+   * Generate response using LM Studio local inference
    */
   async generateResponse(messages, options = {}) {
     const { model = this.modelConfig.model, maxTokens = this.modelConfig.maxTokens } = options;
     
-    // Format messages for the model
-    const prompt = messages
-      .map(m => {
-        if (m.role === 'system') return `<|im_start|>system\n${m.content}<|im_end|>`;
-        if (m.role === 'user') return `<|im_start|>user\n${m.content}<|im_end|>`;
-        if (m.role === 'assistant') return `<|im_start|>assistant\n${m.content}<|im_end|>`;
-        if (m.role === 'tool') return `<|im_start|>tool\n${m.content}<|im_end|>`;
-        return m.content;
-      })
-      .join('\n') + '\n<|im_start|>assistant\n';
-
     try {
-      // Use HuggingFace inference
-      const response = await huggingfaceHandlers.inference(model, {
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: maxTokens,
-          temperature: this.modelConfig.temperature,
-          do_sample: true,
-          return_full_text: false,
-        },
+      // Use LM Studio for local inference
+      const lmStudio = getLmStudioClient();
+      const response = await lmStudio.chat(messages, {
+        model,
+        max_tokens: maxTokens,
+        temperature: this.modelConfig.temperature,
       });
 
-      if (response && response[0]?.generated_text) {
-        return response[0].generated_text.trim();
+      if (response && response.choices && response.choices[0]?.message?.content) {
+        return response.choices[0].message.content.trim();
       }
       
       // Fallback response

@@ -9,6 +9,7 @@ import { clarityHandlers } from '../servers/clarity.js';
 import { fetchHandlers } from '../servers/fetch.js';
 import { githubHandlers } from '../servers/github.js';
 import { huggingfaceHandlers } from '../servers/huggingface.js';
+import { lmstudioHandlers } from '../servers/lmstudio.js';
 import { registry } from '../servers/index.js';
 import { memoryHandlers } from '../servers/memory.js';
 import { mongoHandlers } from '../servers/mongodb.js';
@@ -260,6 +261,82 @@ async function handleRequest(req, res) {
         body.inputs,
         body.options || {}
       );
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // ============ LM STUDIO MCP ROUTES ============
+
+  // GET /api/lmstudio/health - Test connection to LM Studio
+  if (path === '/api/lmstudio/health' && method === 'GET') {
+    try {
+      const result = await lmstudioHandlers.testConnection();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/lmstudio/models - List available models
+  if (path === '/api/lmstudio/models' && method === 'GET') {
+    try {
+      const result = await lmstudioHandlers.listModels();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/lmstudio/model/loaded - Get currently loaded model
+  if (path === '/api/lmstudio/model/loaded' && method === 'GET') {
+    try {
+      const result = await lmstudioHandlers.selectLoadedModel();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/chat - Chat completion
+  if (path === '/api/lmstudio/chat' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.chat(body.messages, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/chat/tools - Chat with tool calling
+  if (path === '/api/lmstudio/chat/tools' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.chatWithTools(body.messages, body.tools, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/complete - Text completion
+  if (path === '/api/lmstudio/complete' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.complete(body.prompt, body.options);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/lmstudio/embed - Generate embeddings
+  if (path === '/api/lmstudio/embed' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await lmstudioHandlers.embed(body.input, body.options);
       return json(res, result);
     } catch (error) {
       return json(res, { error: error.message }, 500);
