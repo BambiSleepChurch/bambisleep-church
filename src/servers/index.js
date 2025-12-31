@@ -156,6 +156,36 @@ export class ServerRegistry {
   }
 
   /**
+   * Start all configured servers
+   * @returns {Promise<Object>} Results object with success/failed counts
+   */
+  async startAll() {
+    logger.info('Starting all MCP servers...');
+    const results = { started: [], failed: [] };
+
+    for (const server of this.servers.values()) {
+      try {
+        const success = await this.start(server.name);
+        if (success) {
+          results.started.push(server.name);
+        } else {
+          results.failed.push(server.name);
+        }
+      } catch (error) {
+        logger.error(`Failed to start ${server.name}:`, error.message);
+        results.failed.push(server.name);
+      }
+    }
+
+    logger.info(`Started ${results.started.length}/${this.servers.size} servers`);
+    if (results.failed.length > 0) {
+      logger.warn(`Failed to start: ${results.failed.join(', ')}`);
+    }
+
+    return results;
+  }
+
+  /**
    * Get summary statistics
    * @returns {Object} Status counts
    */

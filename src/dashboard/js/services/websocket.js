@@ -5,7 +5,7 @@
 
 import { addActivity } from '../components/ActivityFeed.js';
 import { showToast } from '../components/Toast.js';
-import { WS_CONFIG, WS_URL } from '../config.js';
+import { WS_CONFIG, getWsUrl } from '../config.js';
 import { Actions } from '../state/store.js';
 
 let ws = null;
@@ -19,7 +19,8 @@ export function initWebSocket() {
   Actions.setWsStatus('connecting');
   
   try {
-    ws = new WebSocket(WS_URL);
+    const wsUrl = getWsUrl();
+    ws = new WebSocket(wsUrl);
     
     ws.onopen = handleOpen;
     ws.onmessage = handleMessage;

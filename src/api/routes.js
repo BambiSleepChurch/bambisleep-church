@@ -111,11 +111,33 @@ async function handleRequest(req, res) {
     return json(res, getWebSocketStats());
   }
 
-  // Get all servers
+  // Get all servers and integrated handlers
   if (path === '/api/servers' && method === 'GET') {
+    const mcpServers = registry.getAll();
+    const stats = registry.getStats();
+    
+    // Add integrated handlers that don't spawn external processes
+    const integratedHandlers = [
+      { name: 'storage', status: 'running', type: 'integrated', description: 'Local file storage' },
+      { name: 'clarity', status: 'running', type: 'integrated', description: 'Microsoft Clarity analytics' },
+      { name: 'lmstudio', status: 'running', type: 'integrated', description: 'LM Studio LLM integration' },
+      { name: 'agent', status: 'running', type: 'integrated', description: 'Agent orchestrator' },
+    ];
+    
+    // Combine MCP servers with integrated handlers
+    const allServers = [
+      ...mcpServers.map(s => ({ ...s, type: 'mcp' })),
+      ...integratedHandlers,
+    ];
+    
     return json(res, {
-      servers: registry.getAll(),
-      stats: registry.getStats(),
+      servers: allServers,
+      stats: {
+        ...stats,
+        total: stats.total + integratedHandlers.length,
+        running: stats.running + integratedHandlers.length,
+        integrated: integratedHandlers.length,
+      },
     });
   }
 

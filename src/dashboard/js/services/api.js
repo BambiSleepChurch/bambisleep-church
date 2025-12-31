@@ -3,8 +3,11 @@
  * API Service - HTTP requests to backend
  */
 
-import { API_BASE } from '../config.js';
+import { getApiBase } from '../config.js';
 import { Actions } from '../state/store.js';
+
+// Local getter for API_BASE - evaluated at call time, not import time
+const API_BASE = () => getApiBase();
 
 // ============================================================================
 // API HELPERS
@@ -18,7 +21,8 @@ import { Actions } from '../state/store.js';
  * @returns {Promise<any>} Response JSON
  */
 async function apiRequest(path, options = {}, errorMsg = 'API request failed') {
-  const response = await fetch(`${API_BASE}${path}`, options);
+  const apiBase = getApiBase();
+  const response = await fetch(`${apiBase}${path}`, options);
   if (!response.ok) throw new Error(`${errorMsg}: ${response.status}`);
   return response.json();
 }
@@ -66,7 +70,8 @@ export async function fetchServers() {
  */
 export async function startServer(name) {
   try {
-    const response = await fetch(`${API_BASE}/servers/${name}/start`, { 
+    const apiBase = getApiBase();
+    const response = await fetch(`${apiBase}/servers/${name}/start`, { 
       method: 'POST' 
     });
     
@@ -87,7 +92,8 @@ export async function startServer(name) {
  */
 export async function stopServer(name) {
   try {
-    const response = await fetch(`${API_BASE}/servers/${name}/stop`, { 
+    const apiBase = getApiBase();
+    const response = await fetch(`${apiBase}/servers/${name}/stop`, { 
       method: 'POST' 
     });
     
@@ -108,7 +114,8 @@ export async function stopServer(name) {
  */
 export async function fetchHealth() {
   try {
-    const response = await fetch(`${API_BASE}/health`);
+    const apiBase = getApiBase();
+    const response = await fetch(`${apiBase}/health`);
     if (!response.ok) throw new Error('Health check failed');
     return await response.json();
   } catch (error) {
@@ -122,7 +129,7 @@ export async function fetchHealth() {
  */
 export async function fetchWsStats() {
   try {
-    const response = await fetch(`${API_BASE}/stats/websocket`);
+    const response = await fetch(`${API_BASE()}/stats/websocket`);
     if (!response.ok) throw new Error('Failed to fetch WS stats');
     return await response.json();
   } catch (error) {
@@ -136,7 +143,7 @@ export async function fetchWsStats() {
  */
 export async function fetchRateLimitStats() {
   try {
-    const response = await fetch(`${API_BASE}/stats/rate-limit`);
+    const response = await fetch(`${API_BASE()}/stats/rate-limit`);
     if (!response.ok) throw new Error('Failed to fetch rate limit stats');
     return await response.json();
   } catch (error) {
@@ -150,13 +157,13 @@ export async function fetchRateLimitStats() {
 // ============================================================================
 
 export async function fetchMemoryGraph() {
-  const response = await fetch(`${API_BASE}/memory`);
+  const response = await fetch(`${API_BASE()}/memory`);
   if (!response.ok) throw new Error('Failed to fetch memory graph');
   return await response.json();
 }
 
 export async function searchMemory(query) {
-  const response = await fetch(`${API_BASE}/memory/search?q=${encodeURIComponent(query)}`);
+  const response = await fetch(`${API_BASE()}/memory/search?q=${encodeURIComponent(query)}`);
   if (!response.ok) throw new Error('Failed to search memory');
   return await response.json();
 }
@@ -166,7 +173,7 @@ export async function searchMemory(query) {
 // ============================================================================
 
 export async function fetchGitHubUser() {
-  const response = await fetch(`${API_BASE}/github/user`);
+  const response = await fetch(`${API_BASE()}/github/user`);
   if (!response.ok) throw new Error('Failed to fetch GitHub user');
   return await response.json();
 }
@@ -176,7 +183,7 @@ export async function fetchGitHubRepos(options = {}) {
     per_page: options.perPage || 30,
     page: options.page || 1,
   });
-  const response = await fetch(`${API_BASE}/github/repos?${params}`);
+  const response = await fetch(`${API_BASE()}/github/repos?${params}`);
   if (!response.ok) throw new Error('Failed to fetch GitHub repos');
   return await response.json();
 }
@@ -187,14 +194,14 @@ export async function fetchGitHubRepos(options = {}) {
 
 export async function searchHuggingFaceModels(query, options = {}) {
   const params = new URLSearchParams({ q: query, limit: options.limit || 20 });
-  const response = await fetch(`${API_BASE}/huggingface/models?${params}`);
+  const response = await fetch(`${API_BASE()}/huggingface/models?${params}`);
   if (!response.ok) throw new Error('Failed to search HuggingFace models');
   return await response.json();
 }
 
 export async function searchHuggingFaceDatasets(query, options = {}) {
   const params = new URLSearchParams({ q: query, limit: options.limit || 20 });
-  const response = await fetch(`${API_BASE}/huggingface/datasets?${params}`);
+  const response = await fetch(`${API_BASE()}/huggingface/datasets?${params}`);
   if (!response.ok) throw new Error('Failed to search HuggingFace datasets');
   return await response.json();
 }
@@ -206,13 +213,13 @@ export async function searchHuggingFaceDatasets(query, options = {}) {
 export async function fetchStripeCustomers(options = {}) {
   const params = new URLSearchParams({ limit: options.limit || 10 });
   if (options.email) params.set('email', options.email);
-  const response = await fetch(`${API_BASE}/stripe/customers?${params}`);
+  const response = await fetch(`${API_BASE()}/stripe/customers?${params}`);
   if (!response.ok) throw new Error('Failed to fetch Stripe customers');
   return await response.json();
 }
 
 export async function fetchStripeBalance() {
-  const response = await fetch(`${API_BASE}/stripe/balance`);
+  const response = await fetch(`${API_BASE()}/stripe/balance`);
   if (!response.ok) throw new Error('Failed to fetch Stripe balance');
   return await response.json();
 }
@@ -222,7 +229,7 @@ export async function fetchStripeBalance() {
 // ============================================================================
 
 export async function connectMongoDB(database) {
-  const response = await fetch(`${API_BASE}/mongodb/connect`, {
+  const response = await fetch(`${API_BASE()}/mongodb/connect`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ database }),
@@ -232,19 +239,19 @@ export async function connectMongoDB(database) {
 }
 
 export async function fetchMongoDBInfo() {
-  const response = await fetch(`${API_BASE}/mongodb/info`);
+  const response = await fetch(`${API_BASE()}/mongodb/info`);
   if (!response.ok) throw new Error('Failed to fetch MongoDB info');
   return await response.json();
 }
 
 export async function fetchMongoDBCollections() {
-  const response = await fetch(`${API_BASE}/mongodb/collections`);
+  const response = await fetch(`${API_BASE()}/mongodb/collections`);
   if (!response.ok) throw new Error('Failed to fetch MongoDB collections');
   return await response.json();
 }
 
 export async function fetchMongoDBStats() {
-  const response = await fetch(`${API_BASE}/mongodb/stats`);
+  const response = await fetch(`${API_BASE()}/mongodb/stats`);
   if (!response.ok) throw new Error('Failed to fetch MongoDB stats');
   return await response.json();
 }
@@ -254,13 +261,13 @@ export async function fetchMongoDBStats() {
 // ============================================================================
 
 export async function fetchSQLiteTables() {
-  const response = await fetch(`${API_BASE}/sqlite/tables`);
+  const response = await fetch(`${API_BASE()}/sqlite/tables`);
   if (!response.ok) throw new Error('Failed to fetch SQLite tables');
   return await response.json();
 }
 
 export async function fetchSQLiteStats() {
-  const response = await fetch(`${API_BASE}/sqlite/stats`);
+  const response = await fetch(`${API_BASE()}/sqlite/stats`);
   if (!response.ok) throw new Error('Failed to fetch SQLite stats');
   return await response.json();
 }
@@ -270,19 +277,19 @@ export async function fetchSQLiteStats() {
 // ============================================================================
 
 export async function fetchStorageStatus() {
-  const response = await fetch(`${API_BASE}/storage/status`);
+  const response = await fetch(`${API_BASE()}/storage/status`);
   if (!response.ok) throw new Error('Failed to fetch storage status');
   return await response.json();
 }
 
 export async function fetchStorageFiles(folder = 'all') {
-  const response = await fetch(`${API_BASE}/storage/files?folder=${folder}`);
+  const response = await fetch(`${API_BASE()}/storage/files?folder=${folder}`);
   if (!response.ok) throw new Error('Failed to fetch storage files');
   return await response.json();
 }
 
 export async function fetchStorageStats() {
-  const response = await fetch(`${API_BASE}/storage/stats`);
+  const response = await fetch(`${API_BASE()}/storage/stats`);
   if (!response.ok) throw new Error('Failed to fetch storage stats');
   return await response.json();
 }
@@ -292,13 +299,13 @@ export async function fetchStorageStats() {
 // ============================================================================
 
 export async function fetchPuppeteerStatus() {
-  const response = await fetch(`${API_BASE}/puppeteer/status`);
+  const response = await fetch(`${API_BASE()}/puppeteer/status`);
   if (!response.ok) throw new Error('Failed to fetch Puppeteer status');
   return await response.json();
 }
 
 export async function launchPuppeteer(options = {}) {
-  const response = await fetch(`${API_BASE}/puppeteer/launch`, {
+  const response = await fetch(`${API_BASE()}/puppeteer/launch`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(options),
@@ -312,19 +319,19 @@ export async function launchPuppeteer(options = {}) {
 // ============================================================================
 
 export async function fetchThinkingSessions() {
-  const response = await fetch(`${API_BASE}/thinking/sessions`);
+  const response = await fetch(`${API_BASE()}/thinking/sessions`);
   if (!response.ok) throw new Error('Failed to fetch thinking sessions');
   return await response.json();
 }
 
 export async function fetchThinkingStats() {
-  const response = await fetch(`${API_BASE}/thinking/stats`);
+  const response = await fetch(`${API_BASE()}/thinking/stats`);
   if (!response.ok) throw new Error('Failed to fetch thinking stats');
   return await response.json();
 }
 
 export async function createThinkingSession(title, description = '') {
-  const response = await fetch(`${API_BASE}/thinking/sessions`, {
+  const response = await fetch(`${API_BASE()}/thinking/sessions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, description }),
@@ -338,7 +345,7 @@ export async function createThinkingSession(title, description = '') {
 // ============================================================================
 
 export async function pingUrl(url) {
-  const response = await fetch(`${API_BASE}/fetch/ping?url=${encodeURIComponent(url)}`);
+  const response = await fetch(`${API_BASE()}/fetch/ping?url=${encodeURIComponent(url)}`);
   if (!response.ok) throw new Error('Failed to ping URL');
   return await response.json();
 }
@@ -351,7 +358,7 @@ export async function pingUrl(url) {
  * Initialize Clarity tracking
  */
 export async function initClarity() {
-  const response = await fetch(`${API_BASE}/clarity/init`, { method: 'POST' });
+  const response = await fetch(`${API_BASE()}/clarity/init`, { method: 'POST' });
   if (!response.ok) throw new Error('Failed to initialize Clarity');
   return await response.json();
 }
@@ -360,7 +367,7 @@ export async function initClarity() {
  * Get Clarity info
  */
 export async function fetchClarityInfo() {
-  const response = await fetch(`${API_BASE}/clarity/info`);
+  const response = await fetch(`${API_BASE()}/clarity/info`);
   if (!response.ok) throw new Error('Failed to fetch Clarity info');
   return await response.json();
 }
@@ -369,7 +376,7 @@ export async function fetchClarityInfo() {
  * Get Clarity dashboard data
  */
 export async function fetchClarityDashboard() {
-  const response = await fetch(`${API_BASE}/clarity/dashboard`);
+  const response = await fetch(`${API_BASE()}/clarity/dashboard`);
   if (!response.ok) throw new Error('Failed to fetch Clarity dashboard');
   return await response.json();
 }
@@ -378,7 +385,7 @@ export async function fetchClarityDashboard() {
  * Identify user for Clarity tracking
  */
 export async function identifyClarityUser(customId, options = {}) {
-  const response = await fetch(`${API_BASE}/clarity/identify`, {
+  const response = await fetch(`${API_BASE()}/clarity/identify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -396,7 +403,7 @@ export async function identifyClarityUser(customId, options = {}) {
  * Set custom tag for Clarity
  */
 export async function setClarityTag(key, value) {
-  const response = await fetch(`${API_BASE}/clarity/tag`, {
+  const response = await fetch(`${API_BASE()}/clarity/tag`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ key, value }),
@@ -409,7 +416,7 @@ export async function setClarityTag(key, value) {
  * Track custom event
  */
 export async function trackClarityEvent(eventName, data = {}) {
-  const response = await fetch(`${API_BASE}/clarity/event`, {
+  const response = await fetch(`${API_BASE()}/clarity/event`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ eventName, data }),
@@ -422,7 +429,7 @@ export async function trackClarityEvent(eventName, data = {}) {
  * Track page view
  */
 export async function trackClarityPageView(path, data = {}) {
-  const response = await fetch(`${API_BASE}/clarity/pageview`, {
+  const response = await fetch(`${API_BASE()}/clarity/pageview`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ path, data }),
@@ -435,7 +442,7 @@ export async function trackClarityPageView(path, data = {}) {
  * Upgrade session recording
  */
 export async function upgradeClaritySession(reason) {
-  const response = await fetch(`${API_BASE}/clarity/upgrade`, {
+  const response = await fetch(`${API_BASE()}/clarity/upgrade`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason }),
@@ -448,7 +455,7 @@ export async function upgradeClaritySession(reason) {
  * Set consent for Clarity tracking
  */
 export async function setClarityConsent(options = {}) {
-  const response = await fetch(`${API_BASE}/clarity/consent`, {
+  const response = await fetch(`${API_BASE()}/clarity/consent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ options }),
@@ -465,7 +472,7 @@ export async function fetchClaritySessions(options = {}) {
     limit: options.limit || 20,
     offset: options.offset || 0,
   });
-  const response = await fetch(`${API_BASE}/clarity/sessions?${params}`);
+  const response = await fetch(`${API_BASE()}/clarity/sessions?${params}`);
   if (!response.ok) throw new Error('Failed to fetch Clarity sessions');
   return await response.json();
 }
@@ -474,7 +481,7 @@ export async function fetchClaritySessions(options = {}) {
  * Get specific Clarity session
  */
 export async function fetchClaritySession(sessionId) {
-  const response = await fetch(`${API_BASE}/clarity/sessions/${sessionId}`);
+  const response = await fetch(`${API_BASE()}/clarity/sessions/${sessionId}`);
   if (!response.ok) throw new Error('Failed to fetch Clarity session');
   return await response.json();
 }
@@ -485,7 +492,7 @@ export async function fetchClaritySession(sessionId) {
 export async function fetchClarityEvents(options = {}) {
   const params = new URLSearchParams({ limit: options.limit || 50 });
   if (options.type) params.set('type', options.type);
-  const response = await fetch(`${API_BASE}/clarity/events?${params}`);
+  const response = await fetch(`${API_BASE()}/clarity/events?${params}`);
   if (!response.ok) throw new Error('Failed to fetch Clarity events');
   return await response.json();
 }
@@ -494,7 +501,7 @@ export async function fetchClarityEvents(options = {}) {
  * Get top events
  */
 export async function fetchClarityTopEvents(limit = 10) {
-  const response = await fetch(`${API_BASE}/clarity/top-events?limit=${limit}`);
+  const response = await fetch(`${API_BASE()}/clarity/top-events?limit=${limit}`);
   if (!response.ok) throw new Error('Failed to fetch top events');
   return await response.json();
 }
@@ -503,7 +510,7 @@ export async function fetchClarityTopEvents(limit = 10) {
  * Get top pages
  */
 export async function fetchClarityTopPages(limit = 10) {
-  const response = await fetch(`${API_BASE}/clarity/top-pages?limit=${limit}`);
+  const response = await fetch(`${API_BASE()}/clarity/top-pages?limit=${limit}`);
   if (!response.ok) throw new Error('Failed to fetch top pages');
   return await response.json();
 }
@@ -512,7 +519,7 @@ export async function fetchClarityTopPages(limit = 10) {
  * Reset analytics data
  */
 export async function resetClarity() {
-  const response = await fetch(`${API_BASE}/clarity/reset`, { method: 'POST' });
+  const response = await fetch(`${API_BASE()}/clarity/reset`, { method: 'POST' });
   if (!response.ok) throw new Error('Failed to reset Clarity');
   return await response.json();
 }

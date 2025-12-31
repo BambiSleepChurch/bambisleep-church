@@ -63,6 +63,14 @@ async function main() {
   logger.info('MCP Control Tower is ready! 🌸');
   logger.info(`Dashboard: http://localhost:${config.dashboard.port}`);
   logger.info(`API:       http://localhost:${config.api.port}/api`);
+
+  // Auto-start all MCP servers
+  logger.info('Auto-starting all MCP servers...');
+  const startResults = await registry.startAll();
+  logger.info(`✅ Servers started: ${startResults.started.length}/${stats.total}`);
+  if (startResults.failed.length > 0) {
+    logger.warn(`⚠️ Failed servers: ${startResults.failed.join(', ')}`);
+  }
 }
 
 main().catch((error) => {

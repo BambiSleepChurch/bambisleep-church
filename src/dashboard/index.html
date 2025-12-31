@@ -89,6 +89,10 @@
           <span class="nav-item-icon">📁</span>
           <span class="nav-item-text">Storage</span>
         </a>
+        <a class="nav-item" data-section="fetch" onclick="window.Dashboard.showSection('fetch')">
+          <span class="nav-item-icon">🌐</span>
+          <span class="nav-item-text">Fetch</span>
+        </a>
       </div>
 
       <div class="nav-section">
@@ -151,10 +155,10 @@
         <button class="quick-action-btn" onclick="window.Dashboard.importConfigs()">
           📥 Import Configs
         </button>
-        <button class="quick-action-btn" onclick="window.AgentChat.newConversation()">
+        <button class="quick-action-btn" onclick="window.AgentChat?.newConversation()">
           💬 New Chat
         </button>
-        <button class="quick-action-btn" onclick="window.AgentChat.showTools()">
+        <button class="quick-action-btn" onclick="window.AgentChat?.showTools()">
           🔧 View Tools
         </button>
       </div>
@@ -204,52 +208,52 @@
           </div>
           <div class="panel-body" id="overview-servers">
             <div class="integrations-grid">
-              <div class="integration-item" data-server="memory">
+              <div class="integration-item" onclick="window.Dashboard.showSection('memory')">
                 <span class="integration-icon">🧠</span>
                 <span class="integration-name">Memory</span>
                 <span class="integration-desc">Knowledge Graph</span>
               </div>
-              <div class="integration-item" data-server="github">
+              <div class="integration-item" onclick="window.Dashboard.showSection('github')">
                 <span class="integration-icon">🐙</span>
                 <span class="integration-name">GitHub</span>
                 <span class="integration-desc">Repository Ops</span>
               </div>
-              <div class="integration-item" data-server="huggingface">
+              <div class="integration-item" onclick="window.Dashboard.showSection('huggingface')">
                 <span class="integration-icon">🤗</span>
                 <span class="integration-name">HuggingFace</span>
                 <span class="integration-desc">ML Models</span>
               </div>
-              <div class="integration-item" data-server="stripe">
+              <div class="integration-item" onclick="window.Dashboard.showSection('stripe')">
                 <span class="integration-icon">💳</span>
                 <span class="integration-name">Stripe</span>
                 <span class="integration-desc">Payments</span>
               </div>
-              <div class="integration-item" data-server="mongodb">
+              <div class="integration-item" onclick="window.Dashboard.showSection('mongodb')">
                 <span class="integration-icon">🍃</span>
                 <span class="integration-name">MongoDB</span>
                 <span class="integration-desc">Document DB</span>
               </div>
-              <div class="integration-item" data-server="sqlite">
+              <div class="integration-item" onclick="window.Dashboard.showSection('sqlite')">
                 <span class="integration-icon">💾</span>
                 <span class="integration-name">SQLite</span>
                 <span class="integration-desc">Local DB</span>
               </div>
-              <div class="integration-item" data-server="puppeteer">
+              <div class="integration-item" onclick="window.Dashboard.showSection('puppeteer')">
                 <span class="integration-icon">🎭</span>
                 <span class="integration-name">Puppeteer</span>
                 <span class="integration-desc">Browser Auto</span>
               </div>
-              <div class="integration-item" data-server="fetch">
+              <div class="integration-item" onclick="window.Dashboard.showSection('fetch')">
                 <span class="integration-icon">🌐</span>
                 <span class="integration-name">Fetch</span>
                 <span class="integration-desc">HTTP Requests</span>
               </div>
-              <div class="integration-item" data-server="sequential-thinking">
+              <div class="integration-item" onclick="window.Dashboard.showSection('thinking')">
                 <span class="integration-icon">💭</span>
                 <span class="integration-name">Thinking</span>
                 <span class="integration-desc">Reasoning</span>
               </div>
-              <div class="integration-item" data-server="storage">
+              <div class="integration-item" onclick="window.Dashboard.showSection('storage')">
                 <span class="integration-icon">📁</span>
                 <span class="integration-name">Storage</span>
                 <span class="integration-desc">File Hosting</span>
@@ -304,15 +308,7 @@
       </div>
       
       <div id="servers" class="server-grid">
-        <!-- Loading skeleton -->
-        <div class="glass-card server-card">
-          <div class="skeleton skeleton-title"></div>
-          <div class="skeleton skeleton-text"></div>
-        </div>
-        <div class="glass-card server-card">
-          <div class="skeleton skeleton-title"></div>
-          <div class="skeleton skeleton-text"></div>
-        </div>
+        <!-- Server cards render here via JavaScript -->
         <div class="glass-card server-card">
           <div class="skeleton skeleton-title"></div>
           <div class="skeleton skeleton-text"></div>
@@ -325,8 +321,8 @@
       <div class="section-header">
         <h2 class="section-title">🤖 Agent Orchestrator</h2>
         <div class="section-actions">
-          <button onclick="window.AgentChat.newConversation()" class="btn btn-outline">➕ New Chat</button>
-          <button onclick="window.AgentChat.showTools()" class="btn btn-outline">🔧 Tools</button>
+          <button onclick="window.AgentChat?.newConversation()" class="btn btn-outline">➕ New Chat</button>
+          <button onclick="window.AgentChat?.showTools()" class="btn btn-outline">🔧 Tools</button>
         </div>
       </div>
       <div id="agent-container">
@@ -342,7 +338,9 @@
       <div class="section-header">
         <h2 class="section-title">📈 Analytics Dashboard</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.refreshClarity()" class="btn btn-outline">🔄 Refresh</button>
+          <button onclick="window.Dashboard.serverAction('clarity', 'init')" class="btn btn-outline">🚀 Init</button>
+          <button onclick="window.Dashboard.serverAction('clarity', 'dashboard')" class="btn btn-outline">📊 Dashboard</button>
+          <button onclick="window.Dashboard.refreshClarity()" class="btn btn-primary">🔄 Refresh</button>
         </div>
       </div>
       <div id="clarity-container">
@@ -351,6 +349,7 @@
           <div class="skeleton skeleton-text skeleton-narrow skeleton-centered"></div>
         </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
     <!-- Activity Section -->
@@ -366,122 +365,194 @@
       </div>
     </section>
 
-    <!-- Integration-specific sections (Memory, GitHub, etc.) -->
+    <!-- Memory Section -->
     <section id="section-memory" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">🧠 Memory Knowledge Graph</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.serverAction('memory', 'read')" class="btn btn-outline">📖 Read Graph</button>
-          <button onclick="window.Dashboard.serverAction('memory', 'search')" class="btn btn-outline">🔍 Search</button>
+          <button onclick="window.Dashboard.serverAction('memory', 'readGraph')" class="btn btn-outline">📖 Read Graph</button>
+          <button onclick="window.Dashboard.serverAction('memory', 'search')" class="btn btn-primary">🔍 Search</button>
         </div>
       </div>
       <div id="memory-container" class="glass-card">
-        <div class="empty-state">Select an action to interact with the Memory Knowledge Graph</div>
+        <div class="empty-state">
+          <span class="empty-icon">🧠</span>
+          <h3>Memory Knowledge Graph</h3>
+          <p>Click "Read Graph" to view entities and relations, or "Search" to find specific nodes.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- GitHub Section -->
     <section id="section-github" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">🐙 GitHub Integration</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.serverAction('github', 'repos')" class="btn btn-outline">📂 Repos</button>
-          <button onclick="window.Dashboard.serverAction('github', 'issues')" class="btn btn-outline">🐛 Issues</button>
+          <button onclick="window.Dashboard.serverAction('github', 'user')" class="btn btn-outline">👤 My Profile</button>
+          <button onclick="window.Dashboard.serverAction('github', 'repos')" class="btn btn-primary">📂 My Repos</button>
         </div>
       </div>
       <div id="github-container" class="glass-card">
-        <div class="empty-state">Select an action to interact with GitHub</div>
+        <div class="empty-state">
+          <span class="empty-icon">🐙</span>
+          <h3>GitHub Integration</h3>
+          <p>View your profile or browse your repositories.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- HuggingFace Section -->
     <section id="section-huggingface" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">🤗 HuggingFace ML</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.serverAction('huggingface', 'models')" class="btn btn-outline">🤖 Models</button>
-          <button onclick="window.Dashboard.serverAction('huggingface', 'inference')" class="btn btn-outline">⚡ Inference</button>
+          <button onclick="window.Dashboard.serverAction('huggingface', 'models')" class="btn btn-outline">🤖 Search Models</button>
+          <button onclick="window.Dashboard.serverAction('huggingface', 'datasets')" class="btn btn-primary">📊 Search Datasets</button>
         </div>
       </div>
       <div id="huggingface-container" class="glass-card">
-        <div class="empty-state">Select an action to interact with HuggingFace</div>
+        <div class="empty-state">
+          <span class="empty-icon">🤗</span>
+          <h3>HuggingFace ML Hub</h3>
+          <p>Search for ML models and datasets from the HuggingFace Hub.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- Stripe Section -->
     <section id="section-stripe" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">💳 Stripe Payments</h2>
         <div class="section-actions">
           <button onclick="window.Dashboard.serverAction('stripe', 'customers')" class="btn btn-outline">👥 Customers</button>
-          <button onclick="window.Dashboard.serverAction('stripe', 'payments')" class="btn btn-outline">💰 Payments</button>
+          <button onclick="window.Dashboard.serverAction('stripe', 'balance')" class="btn btn-primary">💰 Balance</button>
         </div>
       </div>
       <div id="stripe-container" class="glass-card">
-        <div class="empty-state">Select an action to interact with Stripe</div>
+        <div class="empty-state">
+          <span class="empty-icon">💳</span>
+          <h3>Stripe Payments</h3>
+          <p>View customers and check your account balance.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- MongoDB Section -->
     <section id="section-mongodb" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">🍃 MongoDB Database</h2>
         <div class="section-actions">
+          <button onclick="window.Dashboard.serverAction('mongodb', 'connect')" class="btn btn-outline">🔌 Connect</button>
           <button onclick="window.Dashboard.serverAction('mongodb', 'collections')" class="btn btn-outline">📚 Collections</button>
-          <button onclick="window.Dashboard.serverAction('mongodb', 'query')" class="btn btn-outline">🔍 Query</button>
+          <button onclick="window.Dashboard.serverAction('mongodb', 'stats')" class="btn btn-primary">📊 Stats</button>
         </div>
       </div>
       <div id="mongodb-container" class="glass-card">
-        <div class="empty-state">Select an action to interact with MongoDB</div>
+        <div class="empty-state">
+          <span class="empty-icon">🍃</span>
+          <h3>MongoDB Database</h3>
+          <p>Connect to MongoDB, browse collections, and view database stats.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- SQLite Section -->
     <section id="section-sqlite" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">💾 SQLite Database</h2>
         <div class="section-actions">
           <button onclick="window.Dashboard.serverAction('sqlite', 'tables')" class="btn btn-outline">📋 Tables</button>
-          <button onclick="window.Dashboard.serverAction('sqlite', 'query')" class="btn btn-outline">🔍 Query</button>
+          <button onclick="window.Dashboard.serverAction('sqlite', 'stats')" class="btn btn-primary">📊 Stats</button>
         </div>
       </div>
       <div id="sqlite-container" class="glass-card">
-        <div class="empty-state">Select an action to interact with SQLite</div>
+        <div class="empty-state">
+          <span class="empty-icon">💾</span>
+          <h3>SQLite Database</h3>
+          <p>Browse tables and view database statistics.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- Puppeteer Section -->
     <section id="section-puppeteer" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">🎭 Puppeteer Browser</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.serverAction('puppeteer', 'screenshot')" class="btn btn-outline">📸 Screenshot</button>
-          <button onclick="window.Dashboard.serverAction('puppeteer', 'navigate')" class="btn btn-outline">🌐 Navigate</button>
+          <button onclick="window.Dashboard.serverAction('puppeteer', 'status')" class="btn btn-outline">📊 Status</button>
+          <button onclick="window.Dashboard.serverAction('puppeteer', 'launch')" class="btn btn-primary">🚀 Launch</button>
         </div>
       </div>
       <div id="puppeteer-container" class="glass-card">
-        <div class="empty-state">Select an action to control Puppeteer browser</div>
+        <div class="empty-state">
+          <span class="empty-icon">🎭</span>
+          <h3>Puppeteer Browser Automation</h3>
+          <p>Check status or launch a headless browser instance.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- Thinking Section -->
     <section id="section-thinking" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">💭 Sequential Thinking</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.serverAction('sequential-thinking', 'new')" class="btn btn-outline">➕ New Session</button>
-          <button onclick="window.Dashboard.serverAction('sequential-thinking', 'history')" class="btn btn-outline">📜 History</button>
+          <button onclick="window.Dashboard.serverAction('thinking', 'sessions')" class="btn btn-outline">📜 Sessions</button>
+          <button onclick="window.Dashboard.serverAction('thinking', 'stats')" class="btn btn-primary">📊 Stats</button>
         </div>
       </div>
       <div id="thinking-container" class="glass-card">
-        <div class="empty-state">Start a new thinking session to reason through complex problems</div>
+        <div class="empty-state">
+          <span class="empty-icon">💭</span>
+          <h3>Sequential Thinking</h3>
+          <p>View reasoning sessions and thinking chain statistics.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
 
+    <!-- Storage Section -->
     <section id="section-storage" class="dashboard-section">
       <div class="section-header">
         <h2 class="section-title">📁 File Storage</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.serverAction('storage', 'list')" class="btn btn-outline">📂 List Files</button>
-          <button onclick="window.Dashboard.serverAction('storage', 'upload')" class="btn btn-outline">⬆️ Upload</button>
+          <button onclick="window.Dashboard.serverAction('storage', 'files')" class="btn btn-outline">📂 List Files</button>
+          <button onclick="window.Dashboard.serverAction('storage', 'stats')" class="btn btn-primary">📊 Stats</button>
         </div>
       </div>
       <div id="storage-container" class="glass-card">
-        <div class="empty-state">Select an action to manage file storage</div>
+        <div class="empty-state">
+          <span class="empty-icon">📁</span>
+          <h3>File Storage</h3>
+          <p>Browse uploaded files and view storage statistics.</p>
+        </div>
       </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
+    </section>
+
+    <!-- Fetch Section -->
+    <section id="section-fetch" class="dashboard-section">
+      <div class="section-header">
+        <h2 class="section-title">🌐 HTTP Fetch</h2>
+        <div class="section-actions">
+          <button onclick="window.Dashboard.serverAction('fetch', 'ping')" class="btn btn-primary">🏓 Ping URL</button>
+        </div>
+      </div>
+      <div id="fetch-container" class="glass-card">
+        <div class="empty-state">
+          <span class="empty-icon">🌐</span>
+          <h3>HTTP Fetch Utility</h3>
+          <p>Ping URLs to check connectivity and response times.</p>
+        </div>
+      </div>
+      <div id="server-action-result" class="glass-card result-container" style="display:none;"></div>
     </section>
   </main>
 

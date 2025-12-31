@@ -21,25 +21,25 @@ import { initWebSocket } from './services/websocket.js';
 
 // Components
 import {
-  addActivity,
-  AgentChatController,
-  clearActivityFeed,
-  closeAllModals,
-  exportConfigs,
-  getModal,
-  importConfigs,
-  initModals,
-  initSearchBar,
-  initTheme,
-  renderActivityFeed,
-  renderClarityDashboard,
-  renderServerGrid,
-  renderToastContainer,
-  showToast,
-  toggleTheme,
-  updateStatsBar,
-  updateSystemInfo,
-  updateWsIndicator
+    addActivity,
+    AgentChatController,
+    clearActivityFeed,
+    closeAllModals,
+    exportConfigs,
+    getModal,
+    importConfigs,
+    initModals,
+    initSearchBar,
+    initTheme,
+    renderActivityFeed,
+    renderClarityDashboard,
+    renderServerGrid,
+    renderToastContainer,
+    showToast,
+    toggleTheme,
+    updateStatsBar,
+    updateSystemInfo,
+    updateWsIndicator
 } from './components/index.js';
 
 // Effects
@@ -576,7 +576,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
   });
   
-  // Initialize WebSocket
+  // Discover API port FIRST (critical for dev mode)
+  if (Config.isDev) {
+    console.log('🔍 Discovering API port...');
+    await Config.discoverApiPort();
+    console.log(`✅ API: ${Config.getApiBase()}`);
+    console.log(`✅ WS:  ${Config.getWsUrl()}`);
+  }
+  
+  // Initialize WebSocket (after port discovery)
   initWebSocket();
   
   // Initial data fetch

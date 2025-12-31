@@ -4,31 +4,98 @@
  */
 
 // Detect environment
-const isDev = window.location.hostname === 'localhost';
+export const isDev = window.location.hostname === 'localhost';
 
-// API port - discovered from health endpoint and cached in sessionStorage
-// In production uses same host (reverse proxy), in dev requires port discovery
-const getApiPort = () => {
-  // In production, API runs on same host (reverse proxy handles routing)
-  if (!isDev) return window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
-  // In development, API port MUST be set via sessionStorage (set by initial health check)
-  const port = sessionStorage.getItem('apiPort');
-  if (!port) {
-    console.warn('API port not discovered yet - will retry after health check');
-    return null;
+// Default API port for development
+const DEFAULT_API_PORT = 8080;
+
+// Common ports to probe for API server in dev mode
+const API_PORTS_TO_TRY = [8080, 3001, 8081, 3000];
+
+/**
+ * Get API port - from sessionStorage or default
+ */
+export function getApiPort() {
+  if (!isDev) {
+    return window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
   }
-  return port;
-};
+  return sessionStorage.getItem('apiPort') || DEFAULT_API_PORT;
+}
 
-// API Configuration - will be null until port is discovered in dev mode
-const apiPort = getApiPort();
-export const API_BASE = isDev 
-  ? (apiPort ? `http://localhost:${apiPort}/api` : null)
-  : '/api';
+/**
+ * Set API port in sessionStorage
+ */
+export function setApiPort(port) {
+  sessionStorage.setItem('apiPort', port);
+  console.log(`✅ API port set to ${port}`);
+}
 
-export const WS_URL = isDev 
-  ? (apiPort ? `ws://localhost:${apiPort}/ws` : null)
-  : `ws://${window.location.host}/ws`;
+/**
+ * Discover API port by probing common ports
+ * @returns {Promise<number|null>} Discovered port or null
+ */
+export async function discoverApiPort() {
+  // Check if already discovered
+  const cached = sessionStorage.getItem('apiPort');
+  if (cached) {
+    // Verify it still works
+    try {
+      const response = await fetch(`http://localhost:${cached}/api/health`, { 
+        method: 'GET',
+        signal: AbortSignal.timeout(2000)
+      });
+      if (response.ok) {
+        console.log(`✅ Using cached API port ${cached}`);
+        return parseInt(cached);
+      }
+    } catch {
+      // Cached port no longer valid
+      sessionStorage.removeItem('apiPort');
+    }
+  }
+
+  // Probe ports
+  for (const port of API_PORTS_TO_TRY) {
+    try {
+      const response = await fetch(`http://localhost:${port}/api/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(1000)
+      });
+      if (response.ok) {
+        setApiPort(port);
+        return port;
+      }
+    } catch {
+      // Port not responding, try next
+    }
+  }
+
+  console.warn('⚠️ Could not discover API port, using default:', DEFAULT_API_PORT);
+  setApiPort(DEFAULT_API_PORT);
+  return DEFAULT_API_PORT;
+}
+
+/**
+ * Get API base URL (dynamic getter)
+ */
+export function getApiBase() {
+  if (!isDev) return '/api';
+  const port = getApiPort();
+  return `http://localhost:${port}/api`;
+}
+
+/**
+ * Get WebSocket URL (dynamic getter)
+ */
+export function getWsUrl() {
+  if (!isDev) return `ws://${window.location.host}/ws`;
+  const port = getApiPort();
+  return `ws://localhost:${port}/ws`;
+}
+
+// Legacy exports for backward compatibility (will use default port initially)
+export const API_BASE = isDev ? `http://localhost:${DEFAULT_API_PORT}/api` : '/api';
+export const WS_URL = isDev ? `ws://localhost:${DEFAULT_API_PORT}/ws` : `ws://${window.location.host}/ws`;
 
 // WebSocket Configuration
 export const WS_CONFIG = {

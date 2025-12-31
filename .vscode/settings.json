@@ -90,7 +90,8 @@
     "ecl.launchConfiguration": "not found",
     "ecl.targetCluster": {},
     // MCP Server Configuration (Model Context Protocol)
-    // Core servers: filesystem, git, github + utility servers
+    // External MCP servers spawned via npx
+    // Local handlers (storage, clarity, lmstudio) are integrated directly
     "mcp.servers": {
         "filesystem": {
             "command": "npx",
@@ -114,7 +115,10 @@
             "args": [
                 "-y",
                 "@modelcontextprotocol/server-github"
-            ]
+            ],
+            "env": {
+                "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
+            }
         },
         "puppeteer": {
             "command": "npx",
@@ -152,6 +156,37 @@
                 "-y",
                 "@modelcontextprotocol/server-sequential-thinking"
             ]
+        },
+        "mongodb": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-mongo-server"
+            ],
+            "env": {
+                "MONGODB_URI": "${env:MONGODB_URI}"
+            }
+        },
+        "stripe": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@stripe/mcp",
+                "--tools=all"
+            ],
+            "env": {
+                "STRIPE_API_KEY": "${env:STRIPE_API_KEY}"
+            }
+        },
+        "huggingface": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@huggingface/mcp-server"
+            ],
+            "env": {
+                "HUGGINGFACE_TOKEN": "${env:HUGGINGFACE_TOKEN}"
+            }
         }
     },
     // Search Configuration
