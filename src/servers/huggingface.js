@@ -8,7 +8,7 @@ import { createLogger } from '../utils/logger.js';
 const logger = createLogger('huggingface');
 
 const HF_API = 'https://huggingface.co/api';
-const HF_INFERENCE_API = 'https://api-inference.huggingface.co';
+const HF_INFERENCE_API = 'https://router.huggingface.co';
 
 /**
  * HuggingFace API client
