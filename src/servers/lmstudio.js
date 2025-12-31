@@ -9,30 +9,46 @@
  * - Chat completions with tool calling
  * - Streaming responses
  * - Vision/image input (requires vision-enabled model like LLaVA)
- * - Embeddings generation
+ * - Embeddings generation with similarity search
  * - Structured JSON output
+ * - Auto model selection and JIT loading
+ * 
+ * Based on bambisleep-church-agent LmStudioClient implementation.
  * 
  * @see https://lmstudio.ai/docs/developer/openai-compat
  */
 
 import { createLogger } from '../utils/logger.js';
+import { getConfig } from '../utils/config.js';
 
 const logger = createLogger('lmstudio');
 
 /**
- * Default LM Studio configuration
+ * Get LM Studio configuration from centralized config
+ * Falls back to environment variables and defaults
+ * @returns {Object} LM Studio configuration
  */
-const DEFAULT_CONFIG = {
-  host: process.env.LMS_HOST || 'localhost',
-  port: parseInt(process.env.LMS_PORT || '1234', 10),
-  model: process.env.LMS_MODEL || 'qwen2.5-7b-instruct',
-  temperature: parseFloat(process.env.LMS_TEMPERATURE || '0.7'),
-  maxTokens: parseInt(process.env.LMS_MAX_TOKENS || '2048', 10),
-  timeout: parseInt(process.env.LMS_TIMEOUT || '60000', 10),
-};
+function getLmStudioConfig() {
+  try {
+    const config = getConfig();
+    return config.lmstudio;
+  } catch {
+    // Fallback if getConfig() fails
+    return {
+      host: process.env.LMS_HOST || 'localhost',
+      port: parseInt(process.env.LMS_PORT || '1234', 10),
+      model: process.env.LMS_MODEL || 'qwen2.5-7b-instruct',
+      temperature: parseFloat(process.env.LMS_TEMPERATURE || '0.7'),
+      maxTokens: parseInt(process.env.LMS_MAX_TOKENS || '2048', 10),
+      timeout: parseInt(process.env.LMS_TIMEOUT || '60000', 10),
+      baseUrl: `http://${process.env.LMS_HOST || 'localhost'}:${parseInt(process.env.LMS_PORT || '1234', 10)}/v1`,
+    };
+  }
+}
 
 /**
  * Default models to try loading (in priority order)
+ * Matches bambisleep-church-agent priority list
  */
 const DEFAULT_MODEL_CANDIDATES = [
   'qwen3',
@@ -46,9 +62,12 @@ const DEFAULT_MODEL_CANDIDATES = [
 /**
  * LM Studio Client for local inference
  * 
+ * Uses centralized config from getConfig().lmstudio
+ * Supports all LM Studio OpenAI-compatible features
+ * 
  * @example
  * ```javascript
- * const client = new LMStudioClient();
+ * const client = getLmStudioClient();
  * await client.testConnection();
  * const response = await client.chat([
  *   { role: 'user', content: 'Hello!' }
@@ -56,24 +75,28 @@ const DEFAULT_MODEL_CANDIDATES = [
  * ```
  */
 export class LMStudioClient {
+  #config;
   #baseUrl;
   #model;
   #temperature;
   #maxTokens;
   #timeout;
   #connected = false;
-  #selectedModel = null;
+  #loadedModel = null;
+  #availableModels = [];
 
-  constructor(config = {}) {
-    const mergedConfig = { ...DEFAULT_CONFIG, ...config };
+  constructor(configOverride = {}) {
+    // Get configuration from centralized config, with overrides
+    const defaultConfig = getLmStudioConfig();
+    this.#config = { ...defaultConfig, ...configOverride };
     
-    this.#baseUrl = `http://${mergedConfig.host}:${mergedConfig.port}/v1`;
-    this.#model = mergedConfig.model;
-    this.#temperature = mergedConfig.temperature;
-    this.#maxTokens = mergedConfig.maxTokens;
-    this.#timeout = mergedConfig.timeout;
+    this.#baseUrl = this.#config.baseUrl || `http://${this.#config.host}:${this.#config.port}/v1`;
+    this.#model = this.#config.model;
+    this.#temperature = this.#config.temperature;
+    this.#maxTokens = this.#config.maxTokens;
+    this.#timeout = this.#config.timeout;
 
-    logger.info('LM Studio client initialized', { 
+    logger.info(`LM Studio client initialized`, { 
       baseUrl: this.#baseUrl,
       model: this.#model 
     });
@@ -94,10 +117,19 @@ export class LMStudioClient {
   }
 
   /**
-   * Get selected model
+   * Get selected/loaded model
+   * @returns {string|null}
    */
   getSelectedModel() {
-    return this.#selectedModel || this.#model;
+    return this.#loadedModel || this.#model;
+  }
+
+  /**
+   * Get configuration object
+   * @returns {Object}
+   */
+  getConfig() {
+    return { ...this.#config };
   }
 
   /**
@@ -106,24 +138,13 @@ export class LMStudioClient {
    */
   async testConnection() {
     try {
-      const response = await fetch(`${this.#baseUrl}/models`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        this.#connected = true;
-        logger.info('LM Studio connection successful', { 
-          modelsAvailable: data.data?.length || 0 
-        });
-        return true;
-      }
-
-      this.#connected = false;
-      return false;
+      const models = await this.listModels();
+      this.#connected = true;
+      this.#availableModels = models;
+      logger.info(`[LmStudio] Connected. ${models.length} model(s) available`);
+      return true;
     } catch (error) {
-      logger.warn('LM Studio connection failed', { error: error.message });
+      logger.warn('[LmStudio] Connection test failed', { error: error.message });
       this.#connected = false;
       return false;
     }
@@ -141,41 +162,53 @@ export class LMStudioClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`Failed to list models: ${response.status}`);
       }
 
       const data = await response.json();
-      return data.data || [];
+      this.#availableModels = data.data || [];
+      return this.#availableModels;
     } catch (error) {
-      logger.error('Failed to list models', { error: error.message });
+      logger.error('Failed to list models:', error.message);
       throw error;
     }
   }
 
   /**
    * Select a loaded model (or use the first available)
-   * @returns {Promise<string>} Selected model ID
+   * Auto-selects model matching configured model name
+   * @param {string} [modelName] - Optional model name to search for
+   * @returns {Promise<string|null>} Selected model ID or null
    */
-  async selectLoadedModel() {
+  async selectLoadedModel(modelName = null) {
+    const targetModel = modelName || this.#model;
+
     try {
       const models = await this.listModels();
-      
+
       if (models.length === 0) {
-        throw new Error('No models loaded in LM Studio');
+        logger.warn('No models loaded, attempting auto-load...');
+        return await this.autoLoadModel();
       }
 
-      // Prefer a model matching our configured model name
-      const preferred = models.find(m => 
-        m.id?.toLowerCase().includes(this.#model.toLowerCase())
+      // Find model matching target name (case-insensitive partial match)
+      const matchedModel = models.find(m =>
+        m.id.toLowerCase().includes(targetModel.toLowerCase())
       );
 
-      this.#selectedModel = preferred?.id || models[0].id;
-      logger.info('Model selected', { model: this.#selectedModel });
-      
-      return this.#selectedModel;
+      if (matchedModel) {
+        this.#loadedModel = matchedModel.id;
+        logger.info(`Selected model: ${this.#loadedModel}`);
+        return this.#loadedModel;
+      }
+
+      // Fallback to first available model
+      this.#loadedModel = models[0].id;
+      logger.warn(`Model '${targetModel}' not found, using: ${this.#loadedModel}`);
+      return this.#loadedModel;
     } catch (error) {
-      logger.error('Failed to select model', { error: error.message });
-      throw error;
+      logger.error('Model selection failed:', error.message);
+      return null;
     }
   }
 
@@ -196,7 +229,12 @@ export class LMStudioClient {
    * ```
    */
   async chat(messages, options = {}) {
-    const model = options.model || this.#selectedModel || this.#model;
+    // Auto-select model if not already done
+    if (!this.#loadedModel) {
+      await this.selectLoadedModel();
+    }
+
+    const model = options.model || this.#loadedModel || this.#model;
     const temperature = options.temperature ?? this.#temperature;
     const maxTokens = options.maxTokens ?? this.#maxTokens;
 
@@ -205,14 +243,23 @@ export class LMStudioClient {
       messages,
       temperature,
       max_tokens: maxTokens,
-      stream: false,
-      ...options.extra,
+      stream: options.stream ?? false,
     };
 
-    logger.debug('Chat request', { 
+    // Add tools if provided
+    if (options.tools && options.tools.length > 0) {
+      payload.tools = options.tools;
+      payload.tool_choice = options.toolChoice ?? 'auto';
+    }
+
+    // Add response format for structured output
+    if (options.responseFormat) {
+      payload.response_format = options.responseFormat;
+    }
+
+    logger.debug('[LmStudio] Chat request:', { 
       model, 
       messageCount: messages.length,
-      temperature 
     });
 
     try {
@@ -226,14 +273,14 @@ export class LMStudioClient {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error?.message || `HTTP ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Chat completion failed: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
       this.#connected = true;
 
-      logger.debug('Chat response', { 
+      logger.debug('[LmStudio] Chat response received', { 
         model: data.model,
         tokens: data.usage?.total_tokens 
       });
@@ -241,22 +288,23 @@ export class LMStudioClient {
       return data;
     } catch (error) {
       if (error.name === 'TimeoutError') {
-        logger.error('LM Studio request timeout', { timeout: this.#timeout });
+        logger.error('[LmStudio] Request timeout', { timeout: this.#timeout });
         throw new Error('LM Studio request timed out');
       }
       
-      logger.error('Chat request failed', { error: error.message });
+      logger.error('[LmStudio] Chat completion error:', error.message);
       throw error;
     }
   }
 
   /**
-   * Send a chat completion request with tools (function calling)
+   * Chat with tool calling
+   * Returns structured response with toolCalls array
    * 
    * @param {Array<{role: string, content: string}>} messages - Chat messages
    * @param {Array<Object>} tools - Tool definitions
    * @param {Object} options - Additional options
-   * @returns {Promise<Object>} Chat completion response with potential tool calls
+   * @returns {Promise<Object>} Response with potential tool calls
    * 
    * @example
    * ```javascript
@@ -276,73 +324,48 @@ export class LMStudioClient {
    * }];
    * 
    * const response = await client.chatWithTools(messages, tools);
-   * if (response.choices[0].message.tool_calls) {
+   * if (response.toolCalls.length > 0) {
    *   // Handle tool calls
    * }
    * ```
    */
   async chatWithTools(messages, tools, options = {}) {
-    const model = options.model || this.#selectedModel || this.#model;
-    const temperature = options.temperature ?? this.#temperature;
-    const maxTokens = options.maxTokens ?? this.#maxTokens;
-
-    const payload = {
-      model,
-      messages,
+    const response = await this.chat(messages, {
+      ...options,
       tools,
-      temperature,
-      max_tokens: maxTokens,
-      stream: false,
-      ...options.extra,
-    };
-
-    logger.debug('Chat with tools request', { 
-      model, 
-      messageCount: messages.length,
-      toolCount: tools.length 
+      toolChoice: options.toolChoice ?? 'auto',
     });
 
-    try {
-      const response = await fetch(`${this.#baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(this.#timeout),
-      });
+    const message = response.choices?.[0]?.message;
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error?.message || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      this.#connected = true;
-
-      logger.debug('Chat with tools response', { 
-        model: data.model,
-        finishReason: data.choices?.[0]?.finish_reason,
-        hasToolCalls: !!data.choices?.[0]?.message?.tool_calls
-      });
-
-      return data;
-    } catch (error) {
-      logger.error('Chat with tools failed', { error: error.message });
-      throw error;
-    }
+    return {
+      content: message?.content || null,
+      toolCalls: message?.tool_calls || [],
+      finishReason: response.choices?.[0]?.finish_reason,
+      usage: response.usage,
+    };
   }
 
   /**
-   * Generate a streaming chat completion
+   * Stream chat completion response
    * 
    * @param {Array<{role: string, content: string}>} messages - Chat messages
-   * @param {Function} onChunk - Callback for each chunk
-   * @param {Object} options - Additional options
-   * @returns {Promise<string>} Complete response text
+   * @param {Object} [options] - Additional options
+   * @param {Function} onChunk - Callback for each streamed chunk
+   * @returns {Promise<string>} Full accumulated response
    */
-  async chatStream(messages, onChunk, options = {}) {
-    const model = options.model || this.#selectedModel || this.#model;
+  async streamChat(messages, options = {}, onChunk = null) {
+    // Support legacy signature: streamChat(messages, onChunk, options)
+    if (typeof options === 'function') {
+      onChunk = options;
+      options = {};
+    }
+
+    if (!this.#loadedModel) {
+      await this.selectLoadedModel();
+    }
+
+    const model = options.model || this.#loadedModel || this.#model;
     const temperature = options.temperature ?? this.#temperature;
     const maxTokens = options.maxTokens ?? this.#maxTokens;
 
@@ -354,7 +377,12 @@ export class LMStudioClient {
       stream: true,
     };
 
-    logger.debug('Stream chat request', { model, messageCount: messages.length });
+    if (options.tools && options.tools.length > 0) {
+      payload.tools = options.tools;
+      payload.tool_choice = options.toolChoice ?? 'auto';
+    }
+
+    logger.debug('[LmStudio] Stream chat request', { model, messageCount: messages.length });
 
     try {
       const response = await fetch(`${this.#baseUrl}/chat/completions`, {
@@ -367,20 +395,21 @@ export class LMStudioClient {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error?.message || `HTTP ${response.status}`);
+        throw new Error(`Stream failed: ${response.status}`);
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullContent = '';
+      let buffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -389,13 +418,13 @@ export class LMStudioClient {
 
             try {
               const parsed = JSON.parse(data);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                fullContent += content;
-                if (onChunk) onChunk(content, parsed);
+              const delta = parsed.choices?.[0]?.delta?.content || '';
+              if (delta) {
+                fullContent += delta;
+                if (onChunk) onChunk(delta, fullContent);
               }
             } catch {
-              // Skip invalid JSON chunks
+              // Ignore parse errors for incomplete chunks
             }
           }
         }
@@ -404,9 +433,14 @@ export class LMStudioClient {
       this.#connected = true;
       return fullContent;
     } catch (error) {
-      logger.error('Stream chat failed', { error: error.message });
+      logger.error('[LmStudio] Stream error:', error.message);
       throw error;
     }
+  }
+
+  // Alias for backwards compatibility
+  async chatStream(messages, onChunk, options = {}) {
+    return this.streamChat(messages, options, onChunk);
   }
 
   /**
@@ -417,7 +451,7 @@ export class LMStudioClient {
    * @returns {Promise<string>} Generated text
    */
   async complete(prompt, options = {}) {
-    const model = options.model || this.#selectedModel || this.#model;
+    const model = options.model || this.#loadedModel || this.#model;
     const temperature = options.temperature ?? this.#temperature;
     const maxTokens = options.maxTokens ?? this.#maxTokens;
 
@@ -456,22 +490,26 @@ export class LMStudioClient {
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // 📊 EMBEDDINGS (requires embedding model)
+  // ═══════════════════════════════════════════════════════════════
+
   /**
    * Generate embeddings for text
    * 
-   * @param {string|Array<string>} input - Text to embed
-   * @param {Object} options - Additional options
-   * @returns {Promise<Array>} Embeddings
+   * @param {string|Array<string>} input - Text or array of texts to embed
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Object>} Embeddings response (raw API response)
    */
   async embed(input, options = {}) {
-    const model = options.model || 'text-embedding-nomic-embed-text-v1.5';
+    const model = options.model || this.#loadedModel || 'text-embedding-nomic-embed-text-v1.5';
 
     const payload = {
       model,
       input: Array.isArray(input) ? input : [input],
     };
 
-    logger.debug('Embedding request', { 
+    logger.debug('[LmStudio] Embedding request:', { 
       model, 
       inputCount: Array.isArray(input) ? input.length : 1 
     });
@@ -479,26 +517,97 @@ export class LMStudioClient {
     try {
       const response = await fetch(`${this.#baseUrl}/embeddings`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(this.#timeout),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error?.message || `HTTP ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Embedding failed: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
       this.#connected = true;
 
-      return data.data?.map(d => d.embedding) || [];
+      logger.debug('[LmStudio] Embedding response received', {
+        model: data.model,
+        vectorCount: data.data?.length,
+      });
+
+      return data;
     } catch (error) {
-      logger.error('Embedding failed', { error: error.message });
+      logger.error('[LmStudio] Embedding error:', error.message);
       throw error;
     }
+  }
+
+  /**
+   * Get embedding vector for single text
+   * @param {string} text - Text to embed
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Array<number>>} Embedding vector
+   */
+  async getEmbedding(text, options = {}) {
+    const result = await this.embed(text, options);
+    return result.data?.[0]?.embedding || [];
+  }
+
+  /**
+   * Get embedding vectors for multiple texts
+   * @param {Array<string>} texts - Texts to embed
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Array<Array<number>>>} Array of embedding vectors
+   */
+  async getEmbeddings(texts, options = {}) {
+    const result = await this.embed(texts, options);
+    return result.data?.map(d => d.embedding) || [];
+  }
+
+  /**
+   * Calculate cosine similarity between two vectors
+   * @param {Array<number>} vecA - First vector
+   * @param {Array<number>} vecB - Second vector
+   * @returns {number} Similarity score (0-1)
+   */
+  static cosineSimilarity(vecA, vecB) {
+    if (vecA.length !== vecB.length) {
+      throw new Error('Vectors must have same length');
+    }
+
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < vecA.length; i++) {
+      dotProduct += vecA[i] * vecB[i];
+      normA += vecA[i] * vecA[i];
+      normB += vecB[i] * vecB[i];
+    }
+
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  /**
+   * Find most similar text from candidates
+   * @param {string} query - Query text
+   * @param {Array<string>} candidates - Candidate texts to compare
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Array<{text: string, similarity: number}>>} Ranked results
+   */
+  async findSimilar(query, candidates, options = {}) {
+    const [queryEmbedding, candidateEmbeddings] = await Promise.all([
+      this.getEmbedding(query, options),
+      this.getEmbeddings(candidates, options),
+    ]);
+
+    const results = candidates.map((text, i) => ({
+      text,
+      similarity: LMStudioClient.cosineSimilarity(queryEmbedding, candidateEmbeddings[i]),
+    }));
+
+    // Sort by similarity (highest first)
+    return results.sort((a, b) => b.similarity - a.similarity);
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -510,10 +619,14 @@ export class LMStudioClient {
    * @param {string} text - Text prompt
    * @param {Array<string>} images - Array of base64 encoded images or data URLs
    * @param {Object} [options] - Additional options
-   * @returns {Promise<Object>} Chat completion response
+   * @returns {Promise<Object>} Chat completion response with content, usage, model
    */
   async chatWithImage(text, images, options = {}) {
-    const model = options.model || this.#selectedModel || this.#model;
+    if (!this.#loadedModel) {
+      await this.selectLoadedModel();
+    }
+
+    const model = options.model || this.#loadedModel || this.#model;
 
     // Build multimodal content array
     const content = [{ type: 'text', text }];
@@ -522,7 +635,7 @@ export class LMStudioClient {
     for (const image of images) {
       const imageUrl = image.startsWith('data:')
         ? image
-        : `data:image/jpeg;base64,${image}`;
+        : `data:image/png;base64,${image}`;
       
       content.push({
         type: 'image_url',
@@ -535,43 +648,17 @@ export class LMStudioClient {
       { role: 'user', content },
     ];
 
-    logger.debug('Vision request', { model, imageCount: images.length });
-
-    return this.chat(messages, { ...options, model });
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // 🔧 STRUCTURED OUTPUT & TOOL EXECUTION
-  // ═══════════════════════════════════════════════════════════════
-
-  /**
-   * Chat with structured JSON output
-   * @param {Array} messages - Chat messages
-   * @param {Object} schema - JSON schema for response format
-   * @param {Object} [options] - Additional options
-   * @returns {Promise<Object>} Parsed JSON response
-   */
-  async chatStructured(messages, schema, options = {}) {
-    const responseFormat = {
-      type: 'json_schema',
-      json_schema: {
-        name: schema.name || 'response',
-        strict: true,
-        schema: schema.schema || schema,
-      },
-    };
-
     const payload = {
-      model: options.model || this.#selectedModel || this.#model,
+      model,
       messages,
       temperature: options.temperature ?? this.#temperature,
       max_tokens: options.maxTokens ?? this.#maxTokens,
-      response_format: responseFormat,
+      stream: false,
     };
 
-    logger.debug('Structured chat request', { model: payload.model });
-
     try {
+      logger.debug('[LmStudio] Vision request:', { model, imageCount: images.length });
+
       const response = await fetch(`${this.#baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -580,95 +667,49 @@ export class LMStudioClient {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error?.message || `HTTP ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Vision request failed: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
+      logger.debug('[LmStudio] Vision response received', {
+        model: data.model,
+        tokens: data.usage?.total_tokens,
+      });
 
-      try {
-        return JSON.parse(content);
-      } catch {
-        logger.warn('Failed to parse structured response as JSON');
-        return { raw: content };
-      }
+      return {
+        content: data.choices?.[0]?.message?.content || '',
+        usage: data.usage,
+        model: data.model,
+      };
     } catch (error) {
-      logger.error('Structured chat failed', { error: error.message });
+      logger.error('[LmStudio] Vision error:', error.message);
       throw error;
     }
   }
 
   /**
-   * Execute tool calls and get final response
-   * @param {Array} messages - Original messages
-   * @param {Array} tools - Tool definitions
-   * @param {Object} toolHandlers - Map of tool name to handler function
+   * Describe an image using vision model
+   * @param {string} imageBase64 - Base64 encoded image
+   * @param {string} [prompt] - Custom prompt (default: "What is this image?")
    * @param {Object} [options] - Additional options
-   * @returns {Promise<Object>} Final response after tool execution
+   * @returns {Promise<string>} Image description
    */
-  async executeToolLoop(messages, tools, toolHandlers, options = {}) {
-    const maxIterations = options.maxIterations || 5;
-    let currentMessages = [...messages];
-    let iteration = 0;
+  async describeImage(imageBase64, prompt = 'What is this image?', options = {}) {
+    const result = await this.chatWithImage(prompt, [imageBase64], options);
+    return result.content;
+  }
 
-    while (iteration < maxIterations) {
-      const response = await this.chatWithTools(currentMessages, tools, options);
-      const message = response.choices?.[0]?.message;
-      const toolCalls = message?.tool_calls;
-
-      // If no tool calls, return the final response
-      if (!toolCalls || toolCalls.length === 0) {
-        return {
-          content: message?.content,
-          iterations: iteration + 1,
-          usage: response.usage,
-        };
-      }
-
-      // Add assistant message with tool calls
-      currentMessages.push({
-        role: 'assistant',
-        content: message.content,
-        tool_calls: toolCalls,
-      });
-
-      // Execute each tool call
-      for (const toolCall of toolCalls) {
-        const toolName = toolCall.function.name;
-        const toolArgs = JSON.parse(toolCall.function.arguments || '{}');
-
-        logger.debug(`Executing tool: ${toolName}`, toolArgs);
-
-        let result;
-        try {
-          if (toolHandlers[toolName]) {
-            result = await toolHandlers[toolName](toolArgs);
-          } else {
-            result = { error: `Unknown tool: ${toolName}` };
-          }
-        } catch (error) {
-          result = { error: error.message };
-          logger.error(`Tool ${toolName} failed:`, error.message);
-        }
-
-        // Add tool result
-        currentMessages.push({
-          role: 'tool',
-          tool_call_id: toolCall.id,
-          content: typeof result === 'string' ? result : JSON.stringify(result),
-        });
-      }
-
-      iteration++;
-    }
-
-    logger.warn('Max tool iterations reached');
-    return {
-      content: 'Maximum tool call iterations reached',
-      iterations: maxIterations,
-      error: 'MAX_ITERATIONS',
-    };
+  /**
+   * Analyze multiple images with a question
+   * @param {Array<string>} images - Array of base64 encoded images
+   * @param {string} question - Question about the images
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<string>} Analysis result
+   */
+  async analyzeImages(images, question, options = {}) {
+    const result = await this.chatWithImage(question, images, options);
+    return result.content;
   }
 
   /**
@@ -686,15 +727,15 @@ export class LMStudioClient {
       );
 
       if (matched) {
-        this.#selectedModel = matched.id;
-        logger.info(`Using already loaded model: ${this.#selectedModel}`);
-        return this.#selectedModel;
+        this.#loadedModel = matched.id;
+        logger.info(`Using already loaded model: ${this.#loadedModel}`);
+        return this.#loadedModel;
       }
 
       // Use first available
-      this.#selectedModel = loadedModels[0].id;
-      logger.info(`Using first available model: ${this.#selectedModel}`);
-      return this.#selectedModel;
+      this.#loadedModel = loadedModels[0].id;
+      logger.info(`Using first available model: ${this.#loadedModel}`);
+      return this.#loadedModel;
     }
 
     // No models loaded - try to JIT load configured model first
@@ -702,7 +743,7 @@ export class LMStudioClient {
 
     for (const candidate of candidates) {
       if (await this.loadModel(candidate)) {
-        return this.#selectedModel;
+        return this.#loadedModel;
       }
     }
 
@@ -732,7 +773,7 @@ export class LMStudioClient {
       });
 
       if (response.ok) {
-        this.#selectedModel = modelId;
+        this.#loadedModel = modelId;
         logger.info(`✅ Model loaded successfully: ${modelId}`);
         return true;
       }
@@ -764,6 +805,7 @@ export function getLmStudioClient(config = null) {
 
 /**
  * LM Studio handlers for API routes
+ * Exposes all LMStudioClient methods via REST API
  */
 export const lmstudioHandlers = {
   /**
@@ -785,6 +827,15 @@ export const lmstudioHandlers = {
   },
 
   /**
+   * Select loaded model
+   */
+  selectLoadedModel: async (modelName = null) => {
+    const client = getLmStudioClient();
+    const model = await client.selectLoadedModel(modelName);
+    return { model, success: !!model };
+  },
+
+  /**
    * Chat completion
    */
   chat: async (messages, options = {}) => {
@@ -794,6 +845,7 @@ export const lmstudioHandlers = {
 
   /**
    * Chat with tools (function calling)
+   * Returns structured response with toolCalls array
    */
   chatWithTools: async (messages, tools, options = {}) => {
     const client = getLmStudioClient();
@@ -806,6 +858,24 @@ export const lmstudioHandlers = {
   chatWithImage: async (text, images, options = {}) => {
     const client = getLmStudioClient();
     return client.chatWithImage(text, images, options);
+  },
+
+  /**
+   * Describe a single image
+   */
+  describeImage: async (imageBase64, prompt, options = {}) => {
+    const client = getLmStudioClient();
+    const description = await client.describeImage(imageBase64, prompt, options);
+    return { description };
+  },
+
+  /**
+   * Analyze multiple images
+   */
+  analyzeImages: async (images, question, options = {}) => {
+    const client = getLmStudioClient();
+    const analysis = await client.analyzeImages(images, question, options);
+    return { analysis };
   },
 
   /**
@@ -825,6 +895,14 @@ export const lmstudioHandlers = {
   },
 
   /**
+   * Stream chat (alternate method name)
+   */
+  streamChat: async (messages, options = {}, onChunk = null) => {
+    const client = getLmStudioClient();
+    return client.streamChat(messages, options, onChunk);
+  },
+
+  /**
    * Execute tool loop until completion
    */
   executeToolLoop: async (messages, tools, toolHandlers, options = {}) => {
@@ -833,11 +911,37 @@ export const lmstudioHandlers = {
   },
 
   /**
-   * Generate embeddings
+   * Generate embeddings (raw response)
    */
   embed: async (input, options = {}) => {
     const client = getLmStudioClient();
     return client.embed(input, options);
+  },
+
+  /**
+   * Get single embedding vector
+   */
+  getEmbedding: async (text, options = {}) => {
+    const client = getLmStudioClient();
+    const embedding = await client.getEmbedding(text, options);
+    return { embedding, dimensions: embedding.length };
+  },
+
+  /**
+   * Get multiple embedding vectors
+   */
+  getEmbeddings: async (texts, options = {}) => {
+    const client = getLmStudioClient();
+    const embeddings = await client.getEmbeddings(texts, options);
+    return { embeddings, count: embeddings.length };
+  },
+
+  /**
+   * Find similar texts
+   */
+  findSimilar: async (query, candidates, options = {}) => {
+    const client = getLmStudioClient();
+    return client.findSimilar(query, candidates, options);
   },
 
   /**
@@ -850,7 +954,16 @@ export const lmstudioHandlers = {
   },
 
   /**
-   * Get connection status
+   * Attempt to load a specific model
+   */
+  loadModel: async (modelId) => {
+    const client = getLmStudioClient();
+    const success = await client.loadModel(modelId);
+    return { modelId, success };
+  },
+
+  /**
+   * Get connection status and config
    */
   getStatus: () => {
     const client = getLmStudioClient();
@@ -858,6 +971,16 @@ export const lmstudioHandlers = {
       connected: client.isConnected,
       model: client.getSelectedModel(),
       baseUrl: client.baseUrl,
+      config: client.getConfig(),
+    };
+  },
+
+  /**
+   * Calculate cosine similarity (static utility)
+   */
+  cosineSimilarity: (vecA, vecB) => {
+    return {
+      similarity: LMStudioClient.cosineSimilarity(vecA, vecB),
     };
   },
 };
