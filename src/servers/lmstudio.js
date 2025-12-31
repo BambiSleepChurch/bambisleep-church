@@ -47,16 +47,40 @@ function getLmStudioConfig() {
 }
 
 /**
- * Default models to try loading (in priority order)
- * Matches bambisleep-church-agent priority list
+ * Model preference order - smallest to largest
+ * Prefers smaller qwen models first, then other families
  */
-const DEFAULT_MODEL_CANDIDATES = [
-  'qwen3',
-  'qwen2.5',
+const MODEL_PREFERENCE_ORDER = [
+  // Qwen - smallest first
+  'qwen2.5-0.5b',
+  'qwen2.5-1.5b',
+  'qwen2.5-3b',
+  'qwen3-0.6b',
+  'qwen3-1.7b',
+  'qwen3-4b',
+  'qwen2.5-7b',
+  'qwen3-8b',
+  'qwen2.5-14b',
+  'qwen3-14b',
+  'qwen2.5-32b',
+  'qwen3-30b',
+  // Llama - smallest first
+  'llama-3.2-1b',
+  'llama-3.2-3b',
+  'llama-3.1-8b',
+  'llama-3.3-70b',
+  // Other small models
+  'phi-3-mini',
+  'phi-4',
+  'gemma-2b',
+  'gemma-7b',
+  'mistral-7b',
+  // Generic fallbacks (partial match)
+  'qwen',
   'llama',
-  'mistral',
-  'gemma',
   'phi',
+  'gemma',
+  'mistral',
 ];
 
 /**
@@ -751,72 +775,65 @@ export class LMStudioClient {
 
   /**
    * Auto-load a model from downloaded models using JIT loading
-   * Uses REST API v0 to discover downloaded models, then JIT loads the best match
+   * Queries LM Studio for available models, sorts by preference (smallest qwen first), JIT loads best match
    * @returns {Promise<string|null>} Loaded model ID or null
    */
   async autoLoadModel() {
     // First check if any models are already loaded
     const loadedModels = await this.listModels();
     if (loadedModels.length > 0) {
-      // Find one matching our preference
-      const targetModel = this.#model;
-      const matched = loadedModels.find(m =>
-        m.id.toLowerCase().includes(targetModel.toLowerCase())
-      );
-
-      if (matched) {
-        this.#loadedModel = matched.id;
+      // Use the best loaded model based on preference
+      const bestLoaded = this.#selectBestModel(loadedModels.map(m => ({ id: m.id, type: 'llm' })));
+      if (bestLoaded) {
+        this.#loadedModel = bestLoaded.id;
         logger.info(`Using already loaded model: ${this.#loadedModel}`);
         return this.#loadedModel;
       }
-
-      // Use first available loaded model
+      // Fallback to first available
       this.#loadedModel = loadedModels[0].id;
       logger.info(`Using first available model: ${this.#loadedModel}`);
       return this.#loadedModel;
     }
 
-    // No models loaded - check downloaded models via REST API v0
+    // No models loaded - discover available models via REST API v0
     try {
       const downloadedModels = await this.listDownloadedModels();
       
       if (downloadedModels.length === 0) {
-        logger.error('No models downloaded in LM Studio. Please download a model first.');
+        logger.error('❌ NO MODELS DOWNLOADED in LM Studio!');
+        logger.error('   Please open LM Studio GUI and download a model first.');
+        logger.error('   Recommended: Search for "qwen2.5-0.5b" or "qwen3-0.6b" (small, fast)');
         return null;
       }
 
-      // Filter to LLM models only (not embeddings)
+      // Filter to LLM/VLM models only (not embeddings)
       const llmModels = downloadedModels.filter(m => m.type === 'llm' || m.type === 'vlm');
       
       if (llmModels.length === 0) {
-        logger.error('No LLM models downloaded. Please download an LLM model in LM Studio.');
+        logger.error('❌ No LLM models downloaded. Only embedding models found.');
+        logger.error('   Please download an LLM model in LM Studio GUI.');
         return null;
       }
 
-      logger.info(`Found ${llmModels.length} downloaded LLM model(s), attempting JIT load...`);
+      logger.info(`Found ${llmModels.length} downloaded LLM model(s):`);
+      llmModels.forEach(m => logger.debug(`  - ${m.id} (${m.state})`));
 
-      // Try to find a model matching our configured preference
-      const targetModel = this.#model;
-      const candidates = [targetModel, ...DEFAULT_MODEL_CANDIDATES];
-
-      for (const candidate of candidates) {
-        const matchedModel = llmModels.find(m =>
-          m.id.toLowerCase().includes(candidate.toLowerCase())
-        );
-
-        if (matchedModel) {
-          logger.info(`Found matching model: ${matchedModel.id} (state: ${matchedModel.state})`);
-          if (await this.loadModel(matchedModel.id)) {
-            return this.#loadedModel;
-          }
+      // Select best model based on preference order (smallest qwen first)
+      const bestModel = this.#selectBestModel(llmModels);
+      
+      if (bestModel) {
+        logger.info(`Selected model: ${bestModel.id} (state: ${bestModel.state})`);
+        if (await this.loadModel(bestModel.id)) {
+          return this.#loadedModel;
         }
       }
 
-      // Fallback: try to load the first available LLM model
-      const firstModel = llmModels[0];
-      logger.info(`Trying first available model: ${firstModel.id}`);
-      if (await this.loadModel(firstModel.id)) {
-        return this.#loadedModel;
+      // Fallback: try to load each model in order
+      for (const model of llmModels) {
+        logger.info(`Fallback: trying ${model.id}...`);
+        if (await this.loadModel(model.id)) {
+          return this.#loadedModel;
+        }
       }
 
     } catch (error) {
@@ -824,6 +841,41 @@ export class LMStudioClient {
     }
 
     logger.error('Could not auto-load any model. Please ensure LM Studio has models downloaded.');
+    return null;
+  }
+
+  /**
+   * Select the best model from a list based on preference order
+   * Prefers smaller qwen models, then other small models
+   * @param {Array<{id: string}>} models - List of models with id property
+   * @returns {Object|null} Best model or null
+   */
+  #selectBestModel(models) {
+    if (!models || models.length === 0) return null;
+    
+    // Score each model based on preference order
+    const scored = models.map(model => {
+      const modelLower = model.id.toLowerCase();
+      let score = MODEL_PREFERENCE_ORDER.length + 1; // Default worst score
+      
+      for (let i = 0; i < MODEL_PREFERENCE_ORDER.length; i++) {
+        const pref = MODEL_PREFERENCE_ORDER[i].toLowerCase();
+        if (modelLower.includes(pref)) {
+          score = i;
+          break;
+        }
+      }
+      
+      return { ...model, score };
+    });
+    
+    // Sort by score (lower = better preference)
+    scored.sort((a, b) => a.score - b.score);
+    
+    logger.debug(`Model ranking: ${scored.map(m => `${m.id}(${m.score})`).join(', ')}`);
+    
+    return scored[0];
+  }
     return null;
   }
 
