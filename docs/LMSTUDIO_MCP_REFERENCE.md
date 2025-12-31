@@ -52,14 +52,15 @@ This document provides comprehensive documentation for the LM Studio integration
 
 Recommended models with native tool-calling support:
 
-| Model | Size | Download | Best For |
-|-------|------|----------|----------|
-| **qwen2.5-7b-instruct** | 7B | Search "qwen2.5" in LM Studio | General chat + tools |
-| **qwen2.5-coder-7b-instruct** | 7B | Search "qwen2.5-coder" | Code generation + tools |
-| **llama-3.1-8b-instruct** | 8B | Search "llama-3.1" | Enhanced reasoning |
-| **mistral-7b-instruct-v0.3** | 7B | Search "mistral" | Fast inference |
+| Model                         | Size | Download                      | Best For                |
+| ----------------------------- | ---- | ----------------------------- | ----------------------- |
+| **qwen2.5-7b-instruct**       | 7B   | Search "qwen2.5" in LM Studio | General chat + tools    |
+| **qwen2.5-coder-7b-instruct** | 7B   | Search "qwen2.5-coder"        | Code generation + tools |
+| **llama-3.1-8b-instruct**     | 8B   | Search "llama-3.1"            | Enhanced reasoning      |
+| **mistral-7b-instruct-v0.3**  | 7B   | Search "mistral"              | Fast inference          |
 
 **Download Steps:**
+
 1. Open LM Studio
 2. Click "Search" tab
 3. Search for model name (e.g., "qwen2.5")
@@ -99,24 +100,26 @@ LMS_TIMEOUT=60000
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `LMS_HOST` | `localhost` | LM Studio server hostname |
-| `LMS_PORT` | `1234` | LM Studio server port |
-| `LMS_MODEL` | `qwen2.5-7b-instruct` | Default model identifier |
-| `LMS_TEMPERATURE` | `0.7` | Sampling temperature (0.0-2.0) |
-| `LMS_MAX_TOKENS` | `2048` | Max tokens to generate |
-| `LMS_TIMEOUT` | `60000` | Request timeout in milliseconds |
+| Variable          | Default               | Description                     |
+| ----------------- | --------------------- | ------------------------------- |
+| `LMS_HOST`        | `localhost`           | LM Studio server hostname       |
+| `LMS_PORT`        | `1234`                | LM Studio server port           |
+| `LMS_MODEL`       | `qwen2.5-7b-instruct` | Default model identifier        |
+| `LMS_TEMPERATURE` | `0.7`                 | Sampling temperature (0.0-2.0)  |
+| `LMS_MAX_TOKENS`  | `2048`                | Max tokens to generate          |
+| `LMS_TIMEOUT`     | `60000`               | Request timeout in milliseconds |
 
 ### Server Configuration in LM Studio
 
 **Advanced Settings:**
+
 - **Context Length**: Set to model's max (usually 4096-8192)
 - **GPU Layers**: Increase for faster inference (if you have GPU)
 - **Thread Count**: Set to number of CPU cores
 - **Batch Size**: Increase for throughput (decrease for lower memory)
 
 **CORS Settings:**
+
 - Enable CORS in LM Studio server settings
 - Add Control Tower URL to allowed origins
 
@@ -131,6 +134,7 @@ LMS_TIMEOUT=60000
 Test connection to LM Studio server.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -140,6 +144,7 @@ Test connection to LM Studio server.
 ```
 
 **Error Response:**
+
 ```json
 {
   "status": "error",
@@ -157,6 +162,7 @@ Test connection to LM Studio server.
 Get list of available models in LM Studio.
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -180,6 +186,7 @@ Get list of available models in LM Studio.
 Get currently loaded model information.
 
 **Response:**
+
 ```json
 {
   "id": "qwen2.5-7b-instruct",
@@ -198,11 +205,12 @@ Get currently loaded model information.
 Generate chat completions using the loaded model.
 
 **Request:**
+
 ```json
 {
   "messages": [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Hello! How are you?"}
+    { "role": "system", "content": "You are a helpful assistant." },
+    { "role": "user", "content": "Hello! How are you?" }
   ],
   "options": {
     "temperature": 0.7,
@@ -213,6 +221,7 @@ Generate chat completions using the loaded model.
 ```
 
 **Response:**
+
 ```json
 {
   "id": "chatcmpl-abc123",
@@ -246,10 +255,11 @@ Generate chat completions using the loaded model.
 Chat with function/tool calling support.
 
 **Request:**
+
 ```json
 {
   "messages": [
-    {"role": "user", "content": "What's the weather in San Francisco?"}
+    { "role": "user", "content": "What's the weather in San Francisco?" }
   ],
   "tools": [
     {
@@ -277,6 +287,7 @@ Chat with function/tool calling support.
 ```
 
 **Response (Tool Call):**
+
 ```json
 {
   "id": "chatcmpl-abc123",
@@ -307,6 +318,7 @@ Chat with function/tool calling support.
 ```
 
 **Follow-up Request (After Tool Execution):**
+
 ```json
 {
   "messages": [
@@ -337,6 +349,7 @@ Chat with function/tool calling support.
 ```
 
 **Final Response:**
+
 ```json
 {
   "choices": [
@@ -360,6 +373,7 @@ Chat with function/tool calling support.
 Legacy completion API for text generation.
 
 **Request:**
+
 ```json
 {
   "prompt": "Once upon a time, in a land far away,",
@@ -372,6 +386,7 @@ Legacy completion API for text generation.
 ```
 
 **Response:**
+
 ```json
 {
   "id": "cmpl-abc123",
@@ -397,6 +412,7 @@ Legacy completion API for text generation.
 Generate text embeddings for semantic search.
 
 **Request:**
+
 ```json
 {
   "input": "BambiSleep is a hypnosis series",
@@ -407,6 +423,7 @@ Generate text embeddings for semantic search.
 ```
 
 **Response:**
+
 ```json
 {
   "object": "list",
@@ -432,12 +449,14 @@ Generate text embeddings for semantic search.
 ### For Agent Tool Calling (Recommended)
 
 **Qwen2.5-7B-Instruct**
+
 - **Size**: 7B parameters (~4-5GB with Q4 quantization)
 - **Strengths**: Excellent tool calling, fast inference, multilingual
 - **Best Quantization**: `Q4_K_M` or `Q5_K_M`
 - **VRAM Required**: 6-8GB GPU or 16GB+ RAM
 
 **Qwen2.5-Coder-7B-Instruct**
+
 - **Size**: 7B parameters
 - **Strengths**: Code generation, technical tasks, tool calling
 - **Best Quantization**: `Q4_K_M`
@@ -446,12 +465,14 @@ Generate text embeddings for semantic search.
 ### For Enhanced Reasoning
 
 **Llama-3.1-8B-Instruct**
+
 - **Size**: 8B parameters (~5-6GB with Q4 quantization)
 - **Strengths**: Strong reasoning, good tool calling, accurate
 - **Best Quantization**: `Q4_K_M`
 - **VRAM Required**: 8-10GB GPU or 20GB+ RAM
 
 **Mistral-7B-Instruct-v0.3**
+
 - **Size**: 7B parameters
 - **Strengths**: Fast, efficient, good tool support
 - **Best Quantization**: `Q4_K_M`
@@ -460,6 +481,7 @@ Generate text embeddings for semantic search.
 ### For Constrained Resources
 
 **Phi-3-Mini-4K-Instruct**
+
 - **Size**: 3.8B parameters (~2-3GB with Q4 quantization)
 - **Strengths**: Very compact, surprisingly capable
 - **Limitations**: Limited tool calling support
@@ -468,14 +490,14 @@ Generate text embeddings for semantic search.
 
 ### Quantization Guide
 
-| Quantization | Size | Quality | Speed | Recommendation |
-|--------------|------|---------|-------|----------------|
-| `Q2_K` | Smallest | Low | Fastest | ❌ Not recommended |
-| `Q3_K_M` | Small | Medium-Low | Fast | ⚠️ Budget systems only |
-| `Q4_K_M` | Medium | Good | Fast | ✅ **Recommended** |
-| `Q5_K_M` | Large | Better | Medium | ✅ If you have VRAM |
-| `Q6_K` | Larger | Best | Slower | ⚠️ Diminishing returns |
-| `Q8_0` | Largest | Excellent | Slowest | ❌ Too slow for agent use |
+| Quantization | Size     | Quality    | Speed   | Recommendation            |
+| ------------ | -------- | ---------- | ------- | ------------------------- |
+| `Q2_K`       | Smallest | Low        | Fastest | ❌ Not recommended        |
+| `Q3_K_M`     | Small    | Medium-Low | Fast    | ⚠️ Budget systems only    |
+| `Q4_K_M`     | Medium   | Good       | Fast    | ✅ **Recommended**        |
+| `Q5_K_M`     | Large    | Better     | Medium  | ✅ If you have VRAM       |
+| `Q6_K`       | Larger   | Best       | Slower  | ⚠️ Diminishing returns    |
+| `Q8_0`       | Largest  | Excellent  | Slowest | ❌ Too slow for agent use |
 
 ---
 
@@ -484,89 +506,88 @@ Generate text embeddings for semantic search.
 ### Using the LM Studio Client Directly
 
 ```javascript
-import { getLmStudioClient } from './servers/lmstudio.js';
+import { getLmStudioClient } from "./servers/lmstudio.js";
 
 // Get singleton client instance
 const lms = getLmStudioClient();
 
 // Test connection
 const health = await lms.testConnection();
-console.log('LM Studio status:', health.status);
+console.log("LM Studio status:", health.status);
 
 // List available models
 const models = await lms.listModels();
-console.log('Available models:', models.data);
+console.log("Available models:", models.data);
 
 // Simple chat
 const response = await lms.chat([
-  { role: 'system', content: 'You are a helpful assistant.' },
-  { role: 'user', content: 'What is the capital of France?' }
+  { role: "system", content: "You are a helpful assistant." },
+  { role: "user", content: "What is the capital of France?" },
 ]);
 console.log(response.choices[0].message.content);
 
 // Chat with tool calling
 const toolResponse = await lms.chatWithTools(
-  [{ role: 'user', content: 'Search for bambisleep hypnosis' }],
+  [{ role: "user", content: "Search for bambisleep hypnosis" }],
   [
     {
-      type: 'function',
+      type: "function",
       function: {
-        name: 'web_search',
-        description: 'Search the web',
+        name: "web_search",
+        description: "Search the web",
         parameters: {
-          type: 'object',
+          type: "object",
           properties: {
-            query: { type: 'string', description: 'Search query' }
+            query: { type: "string", description: "Search query" },
           },
-          required: ['query']
-        }
-      }
-    }
+          required: ["query"],
+        },
+      },
+    },
   ]
 );
 
 if (toolResponse.choices[0].message.tool_calls) {
-  console.log('Tool calls:', toolResponse.choices[0].message.tool_calls);
+  console.log("Tool calls:", toolResponse.choices[0].message.tool_calls);
 }
 ```
 
 ### Integration with Agent Orchestrator
 
 ```javascript
-import { agentHandlers } from './servers/agent.js';
+import { agentHandlers } from "./servers/agent.js";
 
 // Create conversation
 const conversation = agentHandlers.createConversation();
-console.log('Conversation ID:', conversation.id);
+console.log("Conversation ID:", conversation.id);
 
 // Send message (agent will use LM Studio)
-const response = await agentHandlers.chat(conversation.id, 
-  'Search GitHub for bambisleep repositories'
+const response = await agentHandlers.chat(
+  conversation.id,
+  "Search GitHub for bambisleep repositories"
 );
-console.log('Agent response:', response.message);
+console.log("Agent response:", response.message);
 
 // Check tool usage stats
 const stats = agentHandlers.getStats();
-console.log('Total tool calls:', stats.totalToolCalls);
-console.log('Tool usage:', stats.toolUsage);
+console.log("Total tool calls:", stats.totalToolCalls);
+console.log("Tool usage:", stats.toolUsage);
 ```
 
 ### Custom HTTP Client
 
 ```javascript
 // Direct HTTP request to LM Studio via Control Tower
-const response = await fetch('http://localhost:8080/api/lmstudio/chat', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("http://localhost:8080/api/lmstudio/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    messages: [
-      { role: 'user', content: 'Hello!' }
-    ],
+    messages: [{ role: "user", content: "Hello!" }],
     options: {
       temperature: 0.7,
-      max_tokens: 100
-    }
-  })
+      max_tokens: 100,
+    },
+  }),
 });
 
 const result = await response.json();
@@ -582,6 +603,7 @@ console.log(result.choices[0].message.content);
 **Problem:** `Failed to connect to LM Studio server`
 
 **Solutions:**
+
 1. Verify LM Studio is running
 2. Check server is started in "Local Server" tab
 3. Verify port in `.env` matches LM Studio (default: 1234)
@@ -593,6 +615,7 @@ console.log(result.choices[0].message.content);
 **Problem:** Model fails to load or crashes
 
 **Solutions:**
+
 1. Check you have enough RAM/VRAM
 2. Try a smaller quantization (Q4_K_M → Q3_K_M)
 3. Close other applications to free memory
@@ -604,6 +627,7 @@ console.log(result.choices[0].message.content);
 **Problem:** Responses are very slow
 
 **Solutions:**
+
 1. Increase GPU layers in LM Studio (if you have GPU)
 2. Use a smaller quantization (Q5_K_M → Q4_K_M)
 3. Reduce context length in settings
@@ -615,6 +639,7 @@ console.log(result.choices[0].message.content);
 **Problem:** Model doesn't recognize tools
 
 **Solutions:**
+
 1. Verify you're using a tool-compatible model:
    - ✅ Qwen2.5 (any size)
    - ✅ Llama-3.1 (8B+)
@@ -629,6 +654,7 @@ console.log(result.choices[0].message.content);
 **Problem:** Getting 400/500 errors from API
 
 **Solutions:**
+
 1. Check request body is valid JSON
 2. Verify `messages` array format (role + content)
 3. Check model name matches loaded model
@@ -638,6 +664,7 @@ console.log(result.choices[0].message.content);
 ### Performance Optimization
 
 **Best Practices:**
+
 1. Use Q4_K_M quantization (balance of speed/quality)
 2. Set context length to minimum needed (saves memory)
 3. Enable GPU acceleration if available
@@ -650,24 +677,24 @@ console.log(result.choices[0].message.content);
 
 ### Inference Speed (Q4_K_M quantization)
 
-| Model | Hardware | Tokens/sec | Latency (first token) |
-|-------|----------|------------|-----------------------|
-| Qwen2.5-7B | RTX 4090 (24GB) | ~120 t/s | ~50ms |
-| Qwen2.5-7B | M2 Max (32GB) | ~80 t/s | ~100ms |
-| Qwen2.5-7B | CPU (i9-13900K) | ~15 t/s | ~300ms |
-| Llama-3.1-8B | RTX 4090 (24GB) | ~100 t/s | ~60ms |
-| Phi-3-Mini | RTX 4090 (24GB) | ~180 t/s | ~30ms |
+| Model        | Hardware        | Tokens/sec | Latency (first token) |
+| ------------ | --------------- | ---------- | --------------------- |
+| Qwen2.5-7B   | RTX 4090 (24GB) | ~120 t/s   | ~50ms                 |
+| Qwen2.5-7B   | M2 Max (32GB)   | ~80 t/s    | ~100ms                |
+| Qwen2.5-7B   | CPU (i9-13900K) | ~15 t/s    | ~300ms                |
+| Llama-3.1-8B | RTX 4090 (24GB) | ~100 t/s   | ~60ms                 |
+| Phi-3-Mini   | RTX 4090 (24GB) | ~180 t/s   | ~30ms                 |
 
-*Benchmarks are approximate and vary by system configuration*
+_Benchmarks are approximate and vary by system configuration_
 
 ### Memory Requirements
 
-| Model | Q4_K_M Size | Minimum RAM | Recommended RAM | GPU VRAM |
-|-------|-------------|-------------|-----------------|----------|
-| Phi-3-Mini (3.8B) | ~2.5GB | 8GB | 16GB | 4GB |
-| Qwen2.5-7B | ~4.5GB | 16GB | 32GB | 6-8GB |
-| Llama-3.1-8B | ~5.5GB | 16GB | 32GB | 8-10GB |
-| Qwen2.5-14B | ~9GB | 32GB | 64GB | 12-16GB |
+| Model             | Q4_K_M Size | Minimum RAM | Recommended RAM | GPU VRAM |
+| ----------------- | ----------- | ----------- | --------------- | -------- |
+| Phi-3-Mini (3.8B) | ~2.5GB      | 8GB         | 16GB            | 4GB      |
+| Qwen2.5-7B        | ~4.5GB      | 16GB        | 32GB            | 6-8GB    |
+| Llama-3.1-8B      | ~5.5GB      | 16GB        | 32GB            | 8-10GB   |
+| Qwen2.5-14B       | ~9GB        | 32GB        | 64GB            | 12-16GB  |
 
 ---
 

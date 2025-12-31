@@ -147,7 +147,7 @@ export function getConfig() {
       maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
     },
     security: {
-      corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:8080').split(','),
+      corsOrigins: (process.env.CORS_ORIGINS || `http://localhost:${parseInt(process.env.DASHBOARD_PORT) || defaults.dashboard.port},http://localhost:${parseInt(process.env.API_PORT) || defaults.api.port}`).split(','),
       apiSecretKey: process.env.API_SECRET_KEY || '',
     },
     env: {

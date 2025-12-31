@@ -10,20 +10,22 @@
  */
 export function renderSystemInfo(health = {}) {
   const isDev = window.location.hostname === 'localhost';
+  const dashboardPort = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+  const apiPort = health.apiPort || sessionStorage.getItem('apiPort') || 'detecting...';
   
   return `
     <div class="info-grid">
       <div class="info-item">
         <span class="info-label">Dashboard</span>
-        <span class="info-value">:3000</span>
+        <span class="info-value">:${dashboardPort}</span>
       </div>
       <div class="info-item">
         <span class="info-label">API</span>
-        <span class="info-value">:8080</span>
+        <span class="info-value">:${apiPort}</span>
       </div>
       <div class="info-item">
         <span class="info-label">WebSocket</span>
-        <span class="info-value">ws://:8080/ws</span>
+        <span class="info-value">ws://:${apiPort}/ws</span>
       </div>
       <div class="info-item">
         <span class="info-label">Environment</span>

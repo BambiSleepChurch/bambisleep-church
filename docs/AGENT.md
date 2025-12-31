@@ -553,13 +553,13 @@ The agent can be configured via environment variables or API:
 
 ### Recommended Models for LM Studio
 
-| Model                      | Size | Use Case                         | Tool Calling |
-| -------------------------- | ---- | -------------------------------- | ------------ |
-| `qwen2.5-7b-instruct`      | 7B   | General chat, tool calling       | ✅ Native    |
-| `qwen2.5-coder-7b-instruct`| 7B   | Code generation with tools       | ✅ Native    |
-| `llama-3.1-8b-instruct`    | 8B   | Enhanced reasoning               | ✅ Native    |
-| `mistral-7b-instruct-v0.3` | 7B   | Fast inference                   | ✅ Native    |
-| `phi-3-mini-4k-instruct`   | 3.8B | Compact with good performance    | ⚠️ Limited   |
+| Model                       | Size | Use Case                      | Tool Calling |
+| --------------------------- | ---- | ----------------------------- | ------------ |
+| `qwen2.5-7b-instruct`       | 7B   | General chat, tool calling    | ✅ Native    |
+| `qwen2.5-coder-7b-instruct` | 7B   | Code generation with tools    | ✅ Native    |
+| `llama-3.1-8b-instruct`     | 8B   | Enhanced reasoning            | ✅ Native    |
+| `mistral-7b-instruct-v0.3`  | 7B   | Fast inference                | ✅ Native    |
+| `phi-3-mini-4k-instruct`    | 3.8B | Compact with good performance | ⚠️ Limited   |
 
 > **Note**: Qwen2.5, Llama-3.1, and Mistral models have native tool-calling support in LM Studio.
 
@@ -616,6 +616,7 @@ HUGGINGFACE_TOKEN=hf_...
 ```
 
 Recommended tiny models for HuggingFace:
+
 - `Qwen/Qwen2.5-0.5B-Instruct` (0.5B)
 - `Qwen/Qwen2.5-Coder-0.5B-Instruct` (0.5B)
 - `HuggingFaceTB/SmolLM-135M-Instruct` (135M)

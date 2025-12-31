@@ -6,13 +6,28 @@
 // Detect environment
 const isDev = window.location.hostname === 'localhost';
 
-// API Configuration
+// API port - discovered from health endpoint and cached in sessionStorage
+// In production uses same host (reverse proxy), in dev requires port discovery
+const getApiPort = () => {
+  // In production, API runs on same host (reverse proxy handles routing)
+  if (!isDev) return window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+  // In development, API port MUST be set via sessionStorage (set by initial health check)
+  const port = sessionStorage.getItem('apiPort');
+  if (!port) {
+    console.warn('API port not discovered yet - will retry after health check');
+    return null;
+  }
+  return port;
+};
+
+// API Configuration - will be null until port is discovered in dev mode
+const apiPort = getApiPort();
 export const API_BASE = isDev 
-  ? 'http://localhost:8080/api' 
+  ? (apiPort ? `http://localhost:${apiPort}/api` : null)
   : '/api';
 
 export const WS_URL = isDev 
-  ? 'ws://localhost:8080/ws' 
+  ? (apiPort ? `ws://localhost:${apiPort}/ws` : null)
   : `ws://${window.location.host}/ws`;
 
 // WebSocket Configuration

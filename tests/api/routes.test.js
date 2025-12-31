@@ -2,7 +2,7 @@
  * BambiSleep™ Church MCP Control Tower
  * Integration Tests - API Routes
  * 
- * These tests require the API server to be running on port 8080.
+ * These tests require the API server to be running.
  * They will be skipped gracefully if the server is unavailable.
  */
 
@@ -10,7 +10,8 @@ import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 
 describe('API Routes', () => {
-  const API_BASE = 'http://localhost:8080/api';
+  const API_PORT = process.env.API_PORT || (() => { throw new Error('API_PORT not set - check .env'); })();
+  const API_BASE = `http://localhost:${API_PORT}/api`;
   let serverAvailable = false;
 
   before(async () => {

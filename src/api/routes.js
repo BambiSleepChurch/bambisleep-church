@@ -1,6 +1,6 @@
 /**
  * BambiSleep™ Church MCP Control Tower
- * API Routes (Port 8080)
+ * API Routes
  */
 
 import { createServer } from 'http';
@@ -9,8 +9,8 @@ import { clarityHandlers } from '../servers/clarity.js';
 import { fetchHandlers } from '../servers/fetch.js';
 import { githubHandlers } from '../servers/github.js';
 import { huggingfaceHandlers } from '../servers/huggingface.js';
-import { lmstudioHandlers } from '../servers/lmstudio.js';
 import { registry } from '../servers/index.js';
+import { lmstudioHandlers } from '../servers/lmstudio.js';
 import { memoryHandlers } from '../servers/memory.js';
 import { mongoHandlers } from '../servers/mongodb.js';
 import { puppeteerHandlers } from '../servers/puppeteer.js';
@@ -1131,8 +1131,13 @@ async function handleRequest(req, res) {
 
 /**
  * Create and start API server with WebSocket support
+ * @param {number} port - Port number from API_PORT env var
+ * @param {string} host - Host from API_HOST env var
  */
-export function createApiServer(port = 8080, host = '0.0.0.0') {
+export function createApiServer(port, host) {
+  if (!port) throw new Error('API_PORT is required - check .env configuration');
+  if (!host) throw new Error('API_HOST is required - check .env configuration');
+  
   const server = createServer(handleRequest);
 
   // Initialize WebSocket server

@@ -3,10 +3,11 @@
  * MCP API Integration Tests
  * 
  * Run with: node tests/api/mcp-api.test.js
- * Requires: API server running on port 8080
+ * Requires: API server running (uses API_PORT from .env)
  */
 
-const API_BASE = 'http://localhost:8080/api';
+const API_PORT = process.env.API_PORT || (() => { throw new Error('API_PORT not set - check .env'); })();
+const API_BASE = `http://localhost:${API_PORT}/api`;
 
 async function testMemoryApi() {
   console.log('\n🧠 Testing Memory API...\n');

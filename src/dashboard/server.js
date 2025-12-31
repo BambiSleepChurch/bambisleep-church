@@ -1,6 +1,6 @@
 /**
  * BambiSleep™ Church MCP Control Tower
- * Dashboard HTTP Server (Port 3000)
+ * Dashboard HTTP Server
  */
 
 import { existsSync, readFileSync } from 'fs';
@@ -50,8 +50,13 @@ function serveStatic(req, res) {
 
 /**
  * Create and start dashboard server
+ * @param {number} port - Port number from DASHBOARD_PORT env var
+ * @param {string} host - Host from DASHBOARD_HOST env var
  */
-export function createDashboardServer(port = 3000, host = '0.0.0.0') {
+export function createDashboardServer(port, host) {
+  if (!port) throw new Error('DASHBOARD_PORT is required - check .env configuration');
+  if (!host) throw new Error('DASHBOARD_HOST is required - check .env configuration');
+  
   const server = createServer(serveStatic);
 
   server.listen(port, host, () => {
