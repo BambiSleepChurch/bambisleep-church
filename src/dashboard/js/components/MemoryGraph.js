@@ -368,14 +368,17 @@ export class MemoryGraphController {
    * Zoom controls
    */
   zoomIn() {
+    if (!this.svg || !this.zoom) return;
     this.svg.transition().call(this.zoom.scaleBy, 1.5);
   }
 
   zoomOut() {
+    if (!this.svg || !this.zoom) return;
     this.svg.transition().call(this.zoom.scaleBy, 0.67);
   }
 
   resetZoom() {
+    if (!this.svg || !this.zoom) return;
     this.svg.transition().call(this.zoom.transform, d3.zoomIdentity);
   }
 
@@ -383,6 +386,10 @@ export class MemoryGraphController {
    * Toggle physics simulation
    */
   togglePhysics() {
+    if (!this.simulation) {
+      console.warn('Graph not loaded yet. Click "Load Graph" first.');
+      return;
+    }
     this.physicsEnabled = !this.physicsEnabled;
     if (this.physicsEnabled) {
       this.simulation.alpha(0.3).restart();
