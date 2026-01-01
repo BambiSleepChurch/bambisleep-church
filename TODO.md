@@ -454,24 +454,24 @@ Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent f
 
 ## 📝 Progress Summary
 
-| Category            | Status         | Progress                          |
-| ------------------- | -------------- | --------------------------------- |
-| MCP Server Wrappers | ✅ Complete    | 14/14 (incl. Patreon)             |
-| REST API Endpoints  | ✅ Complete    | 80+ endpoints                     |
-| Dashboard UI        | ✅ Complete    | Cyber goth design                 |
-| Agent Orchestrator  | ✅ Complete    | 98 tools                          |
-| Agent Personality   | ✅ Complete    | Bambi + event system              |
-| LM Studio Client    | ✅ Complete    | Vision, structured, tools         |
-| Agent Chat UI       | ✅ Complete    | Full conversation UI              |
-| WebSocket           | ✅ Complete    | Real-time updates                 |
-| Unit Tests          | ✅ Complete    | 300+ tests, 84%+ cov              |
-| BambiSleep Chat     | ✅ Complete    | Triggers, spirals, TTS            |
-| Model Router        | ✅ Complete    | Smart model selection             |
-| Agent Parity        | ✅ Complete    | Phase 5.6 (98 tools)              |
-| Legal Pages         | ✅ Complete    | Privacy Policy, Terms of Service  |
-| Patreon OAuth       | ✅ Complete    | OAuth2 redirect flow              |
-| Agentic Rendering   | 🔜 Next        | Phase 6                           |
-| WebGL Avatar        | 🔮 Future      | Phase 7                           |
+| Category            | Status      | Progress                         |
+| ------------------- | ----------- | -------------------------------- |
+| MCP Server Wrappers | ✅ Complete | 14/14 (incl. Patreon)            |
+| REST API Endpoints  | ✅ Complete | 80+ endpoints                    |
+| Dashboard UI        | ✅ Complete | Cyber goth design                |
+| Agent Orchestrator  | ✅ Complete | 98 tools                         |
+| Agent Personality   | ✅ Complete | Bambi + event system             |
+| LM Studio Client    | ✅ Complete | Vision, structured, tools        |
+| Agent Chat UI       | ✅ Complete | Full conversation UI             |
+| WebSocket           | ✅ Complete | Real-time updates                |
+| Unit Tests          | ✅ Complete | 300+ tests, 84%+ cov             |
+| BambiSleep Chat     | ✅ Complete | Triggers, spirals, TTS           |
+| Model Router        | ✅ Complete | Smart model selection            |
+| Agent Parity        | ✅ Complete | Phase 5.6 (98 tools)             |
+| Legal Pages         | ✅ Complete | Privacy Policy, Terms of Service |
+| Patreon OAuth       | ✅ Complete | OAuth2 redirect flow             |
+| Agentic Rendering   | 🔜 Next     | Phase 6                          |
+| WebGL Avatar        | 🔮 Future   | Phase 7                          |
 
 ---
 

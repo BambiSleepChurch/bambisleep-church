@@ -34,7 +34,7 @@ Built by **BambiSleepChurch™** following the sacred laws of the [Religulous Ma
 |   ✅   | 🐙 GitHub              | Repository & issue mgmt     | —                                         |
 |   ✅   | 🤗 HuggingFace         | ML model inference          | [docs](docs/HUGGINGFACE_MCP_REFERENCE.md) |
 |   ✅   | 💳 Stripe              | Payment processing          | [docs](docs/STRIPE_MCP_REFERENCE.md)      |
-|   ✅   | � Patreon             | Creator platform & OAuth    | [docs](docs/PATREON_MCP_REFERENCE.md)     |
+|   ✅   | � Patreon              | Creator platform & OAuth    | [docs](docs/PATREON_MCP_REFERENCE.md)     |
 |   ✅   | 🍃 MongoDB             | Document database           | [docs](docs/MONGODB_MCP_REFERENCE.md)     |
 |   ✅   | 🗃️ SQLite              | Local database              | —                                         |
 |   ✅   | 🌐 Fetch               | HTTP request utilities      | —                                         |
@@ -234,20 +234,20 @@ MCP servers are configured via `.vscode/settings.json` (JSONC with comments allo
 
 **Environment Variables** (`.env`):
 
-| Variable                 | Default | Purpose                       |
-| ------------------------ | ------- | ----------------------------- |
-| `LOG_LEVEL`              | `info`  | `error`/`warn`/`info`/`debug` |
-| `API_PORT`               | `8080`  | REST API port                 |
-| `DASHBOARD_PORT`         | `3000`  | Dashboard UI port             |
-| `GITHUB_TOKEN`           | —       | GitHub API auth               |
-| `STRIPE_API_KEY`         | —       | Stripe payments               |
-| `HUGGINGFACE_TOKEN`      | —       | HuggingFace inference         |
-| `MONGODB_URI`            | —       | MongoDB connection string     |
-| `PATREON_CLIENT_ID`      | —       | Patreon OAuth2 client ID      |
-| `PATREON_CLIENT_SECRET`  | —       | Patreon OAuth2 secret         |
-| `PATREON_ACCESS_TOKEN`   | —       | Patreon API access token      |
-| `LMSTUDIO_HOST`          | —       | LM Studio server host         |
-| `LMSTUDIO_PORT`          | `7777`  | LM Studio server port         |
+| Variable                | Default | Purpose                       |
+| ----------------------- | ------- | ----------------------------- |
+| `LOG_LEVEL`             | `info`  | `error`/`warn`/`info`/`debug` |
+| `API_PORT`              | `8080`  | REST API port                 |
+| `DASHBOARD_PORT`        | `3000`  | Dashboard UI port             |
+| `GITHUB_TOKEN`          | —       | GitHub API auth               |
+| `STRIPE_API_KEY`        | —       | Stripe payments               |
+| `HUGGINGFACE_TOKEN`     | —       | HuggingFace inference         |
+| `MONGODB_URI`           | —       | MongoDB connection string     |
+| `PATREON_CLIENT_ID`     | —       | Patreon OAuth2 client ID      |
+| `PATREON_CLIENT_SECRET` | —       | Patreon OAuth2 secret         |
+| `PATREON_ACCESS_TOKEN`  | —       | Patreon API access token      |
+| `LMSTUDIO_HOST`         | —       | LM Studio server host         |
+| `LMSTUDIO_PORT`         | `7777`  | LM Studio server port         |
 
 ---
 
