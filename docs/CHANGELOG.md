@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Privacy Policy & Terms of Service** - Legal compliance pages
+  - Comprehensive Privacy Policy with 12 sections (GDPR-style)
+  - Complete Terms of Service with 18 sections
+  - Adult content warning notice
+  - Footer links in dashboard
+  - Branded styling matching design system
+
+- **Patreon OAuth Redirect** - OAuth2 callback handling
+  - `GET /redirect/patreon` endpoint for OAuth callback
+  - Automatic token exchange from authorization code
+  - Branded success/error HTML response pages
+  - Event logging with state tracking
+  - Configured redirect URI: `https://bambisleep.church/redirect/patreon`
+
 - **Patreon MCP Server** - Full Patreon API v2 integration for creator platform operations
 
   - PatreonClient class with OAuth2 token handling and JSON:API request format
