@@ -216,11 +216,83 @@ All configured MCP servers now have REST API wrappers:
 
 ---
 
-## 🚀 Phase 6: Agentic Frontend Rendering (Current)
+## � Phase 5.6: Agent Parity with bambisleep-church-agent (Current)
 
 ### Overview
 
-Enable BambiAgent™ to dynamically generate and render frontend components, allowing users to interact with AI-generated interfaces in real-time.
+Upgrade MCP Control Tower agent to feature parity with the standalone bambisleep-church-agent repository. Key features to port: ModelRouter, AgentToolExecutor, 60+ tools, and extended APIs.
+
+### Model Router (`src/servers/model-router.js`) - NEW
+
+- [ ] **Smart Model Selection** - Auto-select optimal model per task type
+  - Task types: reasoning, creative, instruction, chat, toolUse, summarize
+  - Model profiles with quality/speed scores
+  - Context length awareness (reduce tools for small models)
+  - Task detection from user message
+- [ ] **Model Profiles** - Benchmark-based model metadata
+  - quality, speed (tokens/sec), taskScores per task
+  - strengths/weaknesses arrays
+  - contextLength, tier (quality/speed/balanced)
+- [ ] **Singleton Pattern** - `getModelRouter()` factory function
+
+### Agent Tool Executor (`src/servers/agent-tools.js`) - NEW
+
+- [ ] **AgentToolExecutor Class** - Centralized tool execution
+  - MCP client fallback to local handlers
+  - Render callback for WebSocket broadcast
+  - Local fetch implementation for standalone mode
+- [ ] **60+ Tools with JSON Schema** - OpenAI function calling format
+  - Core tools for small context models (~1k tokens)
+  - Full tool set for larger models
+- [ ] **Render Commands** - Emit UI component events
+  - `render_card`, `render_table`, `render_form`
+  - `render_alert`, `render_progress`, `render_list`, `render_code`
+
+### Extended API Tools (30+ new tools)
+
+- [ ] **Puppeteer Extended**
+  - `puppeteer_launch`, `puppeteer_close`, `puppeteer_status`
+  - `puppeteer_get_content`, `puppeteer_pdf`
+- [ ] **MongoDB Extended**
+  - `mongodb_aggregate`, `mongodb_count`, `mongodb_create_index`
+  - `mongodb_delete_many`, `mongodb_stats`
+- [ ] **SQLite Extended**
+  - `sqlite_create_table`, `sqlite_update`, `sqlite_delete`
+  - `sqlite_list_tables`, `sqlite_stats`
+- [ ] **Thinking Extended**
+  - `thinking_generate_hypothesis`, `thinking_conclude`
+  - `thinking_export_markdown`, `thinking_list_sessions`
+- [ ] **Stripe Extended**
+  - `stripe_create_invoice`, `stripe_finalize_invoice`
+  - `stripe_list_subscriptions`, `stripe_create_product`
+  - `stripe_list_disputes`
+- [ ] **Clarity Extended**
+  - `clarity_track_pageview`, `clarity_get_events`
+  - `clarity_top_events`, `clarity_reset`
+- [ ] **Fetch Extended**
+  - `fetch_post`, `fetch_ping`, `fetch_download_base64`
+- [ ] **GitHub Extended**
+  - `github_create_issue`, `github_list_issues`
+  - `github_list_branches`
+- [ ] **LM Studio Direct**
+  - `lmstudio_list_models`, `lmstudio_get_loaded_model`
+  - `lmstudio_generate_embeddings`
+
+### BambiSleep Chat Integration
+
+- [x] **Trigger System** - Official BambiSleep triggers by category
+- [x] **Spiral Effects** - WebGL2 GPU-accelerated hypnotic spirals
+- [x] **Collar System** - Session-based collar activation
+- [x] **TTS Processing** - Text-to-speech preparation
+- [x] **Chat History** - Per-session message tracking
+
+---
+
+## 🚀 Phase 6: Agentic Frontend Rendering (Next)
+
+### Overview
+
+Enable BambiAgent™ to dynamically generate and render frontend components, allowing users to interact with AI-generated interfaces in real-time. Based on bambisleep-church-agent Phase 6 implementation.
 
 ### Core Infrastructure
 
@@ -230,15 +302,15 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - Component schema validation (props, events, children)
   - Sandboxed execution for agent-generated code
 
-- [ ] **Agent UI Tools** - New tools in `src/servers/agent.js`
+- [ ] **Agent UI Tools** - Render tools in `src/servers/agent.js`
 
-  - `ui_render_component` - Render a component by type with props
-  - `ui_create_form` - Generate interactive forms from schema
-  - `ui_create_table` - Render data tables with sorting/filtering
-  - `ui_create_chart` - Generate visualizations (Chart.js integration)
-  - `ui_show_modal` - Display modal dialogs with custom content
-  - `ui_update_element` - Update existing DOM elements
-  - `ui_remove_element` - Remove components from the DOM
+  - `render_card` - Render information cards (repo, user, payment)
+  - `render_table` - Data tables with sorting/filtering
+  - `render_form` - Generate interactive forms from schema
+  - `render_alert` - Display notification alerts
+  - `render_progress` - Show progress indicators
+  - `render_list` - Bullet/numbered lists
+  - `render_code` - Syntax-highlighted code blocks
 
 - [ ] **Agent Workspace Panel** - Dedicated rendering area
   - `src/dashboard/js/components/AgentWorkspace.js` - Container for dynamic content
@@ -306,7 +378,52 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
 
 ---
 
-## 🔮 Phase 7: Advanced Agent Features (Next)
+## 🔮 Phase 7: WebGL Avatar & Voice (Future)
+
+### Overview
+
+Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent for a fully immersive experience.
+
+### WebGL Avatar (`src/dashboard/js/avatar-webgl.js`)
+
+- [ ] **GPU-Accelerated Face Rendering**
+  - Fragment shader with SDF face geometry
+  - Elven female avatar with pointed ears
+  - Dynamic expressions (-1 sad to +1 happy)
+- [ ] **Lip Sync Animation**
+  - `setMouthOpen(0-1)` for speech sync
+  - Phoneme-based mouth movement
+  - `startSpeaking()` / `stopSpeaking()` modes
+- [ ] **Eye Tracking**
+  - Follow mouse cursor
+  - Natural blink cycles (4s interval)
+- [ ] **Bambi Expressions**
+  - `happy()` - "Good girl" trigger response
+  - `sleepy()` - "Bambi sleep" trigger
+  - `alert()` - "Bambi wake" trigger
+  - `reset()` - "Bambi reset" trigger
+  - `confused()` - "Blonde moment" trigger
+  - `comfort()` - "Safe and secure" trigger
+  - `giggle()` - Playful bubbly response
+- [ ] **Theme Support**
+  - Neon mode (dark + glowing)
+  - Inverted mode (light)
+
+### Voice Synthesis (`src/dashboard/js/speech.js`)
+
+- [ ] **Web Speech API Integration**
+  - Female voice preference (Zira, Samantha)
+  - Phoneme-based lip sync callback
+- [ ] **Voice Presets**
+  - 🌸 Bambi (bubbly, rate: 1.05, pitch: 1.2)
+  - 🤖 Machine (synthetic, rate: 0.95, pitch: 0.85)
+  - ⚡ Robot (deep, rate: 0.8, pitch: 0.7)
+  - 👩 Human (natural, rate: 1.0, pitch: 1.1)
+  - 🌙 Whisper (soft, rate: 0.85, pitch: 0.95)
+- [ ] **Speech Controller**
+  - `speak(text, options)` with interrupt support
+  - Lip sync interval callbacks
+  - Queue management
 
 ### Memory & Persistence
 
@@ -333,34 +450,40 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
 
 ## 📝 Progress Summary
 
-| Category            | Status         | Progress                  |
-| ------------------- | -------------- | ------------------------- |
-| MCP Server Wrappers | ✅ Complete    | 11/11                     |
-| REST API Endpoints  | ✅ Complete    | 55+ endpoints             |
-| Dashboard UI        | ✅ Complete    | Cyber goth design         |
-| Agent Orchestrator  | ✅ Complete    | 30+ tools                 |
-| Agent Personality   | ✅ Complete    | Bambi + event system      |
-| LM Studio Client    | ✅ Complete    | Vision, structured, tools |
-| Agent Chat UI       | ✅ Complete    | Full conversation UI      |
-| WebSocket           | ✅ Complete    | Real-time updates         |
-| Unit Tests          | ✅ Complete    | 228 tests, 84%+ cov       |
-| Agent Integration   | ✅ Complete    | Phase 5.5                 |
-| Agentic Rendering   | 🔄 In Progress | Phase 6                   |
-| Advanced Agent      | 🔜 Next        | Phase 7                   |
+| Category            | Status         | Progress                          |
+| ------------------- | -------------- | --------------------------------- |
+| MCP Server Wrappers | ✅ Complete    | 13/13 (incl. BambiSleep Chat)     |
+| REST API Endpoints  | ✅ Complete    | 60+ endpoints                     |
+| Dashboard UI        | ✅ Complete    | Cyber goth design                 |
+| Agent Orchestrator  | ✅ Complete    | 30+ tools                         |
+| Agent Personality   | ✅ Complete    | Bambi + event system              |
+| LM Studio Client    | ✅ Complete    | Vision, structured, tools         |
+| Agent Chat UI       | ✅ Complete    | Full conversation UI              |
+| WebSocket           | ✅ Complete    | Real-time updates                 |
+| Unit Tests          | ✅ Complete    | 228+ tests, 84%+ cov              |
+| BambiSleep Chat     | ✅ Complete    | Triggers, spirals, TTS            |
+| Agent Parity        | 🔄 In Progress | Phase 5.6 (ModelRouter, 60 tools) |
+| Agentic Rendering   | 🔜 Next        | Phase 6                           |
+| WebGL Avatar        | 🔮 Future      | Phase 7                           |
 
 ---
 
-## 🎯 Phase 5.5 Milestones (Completed)
+## 🎯 Phase 5.6 Milestones (Current)
 
-| Milestone           | Target | Status      |
-| ------------------- | ------ | ----------- |
-| Agent Personality   | Dec 31 | ✅ Complete |
-| LM Studio Vision    | Dec 31 | ✅ Complete |
-| Structured Output   | Dec 31 | ✅ Complete |
-| Tool Execution Loop | Dec 31 | ✅ Complete |
-| Event System        | Dec 31 | ✅ Complete |
-| Config Expansion    | Dec 31 | ✅ Complete |
-| Documentation       | Dec 31 | ✅ Complete |
+| Milestone            | Target | Status      |
+| -------------------- | ------ | ----------- |
+| BambiSleep Chat      | Jan 1  | ✅ Complete |
+| WebGL Spiral Effects | Jan 1  | ✅ Complete |
+| Model Router         | Week 1 | 🔜 Planned  |
+| AgentToolExecutor    | Week 1 | 🔜 Planned  |
+| Extended Puppeteer   | Week 2 | 🔜 Planned  |
+| Extended MongoDB     | Week 2 | 🔜 Planned  |
+| Extended SQLite      | Week 2 | 🔜 Planned  |
+| Extended Thinking    | Week 2 | 🔜 Planned  |
+| Extended Stripe      | Week 3 | 🔜 Planned  |
+| Extended Clarity     | Week 3 | 🔜 Planned  |
+| Render Tools         | Week 3 | 🔜 Planned  |
+| 60+ Tools Complete   | Week 4 | 🔜 Planned  |
 
 ---
 

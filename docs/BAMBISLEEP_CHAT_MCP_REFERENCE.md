@@ -547,18 +547,18 @@ GET /api/bambisleep-chat/spiral/presets
 
 ### Available Color Presets
 
-| Preset ID | Name | Description |
-|-----------|------|-------------|
-| `BAMBI_CLASSIC` | Bambi Classic | Teal & Barbie Pink |
-| `DEEP_TRANCE` | Deep Trance | Indigo & Blue Violet |
-| `HYPNO_PINK` | Hypno Pink | Hot Pink & Light Pink |
-| `MIND_MELT` | Mind Melt | Magenta & Cyan |
-| `DREAM_STATE` | Dream State | Dark Violet & Medium Orchid |
+| Preset ID         | Name            | Description                 |
+| ----------------- | --------------- | --------------------------- |
+| `BAMBI_CLASSIC`   | Bambi Classic   | Teal & Barbie Pink          |
+| `DEEP_TRANCE`     | Deep Trance     | Indigo & Blue Violet        |
+| `HYPNO_PINK`      | Hypno Pink      | Hot Pink & Light Pink       |
+| `MIND_MELT`       | Mind Melt       | Magenta & Cyan              |
+| `DREAM_STATE`     | Dream State     | Dark Violet & Medium Orchid |
 | `SUBMISSIVE_BLUE` | Submissive Blue | Dodger Blue & Deep Sky Blue |
-| `BIMBO_BARBIE` | Bimbo Barbie | Deep Pink & Hot Pink |
-| `SLEEPY_LAVENDER` | Sleepy Lavender | Lavender & Thistle |
-| `GOOD_GIRL_GOLD` | Good Girl Gold | Gold & Light Pink |
-| `TRIGGER_RED` | Trigger Red | Crimson & Orange Red |
+| `BIMBO_BARBIE`    | Bimbo Barbie    | Deep Pink & Hot Pink        |
+| `SLEEPY_LAVENDER` | Sleepy Lavender | Lavender & Thistle          |
+| `GOOD_GIRL_GOLD`  | Good Girl Gold  | Gold & Light Pink           |
+| `TRIGGER_RED`     | Trigger Red     | Crimson & Orange Red        |
 
 ### Initialize Spiral Session
 
@@ -694,16 +694,16 @@ GET /api/bambisleep-chat/spiral/trigger-preset/:trigger
 
 Maps triggers to recommended visual presets:
 
-| Trigger | Recommended Preset |
-|---------|-------------------|
-| Bambi Sleep | DEEP_TRANCE |
-| Good Girl | GOOD_GIRL_GOLD |
-| Bambi Freeze | SUBMISSIVE_BLUE |
-| Blonde Moment | BIMBO_BARBIE |
-| Bimbo Doll | HYPNO_PINK |
-| Bambi Reset | MIND_MELT |
-| Bambi Limp | SLEEPY_LAVENDER |
-| Drop for Cock | TRIGGER_RED |
+| Trigger       | Recommended Preset |
+| ------------- | ------------------ |
+| Bambi Sleep   | DEEP_TRANCE        |
+| Good Girl     | GOOD_GIRL_GOLD     |
+| Bambi Freeze  | SUBMISSIVE_BLUE    |
+| Blonde Moment | BIMBO_BARBIE       |
+| Bimbo Doll    | HYPNO_PINK         |
+| Bambi Reset   | MIND_MELT          |
+| Bambi Limp    | SLEEPY_LAVENDER    |
+| Drop for Cock | TRIGGER_RED        |
 
 ### Generate Client Code
 
