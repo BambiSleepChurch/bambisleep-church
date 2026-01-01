@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive test suite with 21 test cases
 
 - **Patreon API Routes** - 16 new REST endpoints
+
   - `GET /api/patreon/status` - Connection status
   - `GET /api/patreon/identity` - Current user identity
   - `GET /api/patreon/campaigns` - List all campaigns
@@ -40,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `GET /api/patreon/oauth/url` - Get OAuth authorization URL
 
 - **Configuration** - Patreon environment variables
+
   - `PATREON_CLIENT_ID` - OAuth2 client ID
   - `PATREON_CLIENT_SECRET` - OAuth2 client secret
   - `PATREON_ACCESS_TOKEN` - API access token

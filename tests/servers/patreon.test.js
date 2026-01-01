@@ -3,8 +3,8 @@
  * Patreon Handler Tests
  */
 
-import { describe, it, mock, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
+import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 
 // Mock fetch globally
 const originalFetch = globalThis.fetch;

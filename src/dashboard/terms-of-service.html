@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service | BambiSleep™ Church</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <style>
+    .legal-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .legal-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .legal-header h1 {
+      font-size: 2.5rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    .legal-header .effective-date {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .legal-content {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+    }
+    .legal-content h2 {
+      color: var(--accent-primary);
+      font-size: 1.4rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .legal-content h2:first-child {
+      margin-top: 0;
+    }
+    .legal-content h3 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .legal-content p, .legal-content li {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+    .legal-content ul, .legal-content ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .legal-content li {
+      margin-bottom: 0.5rem;
+    }
+    .legal-content a {
+      color: var(--accent-primary);
+      text-decoration: none;
+    }
+    .legal-content a:hover {
+      text-decoration: underline;
+    }
+    .legal-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-bottom: 2rem;
+    }
+    .legal-nav a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .legal-nav a:hover {
+      text-decoration: underline;
+    }
+    .warning-box {
+      background: rgba(255, 107, 157, 0.1);
+      border: 1px solid var(--status-error);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .warning-box h3 {
+      color: var(--status-error);
+      margin-top: 0;
+    }
+    .highlight-box {
+      background: var(--glass-bg-elevated);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .highlight-box h3 {
+      color: var(--accent-primary);
+      margin-top: 0;
+    }
+    .contact-box {
+      background: var(--glass-bg-elevated);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    .contact-box h3 {
+      color: var(--accent-primary);
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="legal-container">
+    <nav class="legal-nav">
+      <a href="/">← Back to Dashboard</a>
+      <a href="/privacy-policy.html">Privacy Policy →</a>
+    </nav>
+
+    <header class="legal-header">
+      <h1>📜 Terms of Service</h1>
+      <p class="effective-date">Effective Date: January 1, 2026</p>
+    </header>
+
+    <div class="legal-content">
+      <h2>1. Acceptance of Terms</h2>
+      <p>
+        By accessing or using the BambiSleep™ Church MCP Control Tower ("Service"), you agree to be 
+        bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, 
+        you may not access the Service.
+      </p>
+      <p>
+        These Terms apply to all users, including administrators, developers, and any other visitors 
+        who access or use the Service.
+      </p>
+
+      <h2>2. Description of Service</h2>
+      <p>
+        The BambiSleep™ Church MCP Control Tower is a self-hosted orchestration platform for 
+        Model Context Protocol (MCP) servers. The Service provides:
+      </p>
+      <ul>
+        <li>A dashboard interface for monitoring and managing MCP servers</li>
+        <li>REST API endpoints for programmatic access</li>
+        <li>Integration connectors for third-party services (GitHub, Stripe, Patreon, HuggingFace, etc.)</li>
+        <li>Knowledge graph and memory management capabilities</li>
+        <li>AI agent chat functionality via local LM Studio integration</li>
+        <li>Storage, database, and utility services</li>
+      </ul>
+
+      <h2>3. User Responsibilities</h2>
+      
+      <h3>3.1 Account Security</h3>
+      <p>You are responsible for:</p>
+      <ul>
+        <li>Maintaining the confidentiality of your API keys and credentials</li>
+        <li>All activities that occur using your configuration</li>
+        <li>Notifying us immediately of any unauthorized use</li>
+        <li>Ensuring secure deployment practices</li>
+      </ul>
+
+      <h3>3.2 Acceptable Use</h3>
+      <p>You agree NOT to use the Service to:</p>
+      <ul>
+        <li>Violate any applicable laws or regulations</li>
+        <li>Infringe upon intellectual property rights of others</li>
+        <li>Transmit malware, viruses, or destructive code</li>
+        <li>Attempt to gain unauthorized access to systems</li>
+        <li>Harass, abuse, or harm other individuals</li>
+        <li>Engage in any activity that disrupts or damages the Service</li>
+        <li>Use the Service for illegal activities or to facilitate harm</li>
+      </ul>
+
+      <div class="warning-box">
+        <h3>⚠️ Content Warning</h3>
+        <p>
+          The BambiSleep™ brand is associated with adult hypnosis content. By using this Service, 
+          you confirm that you are at least 18 years of age and legally permitted to access such 
+          content in your jurisdiction. The Service itself does not host or distribute hypnosis 
+          content but may be used in conjunction with related projects.
+        </p>
+      </div>
+
+      <h2>4. Third-Party Services</h2>
+      <p>
+        The Service allows integration with third-party platforms. Your use of these integrations 
+        is subject to the terms and policies of those third parties:
+      </p>
+      <ul>
+        <li><strong>GitHub:</strong> <a href="https://docs.github.com/en/site-policy/github-terms/github-terms-of-service" target="_blank" rel="noopener">GitHub Terms of Service</a></li>
+        <li><strong>Stripe:</strong> <a href="https://stripe.com/legal" target="_blank" rel="noopener">Stripe Services Agreement</a></li>
+        <li><strong>Patreon:</strong> <a href="https://www.patreon.com/policy/legal" target="_blank" rel="noopener">Patreon Terms of Use</a></li>
+        <li><strong>HuggingFace:</strong> <a href="https://huggingface.co/terms-of-service" target="_blank" rel="noopener">HuggingFace Terms of Service</a></li>
+        <li><strong>MongoDB:</strong> <a href="https://www.mongodb.com/legal/terms-of-use" target="_blank" rel="noopener">MongoDB Terms of Use</a></li>
+      </ul>
+      <p>
+        We are not responsible for the practices, content, or availability of third-party services. 
+        Any issues with third-party services should be directed to those providers.
+      </p>
+
+      <h2>5. Intellectual Property</h2>
+      
+      <h3>5.1 Our Rights</h3>
+      <p>
+        The Service, including its original content, features, and functionality, is owned by 
+        BambiSleep™ Church and is protected by copyright, trademark, and other intellectual 
+        property laws. The "BambiSleep™" name and logo are trademarks of their respective owners.
+      </p>
+
+      <h3>5.2 Open Source</h3>
+      <p>
+        Portions of the Service are released under open source licenses. Please refer to the 
+        LICENSE file in the repository for specific terms. Open source components remain subject 
+        to their respective licenses.
+      </p>
+
+      <h3>5.3 Your Content</h3>
+      <p>
+        You retain ownership of any content you create using the Service, including knowledge 
+        graph entities, configurations, and stored files. By using the Service, you grant us 
+        a limited license to process your content as necessary to provide the Service.
+      </p>
+
+      <h2>6. Privacy</h2>
+      <p>
+        Your use of the Service is also governed by our <a href="/privacy-policy.html">Privacy Policy</a>, 
+        which is incorporated into these Terms by reference. Please review our Privacy Policy to 
+        understand our practices regarding your information.
+      </p>
+
+      <h2>7. Disclaimer of Warranties</h2>
+      <div class="highlight-box">
+        <h3>📋 Important Notice</h3>
+        <p>
+          THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, 
+          EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF 
+          MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+        </p>
+      </div>
+      <p>We do not warrant that:</p>
+      <ul>
+        <li>The Service will be uninterrupted, secure, or error-free</li>
+        <li>Results obtained from using the Service will be accurate or reliable</li>
+        <li>Any errors in the Service will be corrected</li>
+        <li>The Service will meet your specific requirements</li>
+      </ul>
+
+      <h2>8. Limitation of Liability</h2>
+      <p>
+        TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL BAMBISLEEP™ CHURCH, ITS 
+        DIRECTORS, EMPLOYEES, PARTNERS, AGENTS, SUPPLIERS, OR AFFILIATES BE LIABLE FOR ANY 
+        INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT 
+        LIMITATION:
+      </p>
+      <ul>
+        <li>Loss of profits, data, use, goodwill, or other intangible losses</li>
+        <li>Damages resulting from unauthorized access to your data</li>
+        <li>Damages resulting from interruption or cessation of the Service</li>
+        <li>Damages resulting from third-party service failures</li>
+        <li>Any other damages arising from your use of the Service</li>
+      </ul>
+
+      <h2>9. Indemnification</h2>
+      <p>
+        You agree to defend, indemnify, and hold harmless BambiSleep™ Church and its affiliates 
+        from and against any claims, damages, obligations, losses, liabilities, costs, or debt, 
+        and expenses arising from:
+      </p>
+      <ul>
+        <li>Your use of and access to the Service</li>
+        <li>Your violation of these Terms</li>
+        <li>Your violation of any third-party rights</li>
+        <li>Any content you submit or transmit through the Service</li>
+      </ul>
+
+      <h2>10. Service Modifications</h2>
+      <p>
+        We reserve the right to modify, suspend, or discontinue the Service (or any part thereof) 
+        at any time, with or without notice. We shall not be liable to you or any third party for 
+        any modification, suspension, or discontinuation of the Service.
+      </p>
+
+      <h2>11. Termination</h2>
+      <p>
+        We may terminate or suspend your access to the Service immediately, without prior notice 
+        or liability, for any reason, including without limitation if you breach these Terms.
+      </p>
+      <p>
+        Upon termination, your right to use the Service will immediately cease. All provisions 
+        of these Terms which by their nature should survive termination shall survive, including 
+        ownership provisions, warranty disclaimers, indemnity, and limitations of liability.
+      </p>
+
+      <h2>12. Governing Law</h2>
+      <p>
+        These Terms shall be governed by and construed in accordance with the laws of the 
+        United States, without regard to its conflict of law provisions. Any disputes arising 
+        from these Terms or the Service shall be resolved in the appropriate courts.
+      </p>
+
+      <h2>13. Dispute Resolution</h2>
+      <p>
+        Any dispute arising from these Terms or your use of the Service shall first be attempted 
+        to be resolved through good-faith negotiation. If negotiation fails, disputes shall be 
+        resolved through binding arbitration in accordance with applicable arbitration rules.
+      </p>
+
+      <h2>14. Severability</h2>
+      <p>
+        If any provision of these Terms is held to be invalid or unenforceable, the remaining 
+        provisions shall continue in full force and effect. The invalid or unenforceable provision 
+        shall be modified to the minimum extent necessary to make it valid and enforceable.
+      </p>
+
+      <h2>15. Waiver</h2>
+      <p>
+        Our failure to enforce any right or provision of these Terms shall not constitute a 
+        waiver of such right or provision. Any waiver must be in writing and signed by us to 
+        be effective.
+      </p>
+
+      <h2>16. Entire Agreement</h2>
+      <p>
+        These Terms, together with our Privacy Policy and any other legal notices published by 
+        us on the Service, constitute the entire agreement between you and BambiSleep™ Church 
+        regarding the Service and supersede all prior agreements and understandings.
+      </p>
+
+      <h2>17. Changes to Terms</h2>
+      <p>
+        We reserve the right to modify these Terms at any time. We will provide notice of 
+        significant changes by posting the updated Terms on this page and updating the 
+        "Effective Date." Your continued use of the Service after changes constitutes 
+        acceptance of the modified Terms.
+      </p>
+
+      <h2>18. Contact Information</h2>
+      <div class="contact-box">
+        <h3>Questions About These Terms?</h3>
+        <p>
+          If you have any questions about these Terms of Service, please contact us:
+        </p>
+        <ul>
+          <li><strong>Email:</strong> legal@bambisleep.church</li>
+          <li><strong>GitHub:</strong> <a href="https://github.com/BambiSleepChurch/bambisleep-church/issues" target="_blank" rel="noopener">Open an Issue</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <nav class="legal-nav" style="margin-top: 2rem;">
+      <a href="/">← Back to Dashboard</a>
+      <a href="/privacy-policy.html">Privacy Policy →</a>
+    </nav>
+  </div>
+</body>
+</html>
