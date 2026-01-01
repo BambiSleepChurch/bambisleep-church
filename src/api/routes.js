@@ -8,6 +8,7 @@ import { createServer } from 'http';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { agentHandlers } from '../servers/agent.js';
+import { bambisleepChatHandlers } from '../servers/bambisleep-chat.js';
 import { clarityHandlers } from '../servers/clarity.js';
 import { fetchHandlers } from '../servers/fetch.js';
 import { githubHandlers } from '../servers/github.js';
@@ -125,6 +126,7 @@ async function handleRequest(req, res) {
       { name: 'clarity', status: 'running', type: 'integrated', description: 'Microsoft Clarity analytics' },
       { name: 'lmstudio', status: 'running', type: 'integrated', description: 'LM Studio LLM integration' },
       { name: 'agent', status: 'running', type: 'integrated', description: 'Agent orchestrator' },
+      { name: 'bambisleep-chat', status: 'running', type: 'integrated', description: 'BambiSleep chat triggers & TTS' },
     ];
     
     // Combine MCP servers with integrated handlers
@@ -1595,6 +1597,153 @@ async function handleRequest(req, res) {
   // DELETE /api/agent/conversations/:id - Delete conversation
   if (agentConvMatch && method === 'DELETE') {
     return json(res, agentHandlers.deleteConversation(agentConvMatch[1]));
+  }
+
+  // ============ BAMBISLEEP-CHAT MCP ROUTES ============
+  
+  // --- Trigger Routes ---
+  
+  // GET /api/bambisleep-chat/triggers - Get all official triggers
+  if (path === '/api/bambisleep-chat/triggers' && method === 'GET') {
+    return json(res, bambisleepChatHandlers.triggers.getAllTriggers());
+  }
+
+  // GET /api/bambisleep-chat/triggers/category/:category - Get triggers by category
+  const triggerCategoryMatch = path.match(/^\/api\/bambisleep-chat\/triggers\/category\/([^/]+)$/);
+  if (triggerCategoryMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.triggers.getTriggersByCategory(triggerCategoryMatch[1]));
+  }
+
+  // POST /api/bambisleep-chat/triggers/detect - Detect triggers in text
+  if (path === '/api/bambisleep-chat/triggers/detect' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.triggers.detectTriggers(body.text));
+  }
+
+  // POST /api/bambisleep-chat/triggers/process - Process message with trigger highlighting
+  if (path === '/api/bambisleep-chat/triggers/process' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.triggers.processMessage(body.text, body.options));
+  }
+
+  // POST /api/bambisleep-chat/triggers/active - Set active triggers for session
+  if (path === '/api/bambisleep-chat/triggers/active' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.triggers.setActiveTriggers(body.sessionId, body.triggers));
+  }
+
+  // GET /api/bambisleep-chat/triggers/active/:sessionId - Get active triggers
+  const activeTriggersMatch = path.match(/^\/api\/bambisleep-chat\/triggers\/active\/([^/]+)$/);
+  if (activeTriggersMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.triggers.getActiveTriggers(activeTriggersMatch[1]));
+  }
+
+  // --- TTS Routes ---
+
+  // POST /api/bambisleep-chat/tts/clean - Clean text for TTS
+  if (path === '/api/bambisleep-chat/tts/clean' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.tts.cleanTextForTTS(body.text));
+  }
+
+  // POST /api/bambisleep-chat/tts/split - Split text into sentences
+  if (path === '/api/bambisleep-chat/tts/split' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.tts.splitIntoSentences(body.text));
+  }
+
+  // POST /api/bambisleep-chat/tts/process - Process for TTS with sentence pairs
+  if (path === '/api/bambisleep-chat/tts/process' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.tts.processForTTS(body.message));
+  }
+
+  // --- Chat Routes ---
+
+  // POST /api/bambisleep-chat/chat/message - Add message to history
+  if (path === '/api/bambisleep-chat/chat/message' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.chat.addMessage(body.sessionId, body.message));
+  }
+
+  // GET /api/bambisleep-chat/chat/history/:sessionId - Get chat history
+  const chatHistoryMatch = path.match(/^\/api\/bambisleep-chat\/chat\/history\/([^/]+)$/);
+  if (chatHistoryMatch && method === 'GET') {
+    const limit = url.searchParams.get('limit');
+    const includeAI = url.searchParams.get('includeAI') !== 'false';
+    const includeUser = url.searchParams.get('includeUser') !== 'false';
+    return json(res, bambisleepChatHandlers.chat.getHistory(chatHistoryMatch[1], {
+      limit: limit ? parseInt(limit, 10) : 50,
+      includeAI,
+      includeUser
+    }));
+  }
+
+  // DELETE /api/bambisleep-chat/chat/history/:sessionId - Clear chat history
+  if (chatHistoryMatch && method === 'DELETE') {
+    return json(res, bambisleepChatHandlers.chat.clearHistory(chatHistoryMatch[1]));
+  }
+
+  // GET /api/bambisleep-chat/chat/username - Generate random username
+  if (path === '/api/bambisleep-chat/chat/username' && method === 'GET') {
+    return json(res, { username: bambisleepChatHandlers.chat.generateUsername() });
+  }
+
+  // --- Collar Routes ---
+
+  // POST /api/bambisleep-chat/collar/activate - Activate collar
+  if (path === '/api/bambisleep-chat/collar/activate' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.collar.activate(body.sessionId));
+  }
+
+  // POST /api/bambisleep-chat/collar/deactivate - Deactivate collar
+  if (path === '/api/bambisleep-chat/collar/deactivate' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.collar.deactivate(body.sessionId));
+  }
+
+  // POST /api/bambisleep-chat/collar/toggle - Toggle collar
+  if (path === '/api/bambisleep-chat/collar/toggle' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.collar.toggle(body.sessionId));
+  }
+
+  // GET /api/bambisleep-chat/collar/status/:sessionId - Get collar status
+  const collarStatusMatch = path.match(/^\/api\/bambisleep-chat\/collar\/status\/([^/]+)$/);
+  if (collarStatusMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.collar.getStatus(collarStatusMatch[1]));
+  }
+
+  // --- Text Effects Routes ---
+
+  // POST /api/bambisleep-chat/effects/highlights - Process text highlights
+  if (path === '/api/bambisleep-chat/effects/highlights' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.textEffects.processHighlights(body.text, body.options));
+  }
+
+  // --- Session Routes ---
+
+  // POST /api/bambisleep-chat/session - Create new session
+  if (path === '/api/bambisleep-chat/session' && method === 'POST') {
+    return json(res, bambisleepChatHandlers.session.create());
+  }
+
+  // DELETE /api/bambisleep-chat/session/:sessionId - Destroy session
+  const sessionDestroyMatch = path.match(/^\/api\/bambisleep-chat\/session\/([^/]+)$/);
+  if (sessionDestroyMatch && method === 'DELETE') {
+    return json(res, bambisleepChatHandlers.session.destroy(sessionDestroyMatch[1]));
+  }
+
+  // GET /api/bambisleep-chat/session/:sessionId - Get session info
+  if (sessionDestroyMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.session.getInfo(sessionDestroyMatch[1]));
+  }
+
+  // GET /api/bambisleep-chat/sessions - Get all sessions (admin)
+  if (path === '/api/bambisleep-chat/sessions' && method === 'GET') {
+    return json(res, bambisleepChatHandlers.session.getAllSessions());
   }
 
   // 404 for unknown routes
