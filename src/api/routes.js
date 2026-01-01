@@ -2168,6 +2168,78 @@ async function handleRequest(req, res) {
     return json(res, { results });
   }
 
+  // ============ OAUTH REDIRECT ROUTES ============
+
+  // GET /redirect/patreon - Patreon OAuth callback
+  if (path === '/redirect/patreon' && method === 'GET') {
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+    const error = url.searchParams.get('error');
+    
+    // HTML response for OAuth callback
+    const sendHtml = (title, message, isError = false) => {
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} - BambiSleep™ Church</title>
+  <style>
+    :root { --bg: #0a0a0f; --glass: rgba(255,255,255,0.05); --accent: #ff6b9d; --text: #e0e0e0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem; max-width: 400px; text-align: center; }
+    h1 { color: ${isError ? '#ff4757' : 'var(--accent)'}; margin-bottom: 1rem; font-size: 1.5rem; }
+    p { margin-bottom: 1.5rem; line-height: 1.6; }
+    .code { background: rgba(0,0,0,0.3); padding: 0.5rem 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; word-break: break-all; margin: 1rem 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>${title}</h1>
+    <p>${message}</p>
+    ${code ? `<div class="code">${code.substring(0, 20)}...</div>` : ''}
+    <p><a href="/">Return to Dashboard</a></p>
+  </div>
+</body>
+</html>`;
+      res.writeHead(isError ? 400 : 200, {
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': '*',
+      });
+      res.end(html);
+    };
+
+    if (error) {
+      logger.warn('Patreon OAuth error', { error, state });
+      return sendHtml('Authorization Failed', `Patreon authorization was denied or failed: ${error}`, true);
+    }
+
+    if (!code) {
+      logger.warn('Patreon OAuth missing code');
+      return sendHtml('Missing Authorization Code', 'No authorization code received from Patreon.', true);
+    }
+
+    try {
+      // Exchange code for tokens
+      const redirectUri = 'https://bambisleep.church/redirect/patreon';
+      const tokens = await patreonHandlers.exchangeCode(code, redirectUri);
+      
+      logger.info('Patreon OAuth successful', { state, hasAccessToken: !!tokens.access_token });
+      
+      // Store tokens securely (you may want to save to database/session)
+      return sendHtml(
+        'Authorization Successful',
+        'Your Patreon account has been connected successfully. You can now close this window.'
+      );
+    } catch (err) {
+      logger.error('Patreon OAuth exchange failed', { error: err.message });
+      return sendHtml('Token Exchange Failed', `Failed to complete authorization: ${err.message}`, true);
+    }
+  }
+
   // 404 for unknown routes
   return json(res, { error: 'Not found' }, 404);
 }
