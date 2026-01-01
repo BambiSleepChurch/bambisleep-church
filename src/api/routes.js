@@ -28,9 +28,9 @@ import { stripeHandlers } from '../servers/stripe.js';
 import { getConfig } from '../utils/config.js';
 import { createLogger } from '../utils/logger.js';
 import { createRateLimiter, getRateLimitStats } from '../utils/rate-limit.js';
-import { createWebSocketServer, getWebSocketStats } from './websocket.js';
-import { formatPrometheusMetrics, getMetricsJson, recordHttpRequest } from './metrics.js';
+import { formatPrometheusMetrics, getMetricsJson } from './metrics.js';
 import { generateApiDocsHtml, getOpenApiSpec } from './openapi.js';
+import { createWebSocketServer, getWebSocketStats } from './websocket.js';
 
 const logger = createLogger('api');
 const config = getConfig();

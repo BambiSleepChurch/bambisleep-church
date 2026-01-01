@@ -3,8 +3,8 @@
  * Prometheus Metrics Collector
  */
 
-import { createLogger } from '../utils/logger.js';
 import { registry } from '../servers/index.js';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('metrics');
 

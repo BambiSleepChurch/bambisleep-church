@@ -109,7 +109,6 @@ All configured MCP servers now have REST API wrappers:
   - `rate-limit.js`: 96%
   - `servers/index.js`: 88%
   - `mongodb.js`: 73%
-- [ ] Add E2E tests for dashboard with Puppeteer
 
 ### Documentation
 
@@ -119,7 +118,6 @@ All configured MCP servers now have REST API wrappers:
 - [x] API documentation generator (OpenAPI 3.0 + Swagger UI at `/docs`)
 - [x] MCP server configuration guide (`docs/MCP_CONFIGURATION_GUIDE.md`)
 - [x] Deployment guide (`docs/DEPLOYMENT_GUIDE.md`)
-- [ ] Complete Azure Quantum reference documentation
 
 ---
 

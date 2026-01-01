@@ -5,6 +5,7 @@
 ## Overview
 
 This guide covers deploying the MCP Control Tower to production environments including:
+
 - VPS/Cloud servers
 - Docker containers
 - Reverse proxy configuration
@@ -126,7 +127,7 @@ CMD ["node", "src/index.js"]
 ### docker-compose.yml
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   mcp-tower:
@@ -230,7 +231,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # Increase timeouts for long operations
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
@@ -350,26 +351,26 @@ The API exposes metrics at `/api/metrics` in Prometheus format.
 
 ```yaml
 scrape_configs:
-  - job_name: 'mcp-tower'
+  - job_name: "mcp-tower"
     static_configs:
-      - targets: ['localhost:8080']
-    metrics_path: '/api/metrics'
+      - targets: ["localhost:8080"]
+    metrics_path: "/api/metrics"
     scrape_interval: 15s
 ```
 
 ### Available Metrics
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `mcp_http_requests_total` | Counter | Total HTTP requests |
-| `mcp_http_errors_total` | Counter | HTTP errors by status |
-| `mcp_http_request_duration_seconds` | Summary | Request latency |
-| `mcp_tool_executions_total` | Counter | Tool executions |
-| `mcp_websocket_messages_total` | Counter | WebSocket messages |
-| `mcp_active_connections` | Gauge | Active connections |
-| `mcp_server_status` | Gauge | Server status (1/0) |
-| `mcp_uptime_seconds` | Gauge | Server uptime |
-| `mcp_nodejs_heap_used_bytes` | Gauge | Node.js memory |
+| Metric                              | Type    | Description           |
+| ----------------------------------- | ------- | --------------------- |
+| `mcp_http_requests_total`           | Counter | Total HTTP requests   |
+| `mcp_http_errors_total`             | Counter | HTTP errors by status |
+| `mcp_http_request_duration_seconds` | Summary | Request latency       |
+| `mcp_tool_executions_total`         | Counter | Tool executions       |
+| `mcp_websocket_messages_total`      | Counter | WebSocket messages    |
+| `mcp_active_connections`            | Gauge   | Active connections    |
+| `mcp_server_status`                 | Gauge   | Server status (1/0)   |
+| `mcp_uptime_seconds`                | Gauge   | Server uptime         |
+| `mcp_nodejs_heap_used_bytes`        | Gauge   | Node.js memory        |
 
 ### Grafana Dashboard
 
@@ -382,30 +383,22 @@ Import the following JSON as a Grafana dashboard:
     {
       "title": "Request Rate",
       "type": "graph",
-      "targets": [
-        { "expr": "rate(mcp_http_requests_total[5m])" }
-      ]
+      "targets": [{ "expr": "rate(mcp_http_requests_total[5m])" }]
     },
     {
       "title": "Error Rate",
       "type": "graph",
-      "targets": [
-        { "expr": "rate(mcp_http_errors_total[5m])" }
-      ]
+      "targets": [{ "expr": "rate(mcp_http_errors_total[5m])" }]
     },
     {
       "title": "Active Connections",
       "type": "stat",
-      "targets": [
-        { "expr": "mcp_active_connections" }
-      ]
+      "targets": [{ "expr": "mcp_active_connections" }]
     },
     {
       "title": "Server Status",
       "type": "table",
-      "targets": [
-        { "expr": "mcp_server_status" }
-      ]
+      "targets": [{ "expr": "mcp_server_status" }]
     }
   ]
 }
@@ -553,18 +546,21 @@ tail -f logs/mcp-tower-*.log
 ### Common Issues
 
 **Port already in use:**
+
 ```bash
 lsof -i :8080
 kill -9 <PID>
 ```
 
 **Memory issues:**
+
 ```bash
 # Increase Node.js memory
 NODE_OPTIONS="--max-old-space-size=4096" node src/index.js
 ```
 
 **SSL certificate issues:**
+
 ```bash
 sudo certbot certificates
 sudo certbot renew --force-renewal

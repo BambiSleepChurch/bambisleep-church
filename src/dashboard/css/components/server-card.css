@@ -125,6 +125,7 @@
   color: var(--text-muted);
   opacity: 0;
   cursor: grab;
+  -webkit-user-select: none;
   user-select: none;
   transition: opacity var(--transition-fast), color var(--transition-fast);
   z-index: 5;

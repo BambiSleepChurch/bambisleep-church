@@ -38,9 +38,11 @@ Knowledge graph storage with entities and relations.
 ```
 
 **Environment Variables:**
+
 - None required (uses in-memory storage)
 
 **API Endpoints:**
+
 - `GET /api/memory` - Read entire graph
 - `POST /api/memory/entities` - Create entities
 - `DELETE /api/memory/entities` - Delete entities
@@ -66,9 +68,11 @@ GitHub repository operations.
 ```
 
 **Environment Variables:**
+
 - `GITHUB_TOKEN` - Personal access token with repo scope
 
 **API Endpoints:**
+
 - `GET /api/github/user` - Authenticated user
 - `GET /api/github/repos` - List repositories
 - `GET /api/github/search/repos?q=` - Search repos
@@ -92,9 +96,11 @@ ML model inference and hub access.
 ```
 
 **Environment Variables:**
+
 - `HUGGINGFACE_TOKEN` - HuggingFace API token
 
 **API Endpoints:**
+
 - `GET /api/huggingface/models?q=` - Search models
 - `GET /api/huggingface/datasets?q=` - Search datasets
 - `POST /api/huggingface/inference` - Run inference
@@ -118,9 +124,11 @@ Payment processing and subscription management.
 ```
 
 **Environment Variables:**
-- `STRIPE_API_KEY` - Stripe secret key (sk_live_* or sk_test_*)
+
+- `STRIPE_API_KEY` - Stripe secret key (sk*live*_ or sk*test*_)
 
 **API Endpoints:**
+
 - `GET /api/stripe/customers` - List customers
 - `POST /api/stripe/customers` - Create customer
 - `GET /api/stripe/products` - List products
@@ -146,9 +154,11 @@ Document database operations.
 ```
 
 **Environment Variables:**
+
 - `MONGODB_URI` - MongoDB connection string (local or Atlas)
 
 **API Endpoints:**
+
 - `POST /api/mongodb/connect` - Connect to database
 - `GET /api/mongodb/collections` - List collections
 - `GET /api/mongodb/:db/:collection` - Query documents
@@ -171,9 +181,11 @@ Local SQL database.
 ```
 
 **Environment Variables:**
+
 - None (database path in args)
 
 **API Endpoints:**
+
 - `POST /api/sqlite/query` - Execute SQL
 - `GET /api/sqlite/tables` - List tables
 - `GET /api/sqlite/stats` - Database stats
@@ -194,9 +206,11 @@ Browser automation.
 ```
 
 **Environment Variables:**
+
 - None (uses bundled Chromium)
 
 **API Endpoints:**
+
 - `GET /api/puppeteer/status` - Browser status
 - `POST /api/puppeteer/launch` - Launch browser
 - `POST /api/puppeteer/navigate` - Navigate to URL
@@ -219,9 +233,11 @@ HTTP request utilities.
 ```
 
 **Environment Variables:**
+
 - None
 
 **API Endpoints:**
+
 - `POST /api/fetch/url` - Fetch URL content
 - `POST /api/fetch/post` - POST request
 - `GET /api/fetch/ping?url=` - Ping URL
@@ -242,9 +258,11 @@ Multi-step reasoning chains.
 ```
 
 **Environment Variables:**
+
 - None
 
 **API Endpoints:**
+
 - `POST /api/thinking/think` - Record thought
 - `GET /api/thinking/sessions` - List sessions
 - `GET /api/thinking/session/:id` - Get session
@@ -258,6 +276,7 @@ Multi-step reasoning chains.
 These handlers don't require external MCP server processes:
 
 ### Storage Handler
+
 Local file storage for images and videos.
 
 ```bash
@@ -265,12 +284,14 @@ STORAGE_DIR=./data/storage  # Default
 ```
 
 **API Endpoints:**
+
 - `GET /api/storage/files` - List files
 - `POST /api/storage/upload` - Upload file
 - `GET /api/storage/files/:type/:filename` - Download file
 - `GET /api/storage/stats` - Storage stats
 
 ### Clarity Handler
+
 Microsoft Clarity analytics integration.
 
 ```bash
@@ -278,6 +299,7 @@ CLARITY_PROJECT_ID=utux7nv0pm  # Default
 ```
 
 **API Endpoints:**
+
 - `POST /api/clarity/init` - Initialize
 - `POST /api/clarity/track/pageview` - Track page
 - `POST /api/clarity/track/event` - Track event
@@ -285,6 +307,7 @@ CLARITY_PROJECT_ID=utux7nv0pm  # Default
 - `GET /api/clarity/stats` - Analytics stats
 
 ### LM Studio Handler
+
 Local LLM integration via LM Studio.
 
 ```bash
@@ -294,6 +317,7 @@ LMSTUDIO_BASE_URL=http://localhost:1234
 ```
 
 **API Endpoints:**
+
 - `GET /api/lmstudio/health` - Connection test
 - `GET /api/lmstudio/models` - List models
 - `POST /api/lmstudio/chat` - Chat completion
@@ -301,15 +325,18 @@ LMSTUDIO_BASE_URL=http://localhost:1234
 - `POST /api/lmstudio/chat/image` - Vision chat
 
 ### Agent Handler
+
 Orchestrates all MCP servers with 98 tools.
 
 **API Endpoints:**
+
 - `POST /api/agent/chat` - Send message
 - `GET /api/agent/tools` - List tools
 - `POST /api/agent/tools/execute` - Execute tool
 - `GET /api/agent/personality` - Get personality
 
 ### Patreon Handler
+
 Patreon creator platform integration.
 
 ```bash
@@ -319,6 +346,7 @@ PATREON_ACCESS_TOKEN=your_access_token
 ```
 
 **API Endpoints:**
+
 - `GET /api/patreon/identity` - Creator identity
 - `GET /api/patreon/campaigns` - List campaigns
 - `GET /api/patreon/members` - List members
@@ -431,11 +459,13 @@ if (path === '/api/{name}/method' && method === 'GET') {
 ### Server Won't Start
 
 1. Check if the npm package exists:
+
    ```bash
    npx -y @modelcontextprotocol/server-{name} --help
    ```
 
 2. Verify environment variables are set:
+
    ```bash
    echo $GITHUB_TOKEN
    ```
