@@ -33,6 +33,7 @@
 @import url('components/agent.css');
 @import url('components/memory-graph.css');
 @import url('components/api-builder.css');
+@import url('components/workspace.css');
 
 /* Utilities & Responsive */
 @import url('utilities.css');

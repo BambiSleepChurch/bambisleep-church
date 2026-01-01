@@ -1636,6 +1636,278 @@ export const AGENT_TOOLS = [
     },
     handler: 'renderModal',
   },
+  {
+    name: 'render_card',
+    description: 'Render a glass card component in the agent workspace. Cards can display any content with optional header and actions.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique card ID for updates/removal' },
+        title: { type: 'string', description: 'Card header title' },
+        content: { type: 'string', description: 'Card body content (HTML or Markdown)' },
+        icon: { type: 'string', description: 'Icon name or emoji for header' },
+        variant: { type: 'string', enum: ['default', 'success', 'warning', 'error', 'info'], description: 'Card color variant' },
+        actions: {
+          type: 'array',
+          description: 'Card action buttons',
+          items: {
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+              action: { type: 'string', description: 'Action identifier or callback name' },
+              icon: { type: 'string' },
+            },
+          },
+        },
+        collapsible: { type: 'boolean', description: 'Whether card can collapse' },
+        collapsed: { type: 'boolean', description: 'Initial collapsed state' },
+      },
+      required: ['id', 'content'],
+    },
+    handler: 'renderCard',
+  },
+  {
+    name: 'render_table',
+    description: 'Render a data table in the agent workspace. Supports sorting, pagination, and row actions.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique table ID' },
+        title: { type: 'string', description: 'Table title' },
+        columns: {
+          type: 'array',
+          description: 'Column definitions',
+          items: {
+            type: 'object',
+            properties: {
+              key: { type: 'string', description: 'Data key' },
+              label: { type: 'string', description: 'Column header' },
+              sortable: { type: 'boolean' },
+              width: { type: 'string', description: 'CSS width' },
+              format: { type: 'string', enum: ['text', 'number', 'date', 'badge', 'link', 'code'] },
+            },
+            required: ['key', 'label'],
+          },
+        },
+        rows: {
+          type: 'array',
+          description: 'Data rows',
+          items: { type: 'object' },
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            pageSize: { type: 'number' },
+            total: { type: 'number' },
+          },
+        },
+        rowActions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+              action: { type: 'string' },
+              icon: { type: 'string' },
+            },
+          },
+        },
+      },
+      required: ['id', 'columns', 'rows'],
+    },
+    handler: 'renderTable',
+  },
+  {
+    name: 'render_form',
+    description: 'Render a dynamic form in the agent workspace. Supports validation and field dependencies.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique form ID' },
+        title: { type: 'string', description: 'Form title' },
+        fields: {
+          type: 'array',
+          description: 'Form field definitions',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: 'Field name' },
+              label: { type: 'string', description: 'Field label' },
+              type: { type: 'string', enum: ['text', 'number', 'email', 'password', 'textarea', 'select', 'checkbox', 'radio', 'date', 'file', 'hidden'] },
+              placeholder: { type: 'string' },
+              required: { type: 'boolean' },
+              disabled: { type: 'boolean' },
+              value: { type: 'string', description: 'Default value' },
+              options: {
+                type: 'array',
+                description: 'Options for select/radio',
+                items: {
+                  type: 'object',
+                  properties: {
+                    value: { type: 'string' },
+                    label: { type: 'string' },
+                  },
+                },
+              },
+              validation: {
+                type: 'object',
+                properties: {
+                  pattern: { type: 'string', description: 'Regex pattern' },
+                  min: { type: 'number' },
+                  max: { type: 'number' },
+                  minLength: { type: 'number' },
+                  maxLength: { type: 'number' },
+                  message: { type: 'string', description: 'Error message' },
+                },
+              },
+            },
+            required: ['name', 'type'],
+          },
+        },
+        submitAction: { type: 'string', description: 'Action identifier on submit' },
+        submitLabel: { type: 'string', description: 'Submit button label' },
+        cancelAction: { type: 'string', description: 'Action identifier on cancel' },
+      },
+      required: ['id', 'fields'],
+    },
+    handler: 'renderForm',
+  },
+  {
+    name: 'render_alert',
+    description: 'Render an alert banner in the agent workspace. For persistent status messages.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique alert ID for dismissal' },
+        message: { type: 'string', description: 'Alert message' },
+        type: { type: 'string', enum: ['info', 'success', 'warning', 'error'], description: 'Alert severity' },
+        title: { type: 'string', description: 'Optional alert title' },
+        dismissible: { type: 'boolean', description: 'Whether user can dismiss' },
+        actions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+              action: { type: 'string' },
+            },
+          },
+        },
+      },
+      required: ['id', 'message', 'type'],
+    },
+    handler: 'renderAlert',
+  },
+  {
+    name: 'render_progress',
+    description: 'Render a progress indicator in the agent workspace. For long-running operations.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique progress ID for updates' },
+        label: { type: 'string', description: 'Progress label' },
+        value: { type: 'number', description: 'Progress value (0-100)' },
+        max: { type: 'number', description: 'Max value (default 100)' },
+        variant: { type: 'string', enum: ['bar', 'circular', 'steps'], description: 'Progress display type' },
+        steps: {
+          type: 'array',
+          description: 'Step definitions for steps variant',
+          items: {
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+              status: { type: 'string', enum: ['pending', 'active', 'completed', 'error'] },
+            },
+          },
+        },
+        showPercentage: { type: 'boolean' },
+        animated: { type: 'boolean' },
+      },
+      required: ['id'],
+    },
+    handler: 'renderProgress',
+  },
+  {
+    name: 'render_list',
+    description: 'Render a list component in the agent workspace. For displaying collections with optional interactions.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique list ID' },
+        title: { type: 'string', description: 'List title' },
+        items: {
+          type: 'array',
+          description: 'List items',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              primary: { type: 'string', description: 'Primary text' },
+              secondary: { type: 'string', description: 'Secondary text' },
+              icon: { type: 'string' },
+              avatar: { type: 'string', description: 'Avatar image URL' },
+              badge: { type: 'string' },
+              badgeVariant: { type: 'string', enum: ['default', 'success', 'warning', 'error'] },
+              action: { type: 'string', description: 'Click action' },
+            },
+            required: ['id', 'primary'],
+          },
+        },
+        variant: { type: 'string', enum: ['default', 'divided', 'card'], description: 'List style' },
+        selectable: { type: 'boolean' },
+        multiSelect: { type: 'boolean' },
+        emptyMessage: { type: 'string', description: 'Message when list is empty' },
+      },
+      required: ['id', 'items'],
+    },
+    handler: 'renderList',
+  },
+  {
+    name: 'render_code',
+    description: 'Render a code block in the agent workspace with syntax highlighting.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique code block ID' },
+        title: { type: 'string', description: 'Code block title' },
+        code: { type: 'string', description: 'Code content' },
+        language: { type: 'string', description: 'Programming language for highlighting' },
+        lineNumbers: { type: 'boolean', description: 'Show line numbers' },
+        highlightLines: {
+          type: 'array',
+          items: { type: 'number' },
+          description: 'Lines to highlight',
+        },
+        copyable: { type: 'boolean', description: 'Show copy button' },
+        editable: { type: 'boolean', description: 'Allow editing' },
+        onChangeAction: { type: 'string', description: 'Action when code changes (if editable)' },
+      },
+      required: ['id', 'code'],
+    },
+    handler: 'renderCode',
+  },
+  {
+    name: 'render_clear',
+    description: 'Clear rendered components from the agent workspace by ID or clear all.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Component ID to remove (omit to clear all)' },
+        type: { type: 'string', enum: ['card', 'table', 'form', 'alert', 'progress', 'list', 'code', 'all'], description: 'Clear all components of this type' },
+      },
+      required: [],
+    },
+    handler: 'renderClear',
+  },
 ];
 
 /**

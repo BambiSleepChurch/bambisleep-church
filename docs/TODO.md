@@ -215,69 +215,69 @@ All configured MCP servers now have REST API wrappers:
 
 ---
 
-## � Phase 5.6: Agent Parity with bambisleep-church-agent (Current)
+## ✅ Phase 5.6: Agent Parity with bambisleep-church-agent (Complete)
 
 ### Overview
 
 Upgrade MCP Control Tower agent to feature parity with the standalone bambisleep-church-agent repository. Key features to port: ModelRouter, AgentToolExecutor, 60+ tools, and extended APIs.
 
-### Model Router (`src/servers/model-router.js`) - NEW
+### Model Router (`src/servers/model-router.js`) ✅
 
-- [ ] **Smart Model Selection** - Auto-select optimal model per task type
+- [x] **Smart Model Selection** - Auto-select optimal model per task type
   - Task types: reasoning, creative, instruction, chat, toolUse, summarize
   - Model profiles with quality/speed scores
   - Context length awareness (reduce tools for small models)
   - Task detection from user message
-- [ ] **Model Profiles** - Benchmark-based model metadata
+- [x] **Model Profiles** - Benchmark-based model metadata
   - quality, speed (tokens/sec), taskScores per task
   - strengths/weaknesses arrays
   - contextLength, tier (quality/speed/balanced)
-- [ ] **Singleton Pattern** - `getModelRouter()` factory function
+- [x] **Singleton Pattern** - `getModelRouter()` factory function
 
-### Agent Tool Executor (`src/servers/agent-tools.js`) - NEW
+### Agent Tool Executor (`src/servers/agent-tools.js`) ✅
 
-- [ ] **AgentToolExecutor Class** - Centralized tool execution
+- [x] **AgentToolExecutor Class** - Centralized tool execution
   - MCP client fallback to local handlers
   - Render callback for WebSocket broadcast
   - Local fetch implementation for standalone mode
-- [ ] **60+ Tools with JSON Schema** - OpenAI function calling format
+- [x] **98 Tools with JSON Schema** - OpenAI function calling format
   - Core tools for small context models (~1k tokens)
   - Full tool set for larger models
-- [ ] **Render Commands** - Emit UI component events
+- [ ] **Render Commands** - Emit UI component events (Phase 6)
   - `render_card`, `render_table`, `render_form`
   - `render_alert`, `render_progress`, `render_list`, `render_code`
 
-### Extended API Tools (30+ new tools)
+### Extended API Tools (30+ new tools) ✅
 
-- [ ] **Puppeteer Extended**
+- [x] **Puppeteer Extended**
   - `puppeteer_launch`, `puppeteer_close`, `puppeteer_status`
   - `puppeteer_get_content`, `puppeteer_pdf`
-- [ ] **MongoDB Extended**
+- [x] **MongoDB Extended**
   - `mongodb_aggregate`, `mongodb_count`, `mongodb_create_index`
   - `mongodb_delete_many`, `mongodb_stats`
-- [ ] **SQLite Extended**
+- [x] **SQLite Extended**
   - `sqlite_create_table`, `sqlite_update`, `sqlite_delete`
   - `sqlite_list_tables`, `sqlite_stats`
-- [ ] **Thinking Extended**
+- [x] **Thinking Extended**
   - `thinking_generate_hypothesis`, `thinking_conclude`
   - `thinking_export_markdown`, `thinking_list_sessions`
-- [ ] **Stripe Extended**
+- [x] **Stripe Extended**
   - `stripe_create_invoice`, `stripe_finalize_invoice`
   - `stripe_list_subscriptions`, `stripe_create_product`
   - `stripe_list_disputes`
-- [ ] **Clarity Extended**
+- [x] **Clarity Extended**
   - `clarity_track_pageview`, `clarity_get_events`
   - `clarity_top_events`, `clarity_reset`
-- [ ] **Fetch Extended**
+- [x] **Fetch Extended**
   - `fetch_post`, `fetch_ping`, `fetch_download_base64`
-- [ ] **GitHub Extended**
+- [x] **GitHub Extended**
   - `github_create_issue`, `github_list_issues`
   - `github_list_branches`
-- [ ] **LM Studio Direct**
+- [x] **LM Studio Direct**
   - `lmstudio_list_models`, `lmstudio_get_loaded_model`
   - `lmstudio_generate_embeddings`
 
-### BambiSleep Chat Integration
+### BambiSleep Chat Integration ✅
 
 - [x] **Trigger System** - Official BambiSleep triggers by category
 - [x] **Spiral Effects** - WebGL2 GPU-accelerated hypnotic spirals
@@ -287,7 +287,7 @@ Upgrade MCP Control Tower agent to feature parity with the standalone bambisleep
 
 ---
 
-## 🚀 Phase 6: Agentic Frontend Rendering (Next)
+## 🚀 Phase 6: Agentic Frontend Rendering (Current)
 
 ### Overview
 
@@ -451,52 +451,36 @@ Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent f
 
 | Category            | Status         | Progress                          |
 | ------------------- | -------------- | --------------------------------- |
-| MCP Server Wrappers | ✅ Complete    | 13/13 (incl. BambiSleep Chat)     |
-| REST API Endpoints  | ✅ Complete    | 60+ endpoints                     |
+| MCP Server Wrappers | ✅ Complete    | 14/14 (incl. BambiSleep Chat)     |
+| REST API Endpoints  | ✅ Complete    | 80+ endpoints                     |
 | Dashboard UI        | ✅ Complete    | Cyber goth design                 |
-| Agent Orchestrator  | ✅ Complete    | 30+ tools                         |
+| Agent Orchestrator  | ✅ Complete    | 98 tools + ModelRouter            |
 | Agent Personality   | ✅ Complete    | Bambi + event system              |
 | LM Studio Client    | ✅ Complete    | Vision, structured, tools         |
 | Agent Chat UI       | ✅ Complete    | Full conversation UI              |
 | WebSocket           | ✅ Complete    | Real-time updates                 |
-| Unit Tests          | ✅ Complete    | 228+ tests, 84%+ cov              |
+| Unit Tests          | ✅ Complete    | 94+ unit tests, 84%+ cov          |
 | BambiSleep Chat     | ✅ Complete    | Triggers, spirals, TTS            |
-| Agent Parity        | 🔄 In Progress | Phase 5.6 (ModelRouter, 60 tools) |
-| Agentic Rendering   | 🔜 Next        | Phase 6                           |
+| Agent Parity        | ✅ Complete    | Phase 5.6 (98 tools, ModelRouter) |
+| Agentic Rendering   | 🔄 In Progress | Phase 6 (render tools, workspace) |
 | WebGL Avatar        | 🔮 Future      | Phase 7                           |
 
 ---
 
-## 🎯 Phase 5.6 Milestones (Current)
+## 🎯 Phase 6 Milestones (Current)
 
-| Milestone            | Target | Status      |
-| -------------------- | ------ | ----------- |
-| BambiSleep Chat      | Jan 1  | ✅ Complete |
-| WebGL Spiral Effects | Jan 1  | ✅ Complete |
-| Model Router         | Week 1 | 🔜 Planned  |
-| AgentToolExecutor    | Week 1 | 🔜 Planned  |
-| Extended Puppeteer   | Week 2 | 🔜 Planned  |
-| Extended MongoDB     | Week 2 | 🔜 Planned  |
-| Extended SQLite      | Week 2 | 🔜 Planned  |
-| Extended Thinking    | Week 2 | 🔜 Planned  |
-| Extended Stripe      | Week 3 | 🔜 Planned  |
-| Extended Clarity     | Week 3 | 🔜 Planned  |
-| Render Tools         | Week 3 | 🔜 Planned  |
-| 60+ Tools Complete   | Week 4 | 🔜 Planned  |
-
----
-
-## 🎯 Phase 6 Milestones
-
-| Milestone               | Target | Status     |
-| ----------------------- | ------ | ---------- |
-| Component Registry      | Week 1 | 🔜 Planned |
-| Agent UI Tools (4 core) | Week 2 | 🔜 Planned |
-| Agent Workspace Panel   | Week 2 | 🔜 Planned |
-| Form Builder            | Week 3 | 🔜 Planned |
-| Data Visualization      | Week 3 | 🔜 Planned |
-| Security Sandboxing     | Week 4 | 🔜 Planned |
-| Integration Testing     | Week 4 | 🔜 Planned |
+| Milestone             | Target | Status     |
+| --------------------- | ------ | ---------- |
+| Render tools in agent | Week 1 | 🔜 Planned |
+| DynamicRenderer.js    | Week 1 | 🔜 Planned |
+| AgentWorkspace.js     | Week 1 | 🔜 Planned |
+| render_card tool      | Week 2 | 🔜 Planned |
+| render_table tool     | Week 2 | 🔜 Planned |
+| render_form tool      | Week 2 | 🔜 Planned |
+| Form Builder          | Week 3 | 🔜 Planned |
+| Data Visualization    | Week 3 | 🔜 Planned |
+| Security Sandboxing   | Week 4 | 🔜 Planned |
+| Integration Testing   | Week 4 | 🔜 Planned |
 
 ---
 

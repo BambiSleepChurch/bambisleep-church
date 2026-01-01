@@ -5,9 +5,11 @@
 
 export * from './ActivityFeed.js';
 export * from './AgentChat.js';
+export * from './AgentWorkspace.js';
 export * from './ApiBuilder.js';
 export * from './ClarityDashboard.js';
 export * from './ConfigActions.js';
+export * from './DynamicRenderer.js';
 export * from './MemoryGraph.js';
 export * from './Modal.js';
 export * from './SearchBar.js';
