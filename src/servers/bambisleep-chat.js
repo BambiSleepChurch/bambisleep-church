@@ -688,15 +688,15 @@ const SPIRAL_COLOR_PRESETS = {
 };
 
 /**
- * Default spiral parameters
+ * Default spiral parameters - optimized for WebGL
  */
 const DEFAULT_SPIRAL_PARAMS = {
-  spiral1Width: 5.0,
-  spiral2Width: 3.0,
-  spiral1Speed: 20,
-  spiral2Speed: 15,
+  spiralWidth: 4.0,        // Unified width parameter
+  spiralSpeed: 0.02,       // Unified speed (radians per frame)
+  spiralTightness: 0.15,   // How tight the spiral winds
+  armCount: 2,             // Number of spiral arms
   opacityLevel: 1.0,
-  iterations: 400
+  rotation: 0.01           // Base rotation speed
 };
 
 /**
@@ -796,13 +796,13 @@ export const spiralEffectsHandlers = {
       config = this.initSession(sessionId).config;
     }
     
-    const { spiral1Width, spiral2Width, spiral1Speed, spiral2Speed, iterations } = params;
+    const { spiralWidth, spiralSpeed, spiralTightness, armCount, rotation } = params;
     
-    if (spiral1Width !== undefined) config.spiral1Width = Math.max(0.5, Math.min(20, spiral1Width));
-    if (spiral2Width !== undefined) config.spiral2Width = Math.max(0.5, Math.min(20, spiral2Width));
-    if (spiral1Speed !== undefined) config.spiral1Speed = Math.max(1, Math.min(100, spiral1Speed));
-    if (spiral2Speed !== undefined) config.spiral2Speed = Math.max(1, Math.min(100, spiral2Speed));
-    if (iterations !== undefined) config.iterations = Math.max(100, Math.min(1000, iterations));
+    if (spiralWidth !== undefined) config.spiralWidth = Math.max(0.5, Math.min(20, spiralWidth));
+    if (spiralSpeed !== undefined) config.spiralSpeed = Math.max(0.001, Math.min(0.1, spiralSpeed));
+    if (spiralTightness !== undefined) config.spiralTightness = Math.max(0.01, Math.min(0.5, spiralTightness));
+    if (armCount !== undefined) config.armCount = Math.max(1, Math.min(8, Math.floor(armCount)));
+    if (rotation !== undefined) config.rotation = Math.max(0.001, Math.min(0.1, rotation));
     
     spiralState.set(sessionId, config);
     logger.info('Spiral params updated', { sessionId, params });
@@ -980,8 +980,8 @@ export const spiralEffectsHandlers = {
   },
 
   /**
-   * Generate client-side JavaScript for spiral rendering
-   * Returns p5.js compatible code
+   * Generate client-side WebGL code for GPU-accelerated spiral rendering
+   * Uses single shader for both spirals - minimal memory, maximum performance
    */
   generateClientCode(sessionId) {
     const config = spiralState.get(sessionId) || {
@@ -990,60 +990,231 @@ export const spiralEffectsHandlers = {
       spiral2Color: SPIRAL_COLOR_PRESETS.BAMBI_CLASSIC.spiral2
     };
     
+    // WebGL shader code - all spiral math done on GPU
+    const vertexShader = `#version 300 es
+precision highp float;
+in vec2 a_position;
+void main() {
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+
+    const fragmentShader = `#version 300 es
+precision highp float;
+
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform vec3 u_color1;
+uniform vec3 u_color2;
+uniform float u_opacity;
+uniform float u_width;
+uniform float u_speed;
+uniform float u_tightness;
+uniform float u_rotation;
+uniform int u_arms;
+
+out vec4 fragColor;
+
+// Unified spiral distance calculation - same math for both colors
+float spiralDist(vec2 uv, float phase, float time) {
+  float angle = atan(uv.y, uv.x);
+  float radius = length(uv);
+  
+  // Logarithmic spiral: r = a * e^(b * theta)
+  float spiral = angle + phase + time * u_speed;
+  float logSpiral = radius - exp(spiral * u_tightness);
+  
+  // Wrap and get distance to nearest arm
+  float armAngle = 6.28318530718 / float(u_arms);
+  float dist = abs(mod(logSpiral + armAngle * 0.5, armAngle) - armAngle * 0.5);
+  
+  return smoothstep(u_width * 0.01, 0.0, dist);
+}
+
+void main() {
+  // Normalized coordinates centered at origin
+  vec2 uv = (gl_FragCoord.xy - u_resolution * 0.5) / min(u_resolution.x, u_resolution.y);
+  
+  // Rotate UV
+  float c = cos(u_time * u_rotation);
+  float s = sin(u_time * u_rotation);
+  uv = mat2(c, -s, s, c) * uv;
+  
+  // Calculate spiral intensity for both colors using same function
+  float spiral1 = spiralDist(uv, 0.0, u_time);
+  float spiral2 = spiralDist(uv, 3.14159265359, u_time * 0.8);
+  
+  // Blend colors
+  vec3 color = u_color1 * spiral1 + u_color2 * spiral2;
+  float alpha = max(spiral1, spiral2) * u_opacity;
+  
+  fragColor = vec4(color, alpha);
+}`;
+
+    const clientCode = `// BambiSleep WebGL Spiral - GPU Accelerated, Minimal Memory
+// Config: ${JSON.stringify({ spiralWidth: config.spiralWidth, spiralSpeed: config.spiralSpeed, armCount: config.armCount })}
+
+(function() {
+  'use strict';
+  
+  const CONFIG = {
+    color1: [${config.spiral1Color.map(c => (c / 255).toFixed(3)).join(', ')}],
+    color2: [${config.spiral2Color.map(c => (c / 255).toFixed(3)).join(', ')}],
+    opacity: ${config.opacityLevel},
+    width: ${config.spiralWidth},
+    speed: ${config.spiralSpeed},
+    tightness: ${config.spiralTightness},
+    rotation: ${config.rotation},
+    arms: ${config.armCount}
+  };
+  
+  let gl, program, startTime;
+  let animationId = null;
+  
+  // Shader sources
+  const VS = \`${vertexShader}\`;
+  const FS = \`${fragmentShader}\`;
+  
+  function compileShader(gl, type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error('Shader error:', gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);
+      return null;
+    }
+    return shader;
+  }
+  
+  function init(containerId) {
+    const container = document.getElementById(containerId) || document.body;
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+    container.appendChild(canvas);
+    
+    gl = canvas.getContext('webgl2', { 
+      alpha: true, 
+      antialias: false,  // Disable for performance
+      depth: false,      // Not needed - 2D
+      stencil: false,    // Not needed
+      preserveDrawingBuffer: false,
+      powerPreference: 'high-performance'
+    });
+    
+    if (!gl) {
+      console.error('WebGL2 not supported');
+      return false;
+    }
+    
+    // Compile shaders
+    const vs = compileShader(gl, gl.VERTEX_SHADER, VS);
+    const fs = compileShader(gl, gl.FRAGMENT_SHADER, FS);
+    
+    program = gl.createProgram();
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+    
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error('Program error:', gl.getProgramInfoLog(program));
+      return false;
+    }
+    
+    // Single fullscreen quad - 6 vertices, reused every frame
+    const quad = new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]);
+    const vbo = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+    
+    const posLoc = gl.getAttribLocation(program, 'a_position');
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+    
+    // Enable blending for transparency
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    
+    startTime = performance.now();
+    
+    // Handle resize
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = canvas.clientWidth * dpr;
+      canvas.height = canvas.clientHeight * dpr;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+    
+    return true;
+  }
+  
+  function render() {
+    if (!gl || !program) return;
+    
+    gl.useProgram(program);
+    
+    const time = (performance.now() - startTime) * 0.001;
+    const canvas = gl.canvas;
+    
+    // Set uniforms - minimal state changes
+    gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), canvas.width, canvas.height);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_time'), time);
+    gl.uniform3fv(gl.getUniformLocation(program, 'u_color1'), CONFIG.color1);
+    gl.uniform3fv(gl.getUniformLocation(program, 'u_color2'), CONFIG.color2);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_opacity'), CONFIG.opacity);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_width'), CONFIG.width);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_speed'), CONFIG.speed);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_tightness'), CONFIG.tightness);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_rotation'), CONFIG.rotation);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_arms'), CONFIG.arms);
+    
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    
+    animationId = requestAnimationFrame(render);
+  }
+  
+  function start(containerId) {
+    if (init(containerId || 'spiralContainer')) {
+      render();
+      return true;
+    }
+    return false;
+  }
+  
+  function stop() {
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
+  }
+  
+  function updateConfig(newConfig) {
+    Object.assign(CONFIG, newConfig);
+  }
+  
+  // Export API
+  window.BambiSpiral = { start, stop, updateConfig, CONFIG };
+})();
+`;
+
     return {
       sessionId,
-      code: `
-// BambiSleep Psychedelic Spiral - Generated Config
-const spiralConfig = ${JSON.stringify(config, null, 2)};
-
-function setup() {
-  const container = document.querySelector("#spiralContainer");
-  if (!container) return;
-  
-  const canvas = createCanvas(container.clientWidth, container.clientHeight);
-  canvas.parent("spiralContainer");
-  
-  window.addEventListener("resize", () => {
-    resizeCanvas(container.clientWidth, container.clientHeight);
-  });
-}
-
-function draw() {
-  clear();
-  translate(width / 2, height / 2);
-  
-  const a = map(sin(frameCount / spiralConfig.spiral1Speed), -1, 1, 0.5, 1.5);
-  const b = map(cos(frameCount / spiralConfig.spiral2Speed), -1, 1, 1, 1.5);
-  
-  rotate(frameCount / 5);
-  drawSpiral(a, 1, spiralConfig.spiral1Color, spiralConfig.spiral1Width);
-  drawSpiral(b, 0.3, spiralConfig.spiral2Color, spiralConfig.spiral2Width);
-}
-
-function drawSpiral(step, ang, colorArray, baseWidth) {
-  const c = color(colorArray[0], colorArray[1], colorArray[2], 255 * spiralConfig.opacityLevel);
-  fill(c);
-  stroke(c);
-  
-  let r1 = 0;
-  let spiralWidth = baseWidth;
-  const dw = spiralWidth / (spiralConfig.iterations * 0.8);
-  
-  beginShape(TRIANGLE_STRIP);
-  for (let i = 0; i < spiralConfig.iterations; i++) {
-    r1 += step;
-    spiralWidth -= dw;
-    const r2 = r1 + spiralWidth;
-    
-    vertex(r1 * sin(ang * i), r1 * cos(ang * i));
-    vertex(r2 * sin(ang * i), r2 * cos(ang * i));
-  }
-  endShape();
-}
-`,
+      code: clientCode,
       config,
-      dependencies: ['p5.js'],
-      message: '📜 Client code generated'
+      renderer: 'webgl2',
+      features: [
+        'GPU-accelerated fragment shader',
+        'Single unified spiral calculation',
+        'Minimal memory: 1 VBO (48 bytes), 1 shader program',
+        'No CPU-side geometry generation',
+        'Logarithmic spiral for smooth curves',
+        'Dynamic resolution scaling (DPR capped at 2x)'
+      ],
+      dependencies: [],
+      message: '📜 WebGL GPU-accelerated code generated'
     };
   },
 

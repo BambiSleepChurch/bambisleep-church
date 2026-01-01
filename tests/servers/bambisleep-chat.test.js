@@ -556,23 +556,23 @@ describe('BambiSleep-Chat Handlers', () => {
       it('should update spiral parameters', () => {
         spiralEffectsHandlers.initSession('spiral_test_4');
         const result = spiralEffectsHandlers.updateParams('spiral_test_4', {
-          spiral1Width: 8,
-          spiral1Speed: 30
+          spiralWidth: 8,
+          spiralSpeed: 0.05
         });
         
-        assert.strictEqual(result.config.spiral1Width, 8);
-        assert.strictEqual(result.config.spiral1Speed, 30);
+        assert.strictEqual(result.config.spiralWidth, 8);
+        assert.strictEqual(result.config.spiralSpeed, 0.05);
       });
       
       it('should clamp values to valid range', () => {
         spiralEffectsHandlers.initSession('spiral_test_5');
         const result = spiralEffectsHandlers.updateParams('spiral_test_5', {
-          spiral1Width: 100, // Should clamp to 20
-          spiral1Speed: 0    // Should clamp to 1
+          spiralWidth: 100,    // Should clamp to 20
+          spiralSpeed: 0       // Should clamp to 0.001
         });
         
-        assert.strictEqual(result.config.spiral1Width, 20);
-        assert.strictEqual(result.config.spiral1Speed, 1);
+        assert.strictEqual(result.config.spiralWidth, 20);
+        assert.strictEqual(result.config.spiralSpeed, 0.001);
       });
     });
     
@@ -684,15 +684,17 @@ describe('BambiSleep-Chat Handlers', () => {
     });
     
     describe('generateClientCode', () => {
-      it('should generate p5.js client code', () => {
+      it('should generate WebGL client code', () => {
         spiralEffectsHandlers.initSession('spiral_test_13');
         const result = spiralEffectsHandlers.generateClientCode('spiral_test_13');
         
         assert.ok(result.code, 'Should have code');
-        assert.ok(result.code.includes('function setup'), 'Should have setup function');
-        assert.ok(result.code.includes('function draw'), 'Should have draw function');
+        assert.ok(result.code.includes('webgl2'), 'Should use WebGL2');
+        assert.ok(result.code.includes('BambiSpiral'), 'Should export BambiSpiral API');
         assert.ok(result.config, 'Should include config');
-        assert.ok(result.dependencies.includes('p5.js'));
+        assert.strictEqual(result.renderer, 'webgl2');
+        assert.ok(result.features.length > 0, 'Should list features');
+        assert.deepStrictEqual(result.dependencies, []); // No external deps
       });
     });
     
