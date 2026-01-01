@@ -12,6 +12,7 @@
   - [x] `src/servers/github.js` - GitHub API
   - [x] `src/servers/huggingface.js` - HuggingFace inference
   - [x] `src/servers/stripe.js` - Payment operations
+  - [x] `src/servers/patreon.js` - Patreon creator platform
   - [x] `src/servers/fetch.js` - HTTP requests
   - [x] `src/servers/sqlite.js` - Local database
   - [x] `src/servers/mongodb.js` - MongoDB database

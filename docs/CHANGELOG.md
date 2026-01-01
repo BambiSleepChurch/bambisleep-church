@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Patreon MCP Server** - Full Patreon API v2 integration for creator platform operations
+
+  - PatreonClient class with OAuth2 token handling and JSON:API request format
+  - Identity, Campaigns, Members, Posts, and Webhooks API methods
+  - HMAC-MD5 webhook signature verification
+  - OAuth2 authorization URL generation and token exchange
+  - Patron status utilities (isActivePatron, getPatronTierAmount, getPatronStatus)
+  - Automatic pagination support for member lists (getAllMembers)
+  - 16 new Patreon agent tools for AI orchestration
+  - Comprehensive test suite with 21 test cases
+
+- **Patreon API Routes** - 16 new REST endpoints
+  - `GET /api/patreon/status` - Connection status
+  - `GET /api/patreon/identity` - Current user identity
+  - `GET /api/patreon/campaigns` - List all campaigns
+  - `GET /api/patreon/campaigns/:id` - Get specific campaign
+  - `GET /api/patreon/campaigns/:id/members` - Get campaign members (paginated)
+  - `GET /api/patreon/campaigns/:id/members/all` - Get all members (auto-paginated)
+  - `GET /api/patreon/members/:id` - Get specific member
+  - `GET /api/patreon/campaigns/:id/posts` - Get campaign posts
+  - `GET /api/patreon/posts/:id` - Get specific post
+  - `GET /api/patreon/webhooks` - List webhooks
+  - `POST /api/patreon/webhooks` - Create webhook
+  - `PATCH /api/patreon/webhooks/:id` - Update webhook
+  - `DELETE /api/patreon/webhooks/:id` - Delete webhook
+  - `POST /api/patreon/webhooks/verify` - Verify webhook signature
+  - `POST /api/patreon/oauth/refresh` - Refresh OAuth token
+  - `POST /api/patreon/oauth/exchange` - Exchange code for token
+  - `GET /api/patreon/oauth/url` - Get OAuth authorization URL
+
+- **Configuration** - Patreon environment variables
+  - `PATREON_CLIENT_ID` - OAuth2 client ID
+  - `PATREON_CLIENT_SECRET` - OAuth2 client secret
+  - `PATREON_ACCESS_TOKEN` - API access token
+  - `PATREON_WEBHOOK_SECRET` - Webhook signature verification secret
+
 - **Agent Personality System** - Bambi AI assistant with ethereal traits
 
   - Agent personality configuration (name, role, traits, greeting, style)

@@ -23,6 +23,7 @@ export const TOOL_CATEGORIES = Object.freeze({
   SQLITE: 'sqlite',
   THINKING: 'thinking',
   STRIPE: 'stripe',
+  PATREON: 'patreon',
   CLARITY: 'clarity',
   GITHUB: 'github',
   LMSTUDIO: 'lmstudio',
@@ -1049,6 +1050,253 @@ export const AGENT_TOOLS = [
       required: ['payment_intent'],
     },
     handler: 'createRefund',
+  },
+
+  // =====================================================
+  // PATREON MCP TOOLS
+  // =====================================================
+  {
+    name: 'patreon_get_status',
+    description: 'Get Patreon API connection status.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'getStatus',
+  },
+  {
+    name: 'patreon_get_identity',
+    description: 'Get the current authorized Patreon user identity.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        fields: {
+          type: 'object',
+          description: 'Fields to return by resource type',
+        },
+        include: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Related resources to include (campaigns, memberships)',
+        },
+      },
+      required: [],
+    },
+    handler: 'getIdentity',
+  },
+  {
+    name: 'patreon_get_campaigns',
+    description: 'Get all campaigns owned by the authorized user.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        include: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Related resources to include (tiers, creator, benefits)',
+        },
+      },
+      required: [],
+    },
+    handler: 'getCampaigns',
+  },
+  {
+    name: 'patreon_get_campaign',
+    description: 'Get a specific Patreon campaign by ID.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Campaign ID' },
+        include: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Related resources to include',
+        },
+      },
+      required: ['id'],
+    },
+    handler: 'getCampaign',
+  },
+  {
+    name: 'patreon_get_campaign_members',
+    description: 'Get members for a specific Patreon campaign. Returns paginated results.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        campaignId: { type: 'string', description: 'Campaign ID' },
+        cursor: { type: 'string', description: 'Pagination cursor from previous response' },
+      },
+      required: ['campaignId'],
+    },
+    handler: 'getCampaignMembers',
+  },
+  {
+    name: 'patreon_get_all_members',
+    description: 'Get all members for a campaign, automatically handling pagination.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        campaignId: { type: 'string', description: 'Campaign ID' },
+        maxPages: { type: 'number', description: 'Maximum pages to fetch (default 100)' },
+      },
+      required: ['campaignId'],
+    },
+    handler: 'getAllMembers',
+  },
+  {
+    name: 'patreon_get_member',
+    description: 'Get details for a specific member by ID.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Member ID' },
+        include: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Related resources to include (currently_entitled_tiers, address, user)',
+        },
+      },
+      required: ['id'],
+    },
+    handler: 'getMember',
+  },
+  {
+    name: 'patreon_get_campaign_posts',
+    description: 'Get posts for a Patreon campaign.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        campaignId: { type: 'string', description: 'Campaign ID' },
+        cursor: { type: 'string', description: 'Pagination cursor' },
+      },
+      required: ['campaignId'],
+    },
+    handler: 'getCampaignPosts',
+  },
+  {
+    name: 'patreon_get_post',
+    description: 'Get a specific post by ID.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Post ID' },
+      },
+      required: ['id'],
+    },
+    handler: 'getPost',
+  },
+  {
+    name: 'patreon_get_webhooks',
+    description: 'List all webhooks configured for the current client.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'getWebhooks',
+  },
+  {
+    name: 'patreon_create_webhook',
+    description: 'Create a new webhook for a campaign.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        campaignId: { type: 'string', description: 'Campaign ID' },
+        uri: { type: 'string', description: 'Webhook delivery URL' },
+        triggers: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: [
+              'members:create',
+              'members:update',
+              'members:delete',
+              'members:pledge:create',
+              'members:pledge:update',
+              'members:pledge:delete',
+              'posts:publish',
+              'posts:update',
+              'posts:delete',
+            ],
+          },
+          description: 'Webhook trigger events',
+        },
+      },
+      required: ['campaignId', 'uri', 'triggers'],
+    },
+    handler: 'createWebhook',
+  },
+  {
+    name: 'patreon_update_webhook',
+    description: 'Update an existing webhook.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Webhook ID' },
+        paused: { type: 'boolean', description: 'Whether the webhook is paused' },
+        triggers: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'New trigger events',
+        },
+        uri: { type: 'string', description: 'New webhook URL' },
+      },
+      required: ['id'],
+    },
+    handler: 'updateWebhook',
+  },
+  {
+    name: 'patreon_delete_webhook',
+    description: 'Delete a webhook.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Webhook ID' },
+      },
+      required: ['id'],
+    },
+    handler: 'deleteWebhook',
+  },
+  {
+    name: 'patreon_verify_webhook_signature',
+    description: 'Verify a webhook payload signature for authenticity.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        body: { type: 'string', description: 'Raw webhook request body' },
+        signature: { type: 'string', description: 'X-Patreon-Signature header value' },
+      },
+      required: ['body', 'signature'],
+    },
+    handler: 'verifyWebhookSignature',
+  },
+  {
+    name: 'patreon_get_patron_status',
+    description: 'Get detailed patron status information for a member.',
+    category: TOOL_CATEGORIES.PATREON,
+    parameters: {
+      type: 'object',
+      properties: {
+        member: { type: 'object', description: 'Member object from Patreon API' },
+      },
+      required: ['member'],
+    },
+    handler: 'getPatronStatus',
   },
 
   // =====================================================

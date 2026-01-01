@@ -161,6 +161,12 @@ export function getConfig() {
         apiKey: process.env.STRIPE_API_KEY || '',
         webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
       },
+      patreon: {
+        clientId: process.env.PATREON_CLIENT_ID || '',
+        clientSecret: process.env.PATREON_CLIENT_SECRET || '',
+        accessToken: process.env.PATREON_ACCESS_TOKEN || '',
+        webhookSecret: process.env.PATREON_WEBHOOK_SECRET || '',
+      },
       huggingface: { token: process.env.HUGGINGFACE_TOKEN || '' },
       clarity: { projectId: process.env.CLARITY_PROJECT_ID || '' },
     },

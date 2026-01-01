@@ -21,6 +21,7 @@ import { getModelRouter, MODEL_PROFILES, TASK_BEST_MODELS, TASK_TYPES } from '..
 import { mongoHandlers } from '../servers/mongodb.js';
 import { puppeteerHandlers } from '../servers/puppeteer.js';
 import { thinkingHandlers } from '../servers/sequential-thinking.js';
+import { patreonHandlers } from '../servers/patreon.js';
 import { sqliteHandlers } from '../servers/sqlite.js';
 import { storageHandlers } from '../servers/storage.js';
 import { stripeHandlers } from '../servers/stripe.js';
@@ -601,6 +602,197 @@ async function handleRequest(req, res) {
     try {
       const result = await stripeHandlers.getBalance();
       return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // ============ PATREON MCP ROUTES ============
+
+  // GET /api/patreon/status - Get Patreon connection status
+  if (path === '/api/patreon/status' && method === 'GET') {
+    try {
+      const result = patreonHandlers.getStatus();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/identity - Get current user identity
+  if (path === '/api/patreon/identity' && method === 'GET') {
+    try {
+      const result = await patreonHandlers.getIdentity();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/campaigns - Get all campaigns
+  if (path === '/api/patreon/campaigns' && method === 'GET') {
+    try {
+      const result = await patreonHandlers.getCampaigns();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/campaigns/:id - Get specific campaign
+  if (path.startsWith('/api/patreon/campaigns/') && !path.includes('/members') && !path.includes('/posts') && method === 'GET') {
+    try {
+      const campaignId = path.split('/')[4];
+      const result = await patreonHandlers.getCampaign(campaignId);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/campaigns/:id/members - Get campaign members
+  if (path.match(/^\/api\/patreon\/campaigns\/[^/]+\/members$/) && method === 'GET') {
+    try {
+      const campaignId = path.split('/')[4];
+      const cursor = url.searchParams.get('cursor');
+      const result = await patreonHandlers.getCampaignMembers(campaignId, { cursor });
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/campaigns/:id/members/all - Get all campaign members (paginated)
+  if (path.match(/^\/api\/patreon\/campaigns\/[^/]+\/members\/all$/) && method === 'GET') {
+    try {
+      const campaignId = path.split('/')[4];
+      const maxPages = parseInt(url.searchParams.get('maxPages')) || 100;
+      const result = await patreonHandlers.getAllMembers(campaignId, { maxPages });
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/members/:id - Get specific member
+  if (path.match(/^\/api\/patreon\/members\/[^/]+$/) && method === 'GET') {
+    try {
+      const memberId = path.split('/')[4];
+      const result = await patreonHandlers.getMember(memberId);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/campaigns/:id/posts - Get campaign posts
+  if (path.match(/^\/api\/patreon\/campaigns\/[^/]+\/posts$/) && method === 'GET') {
+    try {
+      const campaignId = path.split('/')[4];
+      const cursor = url.searchParams.get('cursor');
+      const result = await patreonHandlers.getCampaignPosts(campaignId, { cursor });
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/posts/:id - Get specific post
+  if (path.match(/^\/api\/patreon\/posts\/[^/]+$/) && method === 'GET') {
+    try {
+      const postId = path.split('/')[4];
+      const result = await patreonHandlers.getPost(postId);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/webhooks - Get all webhooks
+  if (path === '/api/patreon/webhooks' && method === 'GET') {
+    try {
+      const result = await patreonHandlers.getWebhooks();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/patreon/webhooks - Create webhook
+  if (path === '/api/patreon/webhooks' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await patreonHandlers.createWebhook(body.campaignId, body.uri, body.triggers);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // PATCH /api/patreon/webhooks/:id - Update webhook
+  if (path.match(/^\/api\/patreon\/webhooks\/[^/]+$/) && method === 'PATCH') {
+    try {
+      const webhookId = path.split('/')[4];
+      const body = await parseBody(req);
+      const result = await patreonHandlers.updateWebhook(webhookId, body);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // DELETE /api/patreon/webhooks/:id - Delete webhook
+  if (path.match(/^\/api\/patreon\/webhooks\/[^/]+$/) && method === 'DELETE') {
+    try {
+      const webhookId = path.split('/')[4];
+      const result = await patreonHandlers.deleteWebhook(webhookId);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/patreon/webhooks/verify - Verify webhook signature
+  if (path === '/api/patreon/webhooks/verify' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const isValid = patreonHandlers.verifyWebhookSignature(body.payload, body.signature);
+      return json(res, { valid: isValid });
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/patreon/oauth/refresh - Refresh OAuth token
+  if (path === '/api/patreon/oauth/refresh' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await patreonHandlers.refreshToken(body.refreshToken);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/patreon/oauth/exchange - Exchange code for token
+  if (path === '/api/patreon/oauth/exchange' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await patreonHandlers.exchangeCode(body.code, body.redirectUri);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/patreon/oauth/url - Get OAuth authorization URL
+  if (path === '/api/patreon/oauth/url' && method === 'GET') {
+    try {
+      const redirectUri = url.searchParams.get('redirectUri');
+      const scopes = url.searchParams.get('scopes')?.split(',') || ['identity', 'campaigns', 'campaigns.members'];
+      const state = url.searchParams.get('state');
+      const result = patreonHandlers.getAuthorizationUrl(redirectUri, scopes, state);
+      return json(res, { url: result });
     } catch (error) {
       return json(res, { error: error.message }, 500);
     }
@@ -1942,6 +2134,7 @@ async function handleRequest(req, res) {
     executor.registerHandlers('sqlite', sqliteHandlers);
     executor.registerHandlers('thinking', thinkingHandlers);
     executor.registerHandlers('stripe', stripeHandlers);
+    executor.registerHandlers('patreon', patreonHandlers);
     executor.registerHandlers('clarity', clarityHandlers);
     executor.registerHandlers('github', githubHandlers);
     executor.registerHandlers('lmstudio', lmstudioHandlers);
@@ -1965,6 +2158,7 @@ async function handleRequest(req, res) {
     executor.registerHandlers('sqlite', sqliteHandlers);
     executor.registerHandlers('thinking', thinkingHandlers);
     executor.registerHandlers('stripe', stripeHandlers);
+    executor.registerHandlers('patreon', patreonHandlers);
     executor.registerHandlers('clarity', clarityHandlers);
     executor.registerHandlers('github', githubHandlers);
     executor.registerHandlers('lmstudio', lmstudioHandlers);
