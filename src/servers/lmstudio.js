@@ -111,6 +111,7 @@ export class LMStudioClient {
   #temperature;
   #maxTokens;
   #timeout;
+  #retries;
   #connected = false;
   #loadedModel = null;
   #availableModels = [];
@@ -128,10 +129,12 @@ export class LMStudioClient {
     this.#temperature = this.#config.temperature;
     this.#maxTokens = this.#config.maxTokens;
     this.#timeout = this.#config.timeout;
+    this.#retries = this.#config.retries || 2;
 
     logger.info(`LM Studio client initialized`, { 
       baseUrl: this.#baseUrl,
-      model: this.#model 
+      model: this.#model,
+      timeout: this.#timeout,
     });
   }
 
@@ -359,39 +362,58 @@ export class LMStudioClient {
       ttl: options.ttl,
     });
 
-    try {
-      const response = await fetch(`${this.#baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(this.#timeout),
-      });
+    // Retry logic for timeouts
+    let lastError;
+    for (let attempt = 1; attempt <= this.#retries; attempt++) {
+      try {
+        const response = await fetch(`${this.#baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(this.#timeout),
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Chat completion failed: ${response.status} - ${errorText}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Chat completion failed: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        this.#connected = true;
+
+        logger.debug('[LmStudio] Chat response received', { 
+          model: data.model,
+          tokens: data.usage?.total_tokens 
+        });
+
+        return data;
+      } catch (error) {
+        lastError = error;
+        
+        if (error.name === 'TimeoutError') {
+          logger.warn(`[LmStudio] Request timeout (attempt ${attempt}/${this.#retries})`, { 
+            timeout: this.#timeout 
+          });
+          
+          if (attempt < this.#retries) {
+            // Wait briefly before retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+          
+          logger.error('[LmStudio] All retry attempts failed');
+          throw new Error('LM Studio request timed out after retries');
+        }
+        
+        // Non-timeout errors - don't retry
+        logger.error('[LmStudio] Chat completion error:', error.message);
+        throw error;
       }
-
-      const data = await response.json();
-      this.#connected = true;
-
-      logger.debug('[LmStudio] Chat response received', { 
-        model: data.model,
-        tokens: data.usage?.total_tokens 
-      });
-
-      return data;
-    } catch (error) {
-      if (error.name === 'TimeoutError') {
-        logger.error('[LmStudio] Request timeout', { timeout: this.#timeout });
-        throw new Error('LM Studio request timed out');
-      }
-      
-      logger.error('[LmStudio] Chat completion error:', error.message);
-      throw error;
     }
+    
+    throw lastError;
   }
 
   /**

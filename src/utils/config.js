@@ -136,7 +136,8 @@ export function getConfig() {
       model: process.env.LMS_MODEL || 'qwen2.5-7b-instruct',
       temperature: parseFloat(process.env.LMS_TEMPERATURE) || 0.7,
       maxTokens: parseInt(process.env.LMS_MAX_TOKENS) || 2048,
-      timeout: parseInt(process.env.LMS_TIMEOUT) || 60000,
+      timeout: parseInt(process.env.LMS_TIMEOUT) || 120000, // 2 minutes for slow models
+      retries: parseInt(process.env.LMS_RETRIES) || 2,
     },
     agent: {
       maxIterations: parseInt(process.env.AGENT_MAX_ITERATIONS) || 5,
