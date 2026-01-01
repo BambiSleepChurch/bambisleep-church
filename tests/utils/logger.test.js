@@ -85,14 +85,28 @@ describe('Logger Module', () => {
       assert.ok(true, 'should handle warn log level');
     });
 
-    it('should handle multiple arguments', () => {
-      const log = createLogger('multi-arg');
+    it('should handle data parameter', () => {
+      process.env.LOG_TO_FILE = 'false';  // Disable file logging for tests
+      const log = createLogger('data-test');
       
-      // Should not throw
-      log.info('message', { key: 'value' }, 123);
-      log.error('error message', new Error('test'));
+      // Should not throw with data parameter
+      log.info('message', { key: 'value' });
+      log.error('error message', { error: 'details' });
+      log.warn('warning', { count: 123 });
+      log.debug('debug info', { nested: { data: true } });
       
-      assert.ok(true, 'should handle multiple arguments');
+      assert.ok(true, 'should handle data parameter');
+    });
+
+    it('should work without data parameter', () => {
+      process.env.LOG_TO_FILE = 'false';
+      const log = createLogger('no-data');
+      
+      // Should not throw without data
+      log.info('simple message');
+      log.error('error without data');
+      
+      assert.ok(true, 'should work without data');
     });
   });
 
