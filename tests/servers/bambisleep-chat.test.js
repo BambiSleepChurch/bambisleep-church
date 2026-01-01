@@ -3,15 +3,16 @@
  * BambiSleep-Chat Handler Tests
  */
 
-import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
 import {
-  triggerHandlers,
-  ttsHandlers,
   chatHandlers,
   collarHandlers,
+  sessionHandlers,
+  spiralEffectsHandlers,
   textEffectsHandlers,
-  sessionHandlers
+  triggerHandlers,
+  ttsHandlers
 } from '../../src/servers/bambisleep-chat.js';
 
 describe('BambiSleep-Chat Handlers', () => {
@@ -467,6 +468,243 @@ describe('BambiSleep-Chat Handlers', () => {
         
         assert.ok(result.sessions.length >= 2);
         assert.ok(result.totalCount >= 2);
+      });
+    });
+  });
+
+  // ============ SPIRAL EFFECTS HANDLERS ============
+  
+  describe('spiralEffectsHandlers', () => {
+    
+    describe('getColorPresets', () => {
+      it('should return all color presets', () => {
+        const result = spiralEffectsHandlers.getColorPresets();
+        
+        assert.ok(result.presets, 'Should have presets array');
+        assert.ok(result.count > 0, 'Should have preset count');
+        assert.strictEqual(result.defaultPreset, 'BAMBI_CLASSIC');
+      });
+      
+      it('should have required preset properties', () => {
+        const result = spiralEffectsHandlers.getColorPresets();
+        const preset = result.presets[0];
+        
+        assert.ok(preset.id, 'Should have id');
+        assert.ok(preset.name, 'Should have name');
+        assert.ok(Array.isArray(preset.spiral1), 'Should have spiral1 color');
+        assert.ok(Array.isArray(preset.spiral2), 'Should have spiral2 color');
+        assert.strictEqual(preset.spiral1.length, 3, 'spiral1 should be RGB');
+        assert.strictEqual(preset.spiral2.length, 3, 'spiral2 should be RGB');
+      });
+    });
+    
+    describe('getPreset', () => {
+      it('should return specific preset', () => {
+        const result = spiralEffectsHandlers.getPreset('DEEP_TRANCE');
+        
+        assert.strictEqual(result.id, 'DEEP_TRANCE');
+        assert.ok(result.spiral1);
+        assert.ok(result.spiral2);
+      });
+      
+      it('should return error for invalid preset', () => {
+        const result = spiralEffectsHandlers.getPreset('INVALID');
+        
+        assert.ok(result.error);
+        assert.ok(result.validPresets);
+      });
+    });
+    
+    describe('initSession', () => {
+      it('should initialize spiral session', () => {
+        const result = spiralEffectsHandlers.initSession('spiral_test_1');
+        
+        assert.strictEqual(result.sessionId, 'spiral_test_1');
+        assert.ok(result.config, 'Should have config');
+        assert.ok(result.config.enabled, 'Should be enabled by default');
+        assert.strictEqual(result.config.currentPreset, 'BAMBI_CLASSIC');
+      });
+      
+      it('should accept custom options', () => {
+        const result = spiralEffectsHandlers.initSession('spiral_test_2', {
+          spiral1Width: 10,
+          enabled: false
+        });
+        
+        assert.strictEqual(result.config.spiral1Width, 10);
+        assert.strictEqual(result.config.enabled, false);
+      });
+    });
+    
+    describe('getConfig', () => {
+      it('should return session config', () => {
+        spiralEffectsHandlers.initSession('spiral_test_3');
+        const result = spiralEffectsHandlers.getConfig('spiral_test_3');
+        
+        assert.strictEqual(result.exists, true);
+        assert.ok(result.config);
+      });
+      
+      it('should return exists:false for unknown session', () => {
+        const result = spiralEffectsHandlers.getConfig('unknown_spiral');
+        
+        assert.strictEqual(result.exists, false);
+      });
+    });
+    
+    describe('updateParams', () => {
+      it('should update spiral parameters', () => {
+        spiralEffectsHandlers.initSession('spiral_test_4');
+        const result = spiralEffectsHandlers.updateParams('spiral_test_4', {
+          spiral1Width: 8,
+          spiral1Speed: 30
+        });
+        
+        assert.strictEqual(result.config.spiral1Width, 8);
+        assert.strictEqual(result.config.spiral1Speed, 30);
+      });
+      
+      it('should clamp values to valid range', () => {
+        spiralEffectsHandlers.initSession('spiral_test_5');
+        const result = spiralEffectsHandlers.updateParams('spiral_test_5', {
+          spiral1Width: 100, // Should clamp to 20
+          spiral1Speed: 0    // Should clamp to 1
+        });
+        
+        assert.strictEqual(result.config.spiral1Width, 20);
+        assert.strictEqual(result.config.spiral1Speed, 1);
+      });
+    });
+    
+    describe('updateColors', () => {
+      it('should update spiral colors', () => {
+        spiralEffectsHandlers.initSession('spiral_test_6');
+        const result = spiralEffectsHandlers.updateColors('spiral_test_6', {
+          spiral1Color: [255, 0, 0],
+          spiral2Color: [0, 255, 0]
+        });
+        
+        assert.deepStrictEqual(result.config.spiral1Color, [255, 0, 0]);
+        assert.deepStrictEqual(result.config.spiral2Color, [0, 255, 0]);
+        assert.strictEqual(result.config.currentPreset, null); // Custom colors
+      });
+      
+      it('should clamp color values', () => {
+        spiralEffectsHandlers.initSession('spiral_test_7');
+        const result = spiralEffectsHandlers.updateColors('spiral_test_7', {
+          spiral1Color: [300, -10, 128]
+        });
+        
+        assert.deepStrictEqual(result.config.spiral1Color, [255, 0, 128]);
+      });
+    });
+    
+    describe('applyPreset', () => {
+      it('should apply color preset', () => {
+        spiralEffectsHandlers.initSession('spiral_test_8');
+        const result = spiralEffectsHandlers.applyPreset('spiral_test_8', 'HYPNO_PINK');
+        
+        assert.strictEqual(result.presetApplied, 'HYPNO_PINK');
+        assert.strictEqual(result.config.currentPreset, 'HYPNO_PINK');
+      });
+      
+      it('should return error for invalid preset', () => {
+        spiralEffectsHandlers.initSession('spiral_test_9');
+        const result = spiralEffectsHandlers.applyPreset('spiral_test_9', 'INVALID');
+        
+        assert.ok(result.error);
+      });
+    });
+    
+    describe('updateOpacity', () => {
+      it('should update opacity level', () => {
+        spiralEffectsHandlers.initSession('spiral_test_10');
+        const result = spiralEffectsHandlers.updateOpacity('spiral_test_10', 0.5);
+        
+        assert.strictEqual(result.opacityLevel, 0.5);
+      });
+      
+      it('should clamp opacity to valid range', () => {
+        spiralEffectsHandlers.initSession('spiral_test_11');
+        
+        const low = spiralEffectsHandlers.updateOpacity('spiral_test_11', 0);
+        assert.strictEqual(low.opacityLevel, 0.1);
+        
+        const high = spiralEffectsHandlers.updateOpacity('spiral_test_11', 2);
+        assert.strictEqual(high.opacityLevel, 1.0);
+      });
+    });
+    
+    describe('generateFade', () => {
+      it('should generate fade animation config', () => {
+        const result = spiralEffectsHandlers.generateFade(0.5, 3000);
+        
+        assert.strictEqual(result.type, 'FADE_OPACITY');
+        assert.strictEqual(result.targetOpacity, 0.5);
+        assert.strictEqual(result.duration, 3000);
+      });
+    });
+    
+    describe('generatePulse', () => {
+      it('should generate pulse animation config', () => {
+        const result = spiralEffectsHandlers.generatePulse(0.2, 0.8, 2000);
+        
+        assert.strictEqual(result.type, 'PULSE_OPACITY');
+        assert.strictEqual(result.minOpacity, 0.2);
+        assert.strictEqual(result.maxOpacity, 0.8);
+        assert.strictEqual(result.period, 2000);
+      });
+    });
+    
+    describe('setEnabled', () => {
+      it('should enable/disable spiral effects', () => {
+        spiralEffectsHandlers.initSession('spiral_test_12');
+        
+        const disabled = spiralEffectsHandlers.setEnabled('spiral_test_12', false);
+        assert.strictEqual(disabled.enabled, false);
+        
+        const enabled = spiralEffectsHandlers.setEnabled('spiral_test_12', true);
+        assert.strictEqual(enabled.enabled, true);
+      });
+    });
+    
+    describe('getPresetForTrigger', () => {
+      it('should return preset for known trigger', () => {
+        const result = spiralEffectsHandlers.getPresetForTrigger('GOOD GIRL');
+        
+        assert.strictEqual(result.recommendedPreset, 'GOOD_GIRL_GOLD');
+        assert.ok(result.preset);
+      });
+      
+      it('should return default for unknown trigger', () => {
+        const result = spiralEffectsHandlers.getPresetForTrigger('Unknown Trigger');
+        
+        assert.strictEqual(result.recommendedPreset, 'BAMBI_CLASSIC');
+      });
+    });
+    
+    describe('generateClientCode', () => {
+      it('should generate p5.js client code', () => {
+        spiralEffectsHandlers.initSession('spiral_test_13');
+        const result = spiralEffectsHandlers.generateClientCode('spiral_test_13');
+        
+        assert.ok(result.code, 'Should have code');
+        assert.ok(result.code.includes('function setup'), 'Should have setup function');
+        assert.ok(result.code.includes('function draw'), 'Should have draw function');
+        assert.ok(result.config, 'Should include config');
+        assert.ok(result.dependencies.includes('p5.js'));
+      });
+    });
+    
+    describe('destroySession', () => {
+      it('should destroy spiral session', () => {
+        spiralEffectsHandlers.initSession('spiral_test_14');
+        const result = spiralEffectsHandlers.destroySession('spiral_test_14');
+        
+        assert.strictEqual(result.destroyed, true);
+        
+        const config = spiralEffectsHandlers.getConfig('spiral_test_14');
+        assert.strictEqual(config.exists, false);
       });
     });
   });

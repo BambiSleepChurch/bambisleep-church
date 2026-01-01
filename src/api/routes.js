@@ -1723,6 +1723,85 @@ async function handleRequest(req, res) {
     return json(res, bambisleepChatHandlers.textEffects.processHighlights(body.text, body.options));
   }
 
+  // --- Spiral Visual Effects Routes ---
+
+  // GET /api/bambisleep-chat/spiral/presets - Get all color presets
+  if (path === '/api/bambisleep-chat/spiral/presets' && method === 'GET') {
+    return json(res, bambisleepChatHandlers.spiral.getColorPresets());
+  }
+
+  // GET /api/bambisleep-chat/spiral/preset/:presetId - Get specific preset
+  const spiralPresetMatch = path.match(/^\/api\/bambisleep-chat\/spiral\/preset\/([^/]+)$/);
+  if (spiralPresetMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.spiral.getPreset(spiralPresetMatch[1]));
+  }
+
+  // POST /api/bambisleep-chat/spiral/init - Initialize spiral for session
+  if (path === '/api/bambisleep-chat/spiral/init' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.initSession(body.sessionId, body.options));
+  }
+
+  // GET /api/bambisleep-chat/spiral/config/:sessionId - Get spiral config
+  const spiralConfigMatch = path.match(/^\/api\/bambisleep-chat\/spiral\/config\/([^/]+)$/);
+  if (spiralConfigMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.spiral.getConfig(spiralConfigMatch[1]));
+  }
+
+  // POST /api/bambisleep-chat/spiral/params - Update spiral parameters
+  if (path === '/api/bambisleep-chat/spiral/params' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.updateParams(body.sessionId, body.params));
+  }
+
+  // POST /api/bambisleep-chat/spiral/colors - Update spiral colors
+  if (path === '/api/bambisleep-chat/spiral/colors' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.updateColors(body.sessionId, body.colors));
+  }
+
+  // POST /api/bambisleep-chat/spiral/apply-preset - Apply color preset
+  if (path === '/api/bambisleep-chat/spiral/apply-preset' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.applyPreset(body.sessionId, body.presetId));
+  }
+
+  // POST /api/bambisleep-chat/spiral/opacity - Update opacity
+  if (path === '/api/bambisleep-chat/spiral/opacity' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.updateOpacity(body.sessionId, body.opacity));
+  }
+
+  // POST /api/bambisleep-chat/spiral/fade - Generate fade animation
+  if (path === '/api/bambisleep-chat/spiral/fade' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.generateFade(body.targetOpacity, body.duration));
+  }
+
+  // POST /api/bambisleep-chat/spiral/pulse - Generate pulse animation
+  if (path === '/api/bambisleep-chat/spiral/pulse' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.generatePulse(body.minOpacity, body.maxOpacity, body.period));
+  }
+
+  // POST /api/bambisleep-chat/spiral/enabled - Enable/disable spirals
+  if (path === '/api/bambisleep-chat/spiral/enabled' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.setEnabled(body.sessionId, body.enabled));
+  }
+
+  // GET /api/bambisleep-chat/spiral/trigger-preset/:trigger - Get preset for trigger
+  const triggerPresetMatch = path.match(/^\/api\/bambisleep-chat\/spiral\/trigger-preset\/(.+)$/);
+  if (triggerPresetMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.spiral.getPresetForTrigger(decodeURIComponent(triggerPresetMatch[1])));
+  }
+
+  // GET /api/bambisleep-chat/spiral/client-code/:sessionId - Generate client code
+  const clientCodeMatch = path.match(/^\/api\/bambisleep-chat\/spiral\/client-code\/([^/]+)$/);
+  if (clientCodeMatch && method === 'GET') {
+    return json(res, bambisleepChatHandlers.spiral.generateClientCode(clientCodeMatch[1]));
+  }
+
   // --- Session Routes ---
 
   // POST /api/bambisleep-chat/session - Create new session

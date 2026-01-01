@@ -618,6 +618,448 @@ export const sessionHandlers = {
   }
 };
 
+// ============ PSYCHEDELIC SPIRAL VISUAL EFFECTS ============
+
+/**
+ * Color presets for spiral visual effects
+ * Each preset contains two spiral colors [R, G, B]
+ */
+const SPIRAL_COLOR_PRESETS = {
+  BAMBI_CLASSIC: {
+    name: 'Bambi Classic',
+    spiral1: [0, 128, 128],      // Teal
+    spiral2: [255, 20, 147],     // Barbie Pink
+    description: 'Classic BambiSleep teal and pink'
+  },
+  DEEP_TRANCE: {
+    name: 'Deep Trance',
+    spiral1: [75, 0, 130],       // Indigo
+    spiral2: [138, 43, 226],     // Blue Violet
+    description: 'Deep hypnotic purples for trance'
+  },
+  HYPNO_PINK: {
+    name: 'Hypno Pink',
+    spiral1: [255, 105, 180],    // Hot Pink
+    spiral2: [255, 182, 193],    // Light Pink
+    description: 'All pink bimbo vibes'
+  },
+  MIND_MELT: {
+    name: 'Mind Melt',
+    spiral1: [255, 0, 255],      // Magenta
+    spiral2: [0, 255, 255],      // Cyan
+    description: 'High contrast mind melting'
+  },
+  DREAM_STATE: {
+    name: 'Dream State',
+    spiral1: [147, 0, 211],      // Dark Violet
+    spiral2: [186, 85, 211],     // Medium Orchid
+    description: 'Dreamy violet hues'
+  },
+  SUBMISSIVE_BLUE: {
+    name: 'Submissive Blue',
+    spiral1: [30, 144, 255],     // Dodger Blue
+    spiral2: [0, 191, 255],      // Deep Sky Blue
+    description: 'Calming submission blues'
+  },
+  BIMBO_BARBIE: {
+    name: 'Bimbo Barbie',
+    spiral1: [255, 20, 147],     // Deep Pink
+    spiral2: [255, 105, 180],    // Hot Pink
+    description: 'Full Barbie bimbo mode'
+  },
+  SLEEPY_LAVENDER: {
+    name: 'Sleepy Lavender',
+    spiral1: [230, 230, 250],    // Lavender
+    spiral2: [216, 191, 216],    // Thistle
+    description: 'Soft sleepy lavender tones'
+  },
+  GOOD_GIRL_GOLD: {
+    name: 'Good Girl Gold',
+    spiral1: [255, 215, 0],      // Gold
+    spiral2: [255, 182, 193],    // Light Pink
+    description: 'Reward colors for good girls'
+  },
+  TRIGGER_RED: {
+    name: 'Trigger Red',
+    spiral1: [220, 20, 60],      // Crimson
+    spiral2: [255, 69, 0],       // Orange Red
+    description: 'Intense trigger activation'
+  }
+};
+
+/**
+ * Default spiral parameters
+ */
+const DEFAULT_SPIRAL_PARAMS = {
+  spiral1Width: 5.0,
+  spiral2Width: 3.0,
+  spiral1Speed: 20,
+  spiral2Speed: 15,
+  opacityLevel: 1.0,
+  iterations: 400
+};
+
+/**
+ * Session spiral state storage
+ */
+const spiralState = new Map(); // sessionId -> spiral config
+
+export const spiralEffectsHandlers = {
+  /**
+   * Get all available color presets
+   */
+  getColorPresets() {
+    logger.info('Getting spiral color presets');
+    
+    const presets = Object.entries(SPIRAL_COLOR_PRESETS).map(([key, value]) => ({
+      id: key,
+      ...value
+    }));
+    
+    return {
+      presets,
+      count: presets.length,
+      defaultPreset: 'BAMBI_CLASSIC'
+    };
+  },
+
+  /**
+   * Get a specific color preset
+   */
+  getPreset(presetId) {
+    const preset = SPIRAL_COLOR_PRESETS[presetId?.toUpperCase()];
+    
+    if (!preset) {
+      return {
+        error: `Unknown preset: ${presetId}`,
+        validPresets: Object.keys(SPIRAL_COLOR_PRESETS)
+      };
+    }
+    
+    return {
+      id: presetId.toUpperCase(),
+      ...preset
+    };
+  },
+
+  /**
+   * Initialize spiral state for a session
+   */
+  initSession(sessionId, options = {}) {
+    const config = {
+      ...DEFAULT_SPIRAL_PARAMS,
+      spiral1Color: SPIRAL_COLOR_PRESETS.BAMBI_CLASSIC.spiral1,
+      spiral2Color: SPIRAL_COLOR_PRESETS.BAMBI_CLASSIC.spiral2,
+      currentPreset: 'BAMBI_CLASSIC',
+      enabled: true,
+      ...options
+    };
+    
+    spiralState.set(sessionId, config);
+    logger.info('Spiral effects initialized', { sessionId });
+    
+    return {
+      sessionId,
+      config,
+      message: '🌀 Psychedelic spiral effects initialized'
+    };
+  },
+
+  /**
+   * Get spiral config for a session
+   */
+  getConfig(sessionId) {
+    const config = spiralState.get(sessionId);
+    
+    if (!config) {
+      return {
+        sessionId,
+        exists: false,
+        defaultParams: DEFAULT_SPIRAL_PARAMS
+      };
+    }
+    
+    return {
+      sessionId,
+      exists: true,
+      config
+    };
+  },
+
+  /**
+   * Update spiral parameters
+   */
+  updateParams(sessionId, params = {}) {
+    let config = spiralState.get(sessionId);
+    
+    if (!config) {
+      config = this.initSession(sessionId).config;
+    }
+    
+    const { spiral1Width, spiral2Width, spiral1Speed, spiral2Speed, iterations } = params;
+    
+    if (spiral1Width !== undefined) config.spiral1Width = Math.max(0.5, Math.min(20, spiral1Width));
+    if (spiral2Width !== undefined) config.spiral2Width = Math.max(0.5, Math.min(20, spiral2Width));
+    if (spiral1Speed !== undefined) config.spiral1Speed = Math.max(1, Math.min(100, spiral1Speed));
+    if (spiral2Speed !== undefined) config.spiral2Speed = Math.max(1, Math.min(100, spiral2Speed));
+    if (iterations !== undefined) config.iterations = Math.max(100, Math.min(1000, iterations));
+    
+    spiralState.set(sessionId, config);
+    logger.info('Spiral params updated', { sessionId, params });
+    
+    return {
+      sessionId,
+      config,
+      message: '🎛️ Spiral parameters updated'
+    };
+  },
+
+  /**
+   * Update spiral colors (raw RGB values)
+   */
+  updateColors(sessionId, colors = {}) {
+    let config = spiralState.get(sessionId);
+    
+    if (!config) {
+      config = this.initSession(sessionId).config;
+    }
+    
+    const { spiral1Color, spiral2Color } = colors;
+    
+    if (spiral1Color && Array.isArray(spiral1Color) && spiral1Color.length === 3) {
+      config.spiral1Color = spiral1Color.map(c => Math.max(0, Math.min(255, c)));
+      config.currentPreset = null; // Custom colors
+    }
+    
+    if (spiral2Color && Array.isArray(spiral2Color) && spiral2Color.length === 3) {
+      config.spiral2Color = spiral2Color.map(c => Math.max(0, Math.min(255, c)));
+      config.currentPreset = null;
+    }
+    
+    spiralState.set(sessionId, config);
+    logger.info('Spiral colors updated', { sessionId });
+    
+    return {
+      sessionId,
+      config,
+      message: '🎨 Spiral colors updated'
+    };
+  },
+
+  /**
+   * Apply a color preset to session
+   */
+  applyPreset(sessionId, presetId) {
+    const preset = SPIRAL_COLOR_PRESETS[presetId?.toUpperCase()];
+    
+    if (!preset) {
+      return {
+        error: `Unknown preset: ${presetId}`,
+        validPresets: Object.keys(SPIRAL_COLOR_PRESETS)
+      };
+    }
+    
+    let config = spiralState.get(sessionId);
+    
+    if (!config) {
+      config = this.initSession(sessionId).config;
+    }
+    
+    config.spiral1Color = [...preset.spiral1];
+    config.spiral2Color = [...preset.spiral2];
+    config.currentPreset = presetId.toUpperCase();
+    
+    spiralState.set(sessionId, config);
+    logger.info('Spiral preset applied', { sessionId, presetId });
+    
+    return {
+      sessionId,
+      config,
+      presetApplied: presetId.toUpperCase(),
+      message: `🎨 Color preset applied: ${preset.name}`
+    };
+  },
+
+  /**
+   * Update opacity level
+   */
+  updateOpacity(sessionId, opacity) {
+    let config = spiralState.get(sessionId);
+    
+    if (!config) {
+      config = this.initSession(sessionId).config;
+    }
+    
+    config.opacityLevel = Math.max(0.1, Math.min(1.0, opacity));
+    spiralState.set(sessionId, config);
+    
+    logger.info('Spiral opacity updated', { sessionId, opacity: config.opacityLevel });
+    
+    return {
+      sessionId,
+      opacityLevel: config.opacityLevel,
+      message: `🔆 Opacity set to ${Math.round(config.opacityLevel * 100)}%`
+    };
+  },
+
+  /**
+   * Generate fade animation config
+   */
+  generateFade(targetOpacity, duration = 2000) {
+    return {
+      type: 'FADE_OPACITY',
+      targetOpacity: Math.max(0.1, Math.min(1.0, targetOpacity)),
+      duration: Math.max(100, Math.min(10000, duration)),
+      easing: 'linear'
+    };
+  },
+
+  /**
+   * Generate pulse animation config
+   */
+  generatePulse(minOpacity = 0.3, maxOpacity = 1.0, period = 3000) {
+    return {
+      type: 'PULSE_OPACITY',
+      minOpacity: Math.max(0.1, Math.min(1.0, minOpacity)),
+      maxOpacity: Math.max(0.1, Math.min(1.0, maxOpacity)),
+      period: Math.max(500, Math.min(10000, period)),
+      waveform: 'sine'
+    };
+  },
+
+  /**
+   * Enable/disable spiral effects for session
+   */
+  setEnabled(sessionId, enabled) {
+    let config = spiralState.get(sessionId);
+    
+    if (!config) {
+      config = this.initSession(sessionId).config;
+    }
+    
+    config.enabled = Boolean(enabled);
+    spiralState.set(sessionId, config);
+    
+    logger.info('Spiral effects toggled', { sessionId, enabled: config.enabled });
+    
+    return {
+      sessionId,
+      enabled: config.enabled,
+      message: config.enabled ? '🌀 Spiral effects enabled' : '⏸️ Spiral effects disabled'
+    };
+  },
+
+  /**
+   * Get trigger-based preset recommendations
+   * Maps detected triggers to appropriate visual presets
+   */
+  getPresetForTrigger(triggerName) {
+    const triggerPresetMap = {
+      'BAMBI SLEEP': 'DEEP_TRANCE',
+      'BAMBI': 'BAMBI_CLASSIC',
+      'GOOD GIRL': 'GOOD_GIRL_GOLD',
+      'BAMBI FREEZE': 'SUBMISSIVE_BLUE',
+      'BLONDE MOMENT': 'BIMBO_BARBIE',
+      'BIMBO DOLL': 'HYPNO_PINK',
+      'GIGGLETIME': 'BIMBO_BARBIE',
+      'BAMBI RESET': 'MIND_MELT',
+      'BAMBI LIMP': 'SLEEPY_LAVENDER',
+      'DROP FOR COCK': 'TRIGGER_RED',
+      'BAMBI CUM AND COLLAPSE': 'TRIGGER_RED',
+      'SAFE AND SECURE': 'SLEEPY_LAVENDER'
+    };
+    
+    const normalized = triggerName?.toUpperCase();
+    const presetId = triggerPresetMap[normalized] || 'BAMBI_CLASSIC';
+    
+    return {
+      trigger: normalized,
+      recommendedPreset: presetId,
+      preset: SPIRAL_COLOR_PRESETS[presetId]
+    };
+  },
+
+  /**
+   * Generate client-side JavaScript for spiral rendering
+   * Returns p5.js compatible code
+   */
+  generateClientCode(sessionId) {
+    const config = spiralState.get(sessionId) || {
+      ...DEFAULT_SPIRAL_PARAMS,
+      spiral1Color: SPIRAL_COLOR_PRESETS.BAMBI_CLASSIC.spiral1,
+      spiral2Color: SPIRAL_COLOR_PRESETS.BAMBI_CLASSIC.spiral2
+    };
+    
+    return {
+      sessionId,
+      code: `
+// BambiSleep Psychedelic Spiral - Generated Config
+const spiralConfig = ${JSON.stringify(config, null, 2)};
+
+function setup() {
+  const container = document.querySelector("#spiralContainer");
+  if (!container) return;
+  
+  const canvas = createCanvas(container.clientWidth, container.clientHeight);
+  canvas.parent("spiralContainer");
+  
+  window.addEventListener("resize", () => {
+    resizeCanvas(container.clientWidth, container.clientHeight);
+  });
+}
+
+function draw() {
+  clear();
+  translate(width / 2, height / 2);
+  
+  const a = map(sin(frameCount / spiralConfig.spiral1Speed), -1, 1, 0.5, 1.5);
+  const b = map(cos(frameCount / spiralConfig.spiral2Speed), -1, 1, 1, 1.5);
+  
+  rotate(frameCount / 5);
+  drawSpiral(a, 1, spiralConfig.spiral1Color, spiralConfig.spiral1Width);
+  drawSpiral(b, 0.3, spiralConfig.spiral2Color, spiralConfig.spiral2Width);
+}
+
+function drawSpiral(step, ang, colorArray, baseWidth) {
+  const c = color(colorArray[0], colorArray[1], colorArray[2], 255 * spiralConfig.opacityLevel);
+  fill(c);
+  stroke(c);
+  
+  let r1 = 0;
+  let spiralWidth = baseWidth;
+  const dw = spiralWidth / (spiralConfig.iterations * 0.8);
+  
+  beginShape(TRIANGLE_STRIP);
+  for (let i = 0; i < spiralConfig.iterations; i++) {
+    r1 += step;
+    spiralWidth -= dw;
+    const r2 = r1 + spiralWidth;
+    
+    vertex(r1 * sin(ang * i), r1 * cos(ang * i));
+    vertex(r2 * sin(ang * i), r2 * cos(ang * i));
+  }
+  endShape();
+}
+`,
+      config,
+      dependencies: ['p5.js'],
+      message: '📜 Client code generated'
+    };
+  },
+
+  /**
+   * Clean up spiral state for session
+   */
+  destroySession(sessionId) {
+    const existed = spiralState.has(sessionId);
+    spiralState.delete(sessionId);
+    
+    logger.info('Spiral session destroyed', { sessionId, existed });
+    
+    return { sessionId, destroyed: existed };
+  }
+};
+
 // ============ COMBINED HANDLERS EXPORT ============
 
 export const bambisleepChatHandlers = {
@@ -626,7 +1068,8 @@ export const bambisleepChatHandlers = {
   chat: chatHandlers,
   collar: collarHandlers,
   textEffects: textEffectsHandlers,
-  session: sessionHandlers
+  session: sessionHandlers,
+  spiral: spiralEffectsHandlers
 };
 
 // ============ UTILITY FUNCTIONS ============
