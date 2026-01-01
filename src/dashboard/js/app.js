@@ -35,7 +35,9 @@ import {
     renderClarityDashboard,
     renderServerGrid,
     renderToastContainer,
+    ServerDrag,
     showToast,
+    sortServersByOrder,
     toggleTheme,
     updateStatsBar,
     updateSystemInfo,
@@ -457,6 +459,28 @@ window.Dashboard = {
       showToast('error', 'Clarity Action Failed', error.message);
     }
   },
+
+  // Refresh servers (re-fetch and re-render)
+  async refreshServers() {
+    await refreshData();
+  },
+
+  // Reset server order
+  resetServerOrder() {
+    ServerDrag.resetOrder();
+  }
+};
+
+// Expose ServerDrag for drag-and-drop handlers
+window.ServerDrag = ServerDrag;
+
+// Expose Toast API for components
+window.Toast = {
+  show: showToast,
+  success: (msg) => showToast('success', 'Success', msg),
+  error: (msg) => showToast('error', 'Error', msg),
+  info: (msg) => showToast('info', 'Info', msg),
+  warning: (msg) => showToast('warning', 'Warning', msg)
 };
 
 // Also expose config for components
@@ -470,7 +494,7 @@ window.clarityAction = (action) => window.Dashboard.clarityAction(action);
 // ============================================================================
 
 /**
- * Render servers grid
+ * Render servers grid with saved order
  */
 function renderServers() {
   const state = AppState.getState();
@@ -482,7 +506,9 @@ function renderServers() {
     ? 'No servers match your filter'
     : 'No MCP servers configured';
   
-  container.innerHTML = renderServerGrid(state.filteredServers, emptyMessage);
+  // Sort servers by saved order before rendering
+  const sortedServers = sortServersByOrder(state.filteredServers);
+  container.innerHTML = renderServerGrid(sortedServers, emptyMessage);
 }
 
 /**

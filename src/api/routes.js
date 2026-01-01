@@ -29,6 +29,8 @@ import { getConfig } from '../utils/config.js';
 import { createLogger } from '../utils/logger.js';
 import { createRateLimiter, getRateLimitStats } from '../utils/rate-limit.js';
 import { createWebSocketServer, getWebSocketStats } from './websocket.js';
+import { formatPrometheusMetrics, getMetricsJson, recordHttpRequest } from './metrics.js';
+import { generateApiDocsHtml, getOpenApiSpec } from './openapi.js';
 
 const logger = createLogger('api');
 const config = getConfig();
@@ -106,6 +108,46 @@ async function handleRequest(req, res) {
       version: '1.0.0',
       env: config.env.nodeEnv,
     });
+  }
+
+  // ============ METRICS & DOCS ROUTES ============
+
+  // Prometheus metrics endpoint
+  if (path === '/api/metrics' && method === 'GET') {
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+    });
+    return res.end(formatPrometheusMetrics());
+  }
+
+  // Metrics JSON endpoint (internal)
+  if (path === '/api/metrics/json' && method === 'GET') {
+    return json(res, getMetricsJson());
+  }
+
+  // OpenAPI specification
+  if (path === '/api/openapi' && method === 'GET') {
+    return json(res, getOpenApiSpec());
+  }
+
+  // OpenAPI YAML
+  if (path === '/api/openapi.yaml' && method === 'GET') {
+    // Simple JSON to YAML conversion (basic)
+    res.writeHead(200, {
+      'Content-Type': 'text/yaml; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+    });
+    return res.end(JSON.stringify(getOpenApiSpec(), null, 2));
+  }
+
+  // API documentation HTML (Swagger UI)
+  if ((path === '/api/docs/ui' || path === '/docs') && method === 'GET') {
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+    });
+    return res.end(generateApiDocsHtml());
   }
 
   // Rate limit stats

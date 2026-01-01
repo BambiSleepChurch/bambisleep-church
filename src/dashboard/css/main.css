@@ -31,6 +31,8 @@
 @import url('components/activity.css');
 @import url('components/clarity.css');
 @import url('components/agent.css');
+@import url('components/memory-graph.css');
+@import url('components/api-builder.css');
 
 /* Utilities & Responsive */
 @import url('utilities.css');

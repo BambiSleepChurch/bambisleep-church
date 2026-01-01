@@ -9,6 +9,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **API Documentation** - OpenAPI 3.0 specification with Swagger UI
+
+  - Full OpenAPI 3.0.3 spec with 80+ endpoints across 18 tags
+  - Interactive Swagger UI at `/docs` and `/api/docs/ui`
+  - JSON spec at `/api/openapi`, YAML at `/api/openapi.yaml`
+  - Component schemas for Server, KnowledgeGraph, Entity, Relation, Tool
+
+- **Prometheus Metrics** - Production monitoring endpoint
+
+  - `/api/metrics` - Prometheus exposition format
+  - `/api/metrics/json` - JSON format for custom dashboards
+  - 15+ metrics: http_requests_total, tool_executions_total, websocket_messages, etc.
+  - Automatic recording via `recordHttpRequest()`, `recordToolExecution()`
+
+- **MCP Configuration Guide** - Comprehensive server setup documentation
+
+  - `docs/MCP_CONFIGURATION_GUIDE.md` - 400+ line reference
+  - Covers all 9 external MCP servers + 5 integrated handlers
+  - Environment variables, troubleshooting, and best practices
+
+- **Deployment Guide** - Production deployment reference
+
+  - `docs/DEPLOYMENT_GUIDE.md` - 500+ line guide
+  - PM2, Docker, docker-compose configurations
+  - Nginx and Caddy reverse proxy with SSL/TLS (Let's Encrypt)
+  - Prometheus + Grafana monitoring stack
+  - Health checks, alerting, backups, security checklist
+
+- **Memory Graph Visualization** - D3.js force-directed knowledge graph
+
+  - Interactive node exploration with drag/zoom
+  - Entity type coloring (person, concept, event)
+  - Search/filter functionality
+  - Physics toggle and SVG export
+  - New dashboard section in Tools
+
+- **API Request Builder** - Interactive API testing panel
+
+  - Endpoint selector with method badges
+  - Custom headers and JSON body editor
+  - Response viewer with timing stats
+  - cURL export for command-line testing
+  - Request history (last 10)
+
+- **Drag-and-Drop Server Ordering** - Custom server card arrangement
+
+  - Drag handle on server cards
+  - Visual drop indicators (top/bottom insertion)
+  - localStorage persistence of custom order
+  - Reset to default button
+  - Toast notifications on reorder
+
 - **Privacy Policy & Terms of Service** - Legal compliance pages
 
   - Comprehensive Privacy Policy with 12 sections (GDPR-style)

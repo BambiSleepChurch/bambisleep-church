@@ -99,3 +99,126 @@
   color: var(--error);
   font-size: var(--text-xs);
 }
+
+/* ============================================================================
+   DRAG AND DROP STYLES
+   ============================================================================ */
+
+.server-card[draggable="true"] {
+  cursor: grab;
+  transition: 
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.server-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Drag handle */
+.drag-handle {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  font-size: var(--text-lg);
+  color: var(--text-muted);
+  opacity: 0;
+  cursor: grab;
+  user-select: none;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+  z-index: 5;
+}
+
+.server-card:hover .drag-handle {
+  opacity: 0.5;
+}
+
+.drag-handle:hover {
+  opacity: 1 !important;
+  color: var(--glow-cyan);
+}
+
+/* Dragging state */
+.server-card.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+  box-shadow: 
+    0 0 0 2px var(--glow-pink),
+    0 10px 40px rgba(255, 107, 157, 0.3);
+}
+
+/* Drop target states */
+.server-card.drag-over {
+  box-shadow: 
+    0 0 0 2px var(--glow-cyan),
+    0 0 20px rgba(0, 247, 255, 0.2);
+}
+
+.server-card.drag-over-top::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--glow-cyan), var(--glow-pink));
+  border-radius: 2px;
+  animation: pulse-border 0.5s ease-in-out infinite alternate;
+  opacity: 1 !important;
+}
+
+.server-card.drag-over-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--glow-pink), var(--glow-cyan));
+  border-radius: 2px;
+  animation: pulse-border 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-border {
+  from {
+    opacity: 0.7;
+    transform: scaleX(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Reset order button */
+.reset-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.reset-order-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--glow-cyan);
+  background: rgba(0, 247, 255, 0.1);
+}
+
+/* Server grid with drop feedback */
+.server-grid {
+  min-height: 200px;
+  transition: background var(--transition-fast);
+}
+
+.server-grid.drag-active {
+  background: rgba(0, 247, 255, 0.02);
+  border-radius: var(--radius-md);
+}

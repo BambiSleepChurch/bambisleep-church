@@ -77,6 +77,10 @@
           <span class="nav-item-icon">🤖</span>
           <span class="nav-item-text">Agent Chat</span>
         </a>
+        <a class="nav-item" data-section="api-builder" onclick="window.Dashboard.showSection('api-builder')">
+          <span class="nav-item-icon">🔧</span>
+          <span class="nav-item-text">API Builder</span>
+        </a>
         <a class="nav-item" data-section="puppeteer" onclick="window.Dashboard.showSection('puppeteer')">
           <span class="nav-item-icon">🎭</span>
           <span class="nav-item-text">Puppeteer</span>
@@ -303,6 +307,7 @@
             <button class="filter-btn" data-filter="stopped">Stopped</button>
             <button class="filter-btn" data-filter="error">Errors</button>
           </div>
+          <button onclick="window.Dashboard.resetServerOrder()" class="reset-order-btn" title="Reset to default order">↩ Reset Order</button>
           <button onclick="window.Dashboard.refresh()" class="btn btn-primary">🔄 Refresh</button>
         </div>
       </div>
@@ -370,18 +375,138 @@
       <div class="section-header">
         <h2 class="section-title">🧠 Memory Knowledge Graph</h2>
         <div class="section-actions">
-          <button onclick="window.Dashboard.serverAction('memory', 'readGraph')" class="btn btn-outline">📖 Read Graph</button>
+          <button onclick="window.MemoryGraph.loadGraph()" class="btn btn-outline">📖 Load Graph</button>
           <button onclick="window.Dashboard.serverAction('memory', 'search')" class="btn btn-primary">🔍 Search</button>
         </div>
       </div>
       <div id="memory-container" class="glass-card">
-        <div class="empty-state">
-          <span class="empty-icon">🧠</span>
-          <h3>Memory Knowledge Graph</h3>
-          <p>Click "Read Graph" to view entities and relations, or "Search" to find specific nodes.</p>
+        <div class="memory-graph-container">
+          <div class="graph-toolbar">
+            <button class="btn btn-small btn-primary" onclick="window.MemoryGraph.loadGraph()">
+              🔄 Load Graph
+            </button>
+            <button class="btn btn-small btn-outline" onclick="window.MemoryGraph.zoomIn()">
+              ➕ Zoom In
+            </button>
+            <button class="btn btn-small btn-outline" onclick="window.MemoryGraph.zoomOut()">
+              ➖ Zoom Out
+            </button>
+            <button class="btn btn-small btn-outline" onclick="window.MemoryGraph.resetZoom()">
+              🎯 Reset
+            </button>
+            <button class="btn btn-small btn-outline" onclick="window.MemoryGraph.togglePhysics()">
+              ⚡ Physics
+            </button>
+            <span class="graph-stats" id="graph-stats">Nodes: 0 | Relations: 0</span>
+          </div>
+          <div class="graph-canvas-wrapper">
+            <svg id="memory-graph-svg" class="graph-svg"></svg>
+          </div>
+          <div class="graph-legend">
+            <div class="legend-item"><span class="legend-dot entity-person"></span> Person</div>
+            <div class="legend-item"><span class="legend-dot entity-concept"></span> Concept</div>
+            <div class="legend-item"><span class="legend-dot entity-event"></span> Event</div>
+            <div class="legend-item"><span class="legend-dot entity-default"></span> Other</div>
+          </div>
+          <div id="node-tooltip" class="node-tooltip hidden"></div>
         </div>
       </div>
-      <div id="server-action-result" class="glass-card result-container hidden"></div>
+    </section>
+
+    <!-- API Builder Section -->
+    <section id="section-api-builder" class="dashboard-section">
+      <div class="section-header">
+        <h2 class="section-title">🔧 API Request Builder</h2>
+        <div class="section-actions">
+          <button onclick="window.ApiBuilder.loadEndpoints()" class="btn btn-outline">📋 Endpoints</button>
+          <a href="/docs" target="_blank" class="btn btn-primary">📚 API Docs</a>
+        </div>
+      </div>
+      <div id="api-builder-container" class="glass-card api-builder-container">
+        <div class="api-builder-content">
+          <!-- Endpoint Selection -->
+          <div class="api-builder-section">
+            <label class="api-label">Endpoint</label>
+            <div class="api-endpoint-row">
+              <select id="api-method" class="api-select method-select">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+              <input type="text" id="api-url" class="api-input url-input" 
+                     placeholder="/api/health" value="/api/health">
+            </div>
+          </div>
+
+          <!-- Quick Endpoints -->
+          <div class="api-builder-section">
+            <label class="api-label">Quick Endpoints</label>
+            <div class="quick-endpoints">
+              <button class="quick-endpoint-btn" onclick="window.ApiBuilder.setEndpoint('GET', '/api/health')">Health</button>
+              <button class="quick-endpoint-btn" onclick="window.ApiBuilder.setEndpoint('GET', '/api/servers')">Servers</button>
+              <button class="quick-endpoint-btn" onclick="window.ApiBuilder.setEndpoint('GET', '/api/memory')">Memory</button>
+              <button class="quick-endpoint-btn" onclick="window.ApiBuilder.setEndpoint('GET', '/api/agent/tools')">Tools</button>
+              <button class="quick-endpoint-btn" onclick="window.ApiBuilder.setEndpoint('GET', '/api/metrics')">Metrics</button>
+              <button class="quick-endpoint-btn" onclick="window.ApiBuilder.setEndpoint('GET', '/api/openapi')">OpenAPI</button>
+            </div>
+          </div>
+
+          <!-- Headers -->
+          <div class="api-builder-section">
+            <label class="api-label">
+              Headers
+              <button class="btn btn-tiny btn-outline" onclick="window.ApiBuilder.addHeader()">+ Add</button>
+            </label>
+            <div id="api-headers" class="api-headers-list">
+              <div class="api-header-row">
+                <input type="text" class="api-input header-key" placeholder="Key" value="Content-Type">
+                <input type="text" class="api-input header-value" placeholder="Value" value="application/json">
+                <button class="btn btn-tiny btn-danger" onclick="this.parentElement.remove()">×</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Request Body -->
+          <div class="api-builder-section">
+            <label class="api-label">Request Body (JSON)</label>
+            <textarea id="api-body" class="api-textarea" placeholder='{ "key": "value" }'></textarea>
+            <div class="body-actions">
+              <button class="btn btn-tiny btn-outline" onclick="window.ApiBuilder.formatJson()">Format</button>
+              <button class="btn btn-tiny btn-outline" onclick="window.ApiBuilder.clearBody()">Clear</button>
+            </div>
+          </div>
+
+          <!-- Send Button -->
+          <div class="api-builder-actions">
+            <button id="api-send-btn" class="btn btn-primary btn-large" onclick="window.ApiBuilder.sendRequest()">
+              🚀 Send Request
+            </button>
+            <button class="btn btn-outline" onclick="window.ApiBuilder.generateCurl()">
+              📋 Copy cURL
+            </button>
+          </div>
+
+          <!-- Response -->
+          <div class="api-builder-section">
+            <label class="api-label">
+              Response
+              <span id="api-status" class="api-status"></span>
+              <span id="api-time" class="api-time"></span>
+            </label>
+            <div class="response-tabs">
+              <button class="tab-btn active" data-tab="body" onclick="window.ApiBuilder.showTab('body')">Body</button>
+              <button class="tab-btn" data-tab="headers" onclick="window.ApiBuilder.showTab('headers')">Headers</button>
+            </div>
+            <div id="api-response-body" class="api-response active">
+              <pre id="api-response-text">// Response will appear here</pre>
+            </div>
+            <div id="api-response-headers" class="api-response">
+              <pre id="api-response-headers-text">// Headers will appear here</pre>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- GitHub Section -->
