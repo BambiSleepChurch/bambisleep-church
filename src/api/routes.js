@@ -8,6 +8,7 @@ import { createServer } from 'http';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { agentHandlers } from '../servers/agent.js';
+import { AGENT_TOOLS, createAgentToolExecutor, formatToolsForOpenAI, getCoreTools, getToolByName, getToolsByCategory, TOOL_CATEGORIES } from '../servers/agent-tools.js';
 import { bambisleepChatHandlers } from '../servers/bambisleep-chat.js';
 import { clarityHandlers } from '../servers/clarity.js';
 import { fetchHandlers } from '../servers/fetch.js';
@@ -16,6 +17,7 @@ import { huggingfaceHandlers } from '../servers/huggingface.js';
 import { registry } from '../servers/index.js';
 import { lmstudioHandlers } from '../servers/lmstudio.js';
 import { memoryHandlers } from '../servers/memory.js';
+import { getModelRouter, MODEL_PROFILES, TASK_BEST_MODELS, TASK_TYPES } from '../servers/model-router.js';
 import { mongoHandlers } from '../servers/mongodb.js';
 import { puppeteerHandlers } from '../servers/puppeteer.js';
 import { thinkingHandlers } from '../servers/sequential-thinking.js';
@@ -1823,6 +1825,153 @@ async function handleRequest(req, res) {
   // GET /api/bambisleep-chat/sessions - Get all sessions (admin)
   if (path === '/api/bambisleep-chat/sessions' && method === 'GET') {
     return json(res, bambisleepChatHandlers.session.getAllSessions());
+  }
+
+  // ============ MODEL ROUTER ROUTES ============
+
+  // GET /api/model-router/config - Get router configuration
+  if (path === '/api/model-router/config' && method === 'GET') {
+    const router = getModelRouter();
+    return json(res, router.getConfig());
+  }
+
+  // GET /api/model-router/profiles - Get all model profiles
+  if (path === '/api/model-router/profiles' && method === 'GET') {
+    return json(res, MODEL_PROFILES);
+  }
+
+  // GET /api/model-router/tasks - Get task type definitions
+  if (path === '/api/model-router/tasks' && method === 'GET') {
+    return json(res, { taskTypes: TASK_TYPES, bestModels: TASK_BEST_MODELS });
+  }
+
+  // GET /api/model-router/recommendations - Get model recommendations for all tasks
+  if (path === '/api/model-router/recommendations' && method === 'GET') {
+    const router = getModelRouter();
+    return json(res, router.getRecommendations());
+  }
+
+  // POST /api/model-router/select - Select optimal model for task
+  if (path === '/api/model-router/select' && method === 'POST') {
+    const body = await parseBody(req);
+    const router = getModelRouter();
+    const result = router.selectModel(body.taskType || 'chat', body.options || {});
+    return json(res, result);
+  }
+
+  // POST /api/model-router/detect-task - Detect task type from message
+  if (path === '/api/model-router/detect-task' && method === 'POST') {
+    const body = await parseBody(req);
+    const router = getModelRouter();
+    const taskType = router.detectTaskType(body.message || '');
+    return json(res, { taskType, message: body.message });
+  }
+
+  // POST /api/model-router/update-models - Update available models
+  if (path === '/api/model-router/update-models' && method === 'POST') {
+    const body = await parseBody(req);
+    const router = getModelRouter();
+    router.updateAvailableModels(body.models || []);
+    return json(res, { success: true, config: router.getConfig() });
+  }
+
+  // POST /api/model-router/speed-preference - Set speed preference
+  if (path === '/api/model-router/speed-preference' && method === 'POST') {
+    const body = await parseBody(req);
+    const router = getModelRouter();
+    router.setSpeedPreference(body.preferSpeed === true);
+    return json(res, { success: true, config: router.getConfig() });
+  }
+
+  // ============ AGENT TOOLS ROUTES ============
+
+  // GET /api/agent-tools - Get all available tools
+  if (path === '/api/agent-tools' && method === 'GET') {
+    return json(res, { tools: AGENT_TOOLS, count: AGENT_TOOLS.length });
+  }
+
+  // GET /api/agent-tools/categories - Get tool categories
+  if (path === '/api/agent-tools/categories' && method === 'GET') {
+    return json(res, { categories: TOOL_CATEGORIES });
+  }
+
+  // GET /api/agent-tools/openai - Get tools in OpenAI function calling format
+  if (path === '/api/agent-tools/openai' && method === 'GET') {
+    const useCase = url.searchParams.get('useCase') || 'full';
+    const tools = useCase === 'full' ? AGENT_TOOLS : getCoreTools(useCase);
+    return json(res, { tools: formatToolsForOpenAI(tools), count: tools.length });
+  }
+
+  // GET /api/agent-tools/core/:useCase - Get core tools for use case
+  const coreToolsMatch = path.match(/^\/api\/agent-tools\/core\/([^/]+)$/);
+  if (coreToolsMatch && method === 'GET') {
+    const useCase = coreToolsMatch[1];
+    const tools = getCoreTools(useCase);
+    return json(res, { useCase, tools, count: tools.length });
+  }
+
+  // GET /api/agent-tools/category/:category - Get tools by category
+  const toolsCategoryMatch = path.match(/^\/api\/agent-tools\/category\/([^/]+)$/);
+  if (toolsCategoryMatch && method === 'GET') {
+    const category = toolsCategoryMatch[1];
+    const tools = getToolsByCategory(category);
+    return json(res, { category, tools, count: tools.length });
+  }
+
+  // GET /api/agent-tools/:name - Get single tool by name
+  const toolByNameMatch = path.match(/^\/api\/agent-tools\/([^/]+)$/);
+  if (toolByNameMatch && method === 'GET' && !['categories', 'openai'].includes(toolByNameMatch[1])) {
+    const tool = getToolByName(toolByNameMatch[1]);
+    if (tool) {
+      return json(res, tool);
+    }
+    return json(res, { error: 'Tool not found' }, 404);
+  }
+
+  // POST /api/agent-tools/execute - Execute a tool
+  if (path === '/api/agent-tools/execute' && method === 'POST') {
+    const body = await parseBody(req);
+    const executor = createAgentToolExecutor({ wsServer: wss });
+    
+    // Register all handlers
+    executor.registerHandlers('memory', memoryHandlers);
+    executor.registerHandlers('storage', storageHandlers);
+    executor.registerHandlers('fetch', fetchHandlers);
+    executor.registerHandlers('puppeteer', puppeteerHandlers);
+    executor.registerHandlers('mongodb', mongoHandlers);
+    executor.registerHandlers('sqlite', sqliteHandlers);
+    executor.registerHandlers('thinking', thinkingHandlers);
+    executor.registerHandlers('stripe', stripeHandlers);
+    executor.registerHandlers('clarity', clarityHandlers);
+    executor.registerHandlers('github', githubHandlers);
+    executor.registerHandlers('lmstudio', lmstudioHandlers);
+    executor.registerHandlers('huggingface', huggingfaceHandlers);
+
+    const result = await executor.execute(body.tool, body.args || {});
+    return json(res, result);
+  }
+
+  // POST /api/agent-tools/execute-many - Execute multiple tools
+  if (path === '/api/agent-tools/execute-many' && method === 'POST') {
+    const body = await parseBody(req);
+    const executor = createAgentToolExecutor({ wsServer: wss });
+    
+    // Register all handlers
+    executor.registerHandlers('memory', memoryHandlers);
+    executor.registerHandlers('storage', storageHandlers);
+    executor.registerHandlers('fetch', fetchHandlers);
+    executor.registerHandlers('puppeteer', puppeteerHandlers);
+    executor.registerHandlers('mongodb', mongoHandlers);
+    executor.registerHandlers('sqlite', sqliteHandlers);
+    executor.registerHandlers('thinking', thinkingHandlers);
+    executor.registerHandlers('stripe', stripeHandlers);
+    executor.registerHandlers('clarity', clarityHandlers);
+    executor.registerHandlers('github', githubHandlers);
+    executor.registerHandlers('lmstudio', lmstudioHandlers);
+    executor.registerHandlers('huggingface', huggingfaceHandlers);
+
+    const results = await executor.executeMany(body.toolCalls || []);
+    return json(res, { results });
   }
 
   // 404 for unknown routes
