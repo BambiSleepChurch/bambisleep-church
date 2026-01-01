@@ -1,10 +1,10 @@
 # 🌸✨ BambiSleep™ Church MCP Control Tower ✨🌸
 
-> _"11/11 MCP servers orchestrated with enterprise-grade elegance"_ 💅
+> _"14 MCP servers • 98 AI tools • Enterprise-grade elegance"_ 💅
 
 [![Node.js 20+](https://img.shields.io/badge/Node.js-20%2B%20LTS-pink?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-ff69b4?style=for-the-badge)](https://modelcontextprotocol.io/)
-[![Tests](https://img.shields.io/badge/Tests-228%20passing-brightgreen?style=for-the-badge)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-300%2B%20passing-brightgreen?style=for-the-badge)](tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-hotpink?style=for-the-badge)](LICENSE)
 
 ---
@@ -18,10 +18,11 @@ Built by **BambiSleepChurch™** following the sacred laws of the [Religulous Ma
 ### ✨ Highlights
 
 - **Dual-Server Architecture**: Dashboard (Port 3000) + REST API & WebSocket (Port 8080)
-- **10 MCP Server Wrappers**: Memory, GitHub, HuggingFace, Stripe, MongoDB, SQLite, Puppeteer, Fetch, Sequential Thinking, Storage
-- **50+ REST Endpoints**: Full CRUD operations for all integrated services
+- **14 MCP Server Wrappers**: Memory, GitHub, HuggingFace, Stripe, Patreon, MongoDB, SQLite, Puppeteer, Fetch, Sequential Thinking, Storage, Clarity, LM Studio, Agent
+- **80+ REST Endpoints**: Full CRUD operations for all integrated services
+- **98 AI Agent Tools**: OpenAI function calling format with smart model routing
 - **Real-time Dashboard**: Glass morphism UI with WebSocket live updates
-- **228 Tests**: 84%+ code coverage with Node.js built-in test runner
+- **300+ Tests**: 84%+ code coverage with Node.js built-in test runner
 
 ---
 
@@ -33,15 +34,18 @@ Built by **BambiSleepChurch™** following the sacred laws of the [Religulous Ma
 |   ✅   | 🐙 GitHub              | Repository & issue mgmt     | —                                         |
 |   ✅   | 🤗 HuggingFace         | ML model inference          | [docs](docs/HUGGINGFACE_MCP_REFERENCE.md) |
 |   ✅   | 💳 Stripe              | Payment processing          | [docs](docs/STRIPE_MCP_REFERENCE.md)      |
+|   ✅   | � Patreon             | Creator platform & OAuth    | [docs](docs/PATREON_MCP_REFERENCE.md)     |
 |   ✅   | 🍃 MongoDB             | Document database           | [docs](docs/MONGODB_MCP_REFERENCE.md)     |
-|   ✅   | SQLite                 | Local database              | —                                         |
+|   ✅   | 🗃️ SQLite              | Local database              | —                                         |
 |   ✅   | 🌐 Fetch               | HTTP request utilities      | —                                         |
 |   ✅   | 🎭 Puppeteer           | Browser automation          | —                                         |
 |   ✅   | 💭 Sequential Thinking | Reasoning chains            | —                                         |
 |   ✅   | 📁 Storage             | File hosting (images/video) | [docs](docs/STORAGE_MCP_REFERENCE.md)     |
-|   📊   | 📊 Clarity             | Microsoft analytics         | [docs](docs/CLARITY_MCP_REFERENCE.md)     |
+|   ✅   | 📊 Clarity             | Microsoft analytics         | [docs](docs/CLARITY_MCP_REFERENCE.md)     |
+|   ✅   | 🤖 LM Studio           | Local LLM inference         | [docs](docs/LMSTUDIO_MCP_REFERENCE.md)    |
+|   ✅   | 🌸 BambiSleep Chat     | Triggers, spirals, TTS      | —                                         |
 
-**Status: 10/10 operational** 🌸
+**Status: 14/14 operational** 🌸
 
 ---
 
@@ -68,7 +72,7 @@ npm test
 | -------------------------- | ----------------------------------- |
 | `npm run dev`              | Development server with hot reload  |
 | `npm run start`            | Production server                   |
-| `npm test`                 | Run all tests (228 tests)           |
+| `npm test`                 | Run all tests (300+ tests)          |
 | `npm run test:unit`        | Fast unit tests only                |
 | `npm run test:integration` | Integration tests (server required) |
 | `npm run test:coverage`    | Coverage report (84%+)              |
@@ -106,23 +110,31 @@ npm test
 │   │       ├── components/  # Pure render functions
 │   │       ├── effects/     # Side effects (keyboard, polling)
 │   │       └── services/    # API client
-│   ├── servers/             # MCP server wrappers
+│   ├── servers/             # MCP server wrappers (14 modules)
 │   │   ├── index.js         # ServerRegistry
 │   │   ├── mcp-client.js    # Generic MCP client
+│   │   ├── agent.js         # AI Agent orchestrator
+│   │   ├── agent-tools.js   # 98 AI tools (OpenAI format)
+│   │   ├── model-router.js  # Smart model selection
 │   │   ├── memory.js        # Knowledge graph
 │   │   ├── github.js        # GitHub API
 │   │   ├── stripe.js        # Payments
+│   │   ├── patreon.js       # Patreon creator platform
 │   │   ├── mongodb.js       # Document DB
 │   │   ├── huggingface.js   # ML inference
+│   │   ├── lmstudio.js      # Local LLM inference
 │   │   ├── fetch.js         # HTTP utilities
 │   │   ├── sqlite.js        # Local database
-│   │   └── puppeteer.js     # Browser automation
-│   │   └── sequential-thinking.js # Reasoning chains
+│   │   ├── puppeteer.js     # Browser automation
+│   │   ├── sequential-thinking.js # Reasoning chains
+│   │   ├── bambisleep-chat.js # Triggers & TTS
+│   │   ├── clarity.js       # Microsoft analytics
+│   │   └── storage.js       # File storage
 │   └── utils/
 │       ├── config.js        # JSONC config loader
 │       ├── logger.js        # Structured logging
 │       └── rate-limit.js    # Request throttling
-├── 🧪 tests/                # 197 tests
+├── 🧪 tests/                # 300+ tests
 │   ├── api/                 # Integration tests
 │   ├── servers/             # Server handler tests
 │   └── utils/               # Unit tests
@@ -146,10 +158,14 @@ All endpoints are prefixed with `/api`. Examples:
 | `/api/memory/search`       | GET    | Search nodes                   |
 | `/api/mongodb/...`         | \*     | MongoDB CRUD operations        |
 | `/api/stripe/...`          | \*     | Stripe payment APIs            |
+| `/api/patreon/...`         | \*     | Patreon creator platform       |
+| `/api/agent/...`           | \*     | AI agent chat & tools          |
+| `/api/model-router/...`    | \*     | Smart model selection          |
 | `/api/stats/rate-limit`    | GET    | Rate limiter statistics        |
 | `/api/stats/websocket`     | GET    | WebSocket connection stats     |
+| `/redirect/patreon`        | GET    | OAuth2 callback                |
 
-See [src/api/routes.js](src/api/routes.js) for complete endpoint documentation.
+See [src/api/routes.js](src/api/routes.js) for complete endpoint documentation (80+ endpoints).
 
 ---
 
@@ -172,7 +188,7 @@ _See [docs/RELIGULOUS_MANTRA.md](docs/RELIGULOUS_MANTRA.md) for the complete phi
 Node.js built-in test runner (no Jest/Mocha required):
 
 ```bash
-# Run all 228 tests
+# Run all 300+ tests
 npm test
 
 # Unit tests only (fast, no server needed)
@@ -218,15 +234,20 @@ MCP servers are configured via `.vscode/settings.json` (JSONC with comments allo
 
 **Environment Variables** (`.env`):
 
-| Variable            | Default | Purpose                       |
-| ------------------- | ------- | ----------------------------- |
-| `LOG_LEVEL`         | `info`  | `error`/`warn`/`info`/`debug` |
-| `API_PORT`          | `8080`  | REST API port                 |
-| `DASHBOARD_PORT`    | `3000`  | Dashboard UI port             |
-| `GITHUB_TOKEN`      | —       | GitHub API auth               |
-| `STRIPE_API_KEY`    | —       | Stripe payments               |
-| `HUGGINGFACE_TOKEN` | —       | HuggingFace inference         |
-| `MONGODB_URI`       | —       | MongoDB connection string     |
+| Variable                 | Default | Purpose                       |
+| ------------------------ | ------- | ----------------------------- |
+| `LOG_LEVEL`              | `info`  | `error`/`warn`/`info`/`debug` |
+| `API_PORT`               | `8080`  | REST API port                 |
+| `DASHBOARD_PORT`         | `3000`  | Dashboard UI port             |
+| `GITHUB_TOKEN`           | —       | GitHub API auth               |
+| `STRIPE_API_KEY`         | —       | Stripe payments               |
+| `HUGGINGFACE_TOKEN`      | —       | HuggingFace inference         |
+| `MONGODB_URI`            | —       | MongoDB connection string     |
+| `PATREON_CLIENT_ID`      | —       | Patreon OAuth2 client ID      |
+| `PATREON_CLIENT_SECRET`  | —       | Patreon OAuth2 secret         |
+| `PATREON_ACCESS_TOKEN`   | —       | Patreon API access token      |
+| `LMSTUDIO_HOST`          | —       | LM Studio server host         |
+| `LMSTUDIO_PORT`          | `7777`  | LM Studio server port         |
 
 ---
 
