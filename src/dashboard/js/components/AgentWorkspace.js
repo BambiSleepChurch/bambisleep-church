@@ -24,6 +24,28 @@ export const LAYOUT_MODES = Object.freeze({
 });
 
 /**
+ * Rate limit configuration
+ */
+const RATE_LIMIT_CONFIG = {
+  maxComponents: 50,           // Max components at once
+  maxRendersPerMinute: 60,     // Max renders per minute
+  maxRendersPerSecond: 5,      // Burst limit
+  throttleDelayMs: 200,        // Min delay between renders
+  maxMemoryMB: 50,             // Max DOM memory estimate
+};
+
+/**
+ * Rate limit state
+ */
+const rateLimitState = {
+  renderTimestamps: [],
+  lastRenderTime: 0,
+  pendingRenders: [],
+  throttleTimer: null,
+  isThrottled: false,
+};
+
+/**
  * Workspace state
  */
 const workspaceState = {
@@ -35,6 +57,7 @@ const workspaceState = {
   maxHistory: 50,
   isConnected: false,
   wsConnection: null,
+  rateLimitConfig: { ...RATE_LIMIT_CONFIG },
 };
 
 /**
@@ -86,6 +109,10 @@ function getWorkspaceAPI() {
     getState: () => ({ ...workspaceState, container: undefined, wsConnection: undefined }),
     connectWs: connectWebSocket,
     disconnectWs: disconnectWebSocket,
+    // Rate limiting
+    getRateLimitStats,
+    setRateLimitConfig,
+    clearPendingRenders: () => { rateLimitState.pendingRenders = []; },
   };
 }
 
@@ -101,10 +128,151 @@ export function renderToWorkspace(type, props) {
     return null;
   }
 
+  // Check rate limits
+  const rateLimitResult = checkRateLimit();
+  if (!rateLimitResult.allowed) {
+    console.warn(`Render rate limited: ${rateLimitResult.reason}`);
+    
+    // Queue if throttled, reject if over limits
+    if (rateLimitResult.reason === 'throttled') {
+      queueRender(type, props);
+      return null;
+    }
+    
+    return null;
+  }
+
+  // Record this render
+  recordRender();
+
   // Add to history
   addToHistory({ type, props, timestamp: Date.now() });
 
   return DynamicRenderer.renderComponent(type, props, workspaceState.container);
+}
+
+/**
+ * Check if render is allowed by rate limits
+ * @returns {{allowed: boolean, reason?: string}}
+ */
+function checkRateLimit() {
+  const config = workspaceState.rateLimitConfig;
+  const now = Date.now();
+  
+  // Check max components
+  const currentComponents = getAllComponents();
+  if (currentComponents.length >= config.maxComponents) {
+    return { allowed: false, reason: 'max_components' };
+  }
+  
+  // Clean old timestamps (older than 1 minute)
+  rateLimitState.renderTimestamps = rateLimitState.renderTimestamps.filter(
+    ts => now - ts < 60000
+  );
+  
+  // Check renders per minute
+  if (rateLimitState.renderTimestamps.length >= config.maxRendersPerMinute) {
+    return { allowed: false, reason: 'rate_limit_minute' };
+  }
+  
+  // Check burst limit (renders in last second)
+  const recentRenders = rateLimitState.renderTimestamps.filter(
+    ts => now - ts < 1000
+  ).length;
+  if (recentRenders >= config.maxRendersPerSecond) {
+    return { allowed: false, reason: 'rate_limit_burst' };
+  }
+  
+  // Check throttle (min delay between renders)
+  if (now - rateLimitState.lastRenderTime < config.throttleDelayMs) {
+    return { allowed: false, reason: 'throttled' };
+  }
+  
+  return { allowed: true };
+}
+
+/**
+ * Record a render timestamp
+ */
+function recordRender() {
+  const now = Date.now();
+  rateLimitState.renderTimestamps.push(now);
+  rateLimitState.lastRenderTime = now;
+}
+
+/**
+ * Queue a render for later (when throttled)
+ * @param {string} type - Component type
+ * @param {Object} props - Component properties
+ */
+function queueRender(type, props) {
+  const config = workspaceState.rateLimitConfig;
+  
+  // Add to queue
+  rateLimitState.pendingRenders.push({ type, props });
+  
+  // Process queue after throttle delay
+  if (!rateLimitState.throttleTimer) {
+    rateLimitState.throttleTimer = setTimeout(() => {
+      processRenderQueue();
+    }, config.throttleDelayMs);
+  }
+}
+
+/**
+ * Process queued renders
+ */
+function processRenderQueue() {
+  rateLimitState.throttleTimer = null;
+  
+  if (rateLimitState.pendingRenders.length === 0) return;
+  
+  // Process one render from queue
+  const { type, props } = rateLimitState.pendingRenders.shift();
+  renderToWorkspace(type, props);
+  
+  // Schedule next if more pending
+  if (rateLimitState.pendingRenders.length > 0) {
+    rateLimitState.throttleTimer = setTimeout(() => {
+      processRenderQueue();
+    }, workspaceState.rateLimitConfig.throttleDelayMs);
+  }
+}
+
+/**
+ * Get rate limit stats
+ * @returns {Object} Rate limit statistics
+ */
+export function getRateLimitStats() {
+  const config = workspaceState.rateLimitConfig;
+  const currentComponents = getAllComponents();
+  const now = Date.now();
+  
+  // Clean old timestamps
+  const recentTimestamps = rateLimitState.renderTimestamps.filter(
+    ts => now - ts < 60000
+  );
+  
+  return {
+    currentComponents: currentComponents.length,
+    maxComponents: config.maxComponents,
+    rendersLastMinute: recentTimestamps.length,
+    maxRendersPerMinute: config.maxRendersPerMinute,
+    pendingRenders: rateLimitState.pendingRenders.length,
+    isThrottled: rateLimitState.throttleTimer !== null,
+    utilizationPercent: Math.round((currentComponents.length / config.maxComponents) * 100),
+  };
+}
+
+/**
+ * Update rate limit configuration
+ * @param {Object} newConfig - New configuration values
+ */
+export function setRateLimitConfig(newConfig) {
+  workspaceState.rateLimitConfig = {
+    ...workspaceState.rateLimitConfig,
+    ...newConfig,
+  };
 }
 
 /**

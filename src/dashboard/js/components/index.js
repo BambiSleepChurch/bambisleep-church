@@ -8,6 +8,7 @@ export * from './AgentChat.js';
 export * from './AgentWorkspace.js';
 export * from './ApiBuilder.js';
 export * from './ClarityDashboard.js';
+export * from './ComponentTemplates.js';
 export * from './ConfigActions.js';
 export * from './DynamicRenderer.js';
 export * from './MemoryGraph.js';

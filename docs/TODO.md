@@ -378,10 +378,19 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - Collapsible card toggle, list selection, table sorting
 
 - [ ] **Template Library** - Pre-built component patterns
-  - CRUD interfaces for any collection
-  - Search/filter panels
-  - Dashboard layouts
-  - Data entry forms
+  - [x] CRUD interfaces template
+  - [x] Search/filter panels template
+  - [x] Dashboard layouts template
+  - [x] Auth forms (login/signup) template
+  - [x] Settings forms template
+  - [x] Setup/onboarding wizards template
+  - [x] Confirmation dialogs template
+  - [x] Notification templates
+  - [x] Template registry with generateFromTemplate()
+  - [x] render_template tool
+  - [x] render_crud tool
+  - [x] render_dashboard tool
+  - [x] render_onboarding tool
 
 ### Dashboard Integration ✅
 
@@ -426,7 +435,7 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - Request/response examples
   - Parameter descriptions
 
-### Security & Sandboxing
+### Security & Sandboxing ✅
 
 - [x] **Safe Rendering** - Prevent XSS and injection
 
@@ -434,10 +443,15 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - No eval() or Function() constructors
   - Template literals with escaped interpolation
 
-- [ ] **Rate Limiting** - Prevent UI spam
-  - Max components per conversation
-  - Render throttling
-  - Memory usage limits
+- [x] **Rate Limiting** - Prevent UI spam
+  - Max 50 components at once (maxComponents)
+  - Max 60 renders per minute (maxRendersPerMinute)
+  - Burst limit of 5 renders per second (maxRendersPerSecond)
+  - 200ms throttle delay between renders
+  - Render queue for throttled requests
+  - `getRateLimitStats()` for monitoring
+  - `setRateLimitConfig()` for customization
+  - Automatic rejection when over limits
 
 ---
 

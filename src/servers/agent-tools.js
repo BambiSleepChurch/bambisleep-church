@@ -1950,6 +1950,134 @@ export const AGENT_TOOLS = [
     },
     handler: 'renderClear',
   },
+  
+  // Template tools
+  {
+    name: 'render_template',
+    description: 'Render a pre-built UI template for common patterns like CRUD interfaces, dashboards, and forms.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        template: {
+          type: 'string',
+          enum: ['crud', 'searchFilter', 'dashboard', 'authForm', 'settingsForm', 'setupWizard', 'onboardingWizard', 'confirmation', 'deleteConfirmation', 'notification'],
+          description: 'Template type to render',
+        },
+        options: {
+          type: 'object',
+          description: 'Template-specific options (varies by template type)',
+        },
+      },
+      required: ['template'],
+    },
+    handler: 'renderTemplate',
+  },
+  {
+    name: 'render_crud',
+    description: 'Render a complete CRUD interface for managing a collection of entities.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        entityName: { type: 'string', description: 'Singular entity name (e.g., "User")' },
+        entityPlural: { type: 'string', description: 'Plural entity name (e.g., "Users")' },
+        columns: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              key: { type: 'string' },
+              label: { type: 'string' },
+              sortable: { type: 'boolean' },
+              format: { type: 'string', enum: ['text', 'number', 'date', 'badge', 'link', 'code'] },
+            },
+          },
+          description: 'Table column definitions',
+        },
+        fields: {
+          type: 'array',
+          items: { type: 'object' },
+          description: 'Form field definitions for create/edit',
+        },
+        actions: {
+          type: 'array',
+          items: { type: 'string', enum: ['create', 'read', 'update', 'delete'] },
+          description: 'Enabled CRUD actions',
+        },
+      },
+      required: ['entityName', 'entityPlural', 'columns', 'fields'],
+    },
+    handler: 'renderCrud',
+  },
+  {
+    name: 'render_dashboard',
+    description: 'Render a dashboard layout with stats cards, charts, and activity feed.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Dashboard title' },
+        stats: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+              value: { type: 'string' },
+              icon: { type: 'string' },
+              change: { type: 'number' },
+              variant: { type: 'string' },
+            },
+          },
+          description: 'Stats cards to display',
+        },
+        recentActivity: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string' },
+              badge: { type: 'string' },
+              icon: { type: 'string' },
+              timestamp: { type: 'string' },
+            },
+          },
+          description: 'Recent activity items',
+        },
+      },
+      required: ['stats'],
+    },
+    handler: 'renderDashboard',
+  },
+  {
+    name: 'render_onboarding',
+    description: 'Render an onboarding wizard to guide new users through setup.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        userName: { type: 'string', description: 'User name for personalization' },
+        features: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              description: { type: 'string' },
+              icon: { type: 'string' },
+              content: { type: 'string' },
+            },
+          },
+          description: 'Feature highlights to show',
+        },
+        onComplete: { type: 'string', description: 'Action on completion' },
+      },
+      required: ['features'],
+    },
+    handler: 'renderOnboarding',
+  },
 ];
 
 /**
