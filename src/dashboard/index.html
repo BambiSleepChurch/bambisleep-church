@@ -328,12 +328,50 @@
         <div class="section-actions">
           <button onclick="window.AgentChat?.newConversation()" class="btn btn-outline">➕ New Chat</button>
           <button onclick="window.AgentChat?.showTools()" class="btn btn-outline">🔧 Tools</button>
+          <button onclick="window.Dashboard.toggleWorkspace()" class="btn btn-outline" id="workspace-toggle">📐 Workspace</button>
         </div>
       </div>
-      <div id="agent-container">
-        <div class="glass-card skeleton-card">
-          <div class="skeleton skeleton-title skeleton-centered"></div>
-          <div class="skeleton skeleton-text skeleton-narrow skeleton-centered"></div>
+      <div class="agent-layout">
+        <div id="agent-container" class="agent-chat-panel">
+          <div class="glass-card skeleton-card">
+            <div class="skeleton skeleton-title skeleton-centered"></div>
+            <div class="skeleton skeleton-text skeleton-narrow skeleton-centered"></div>
+          </div>
+        </div>
+        <div id="agent-workspace-panel" class="agent-workspace-panel hidden">
+          <div class="glass-card workspace-wrapper">
+            <div class="workspace-header">
+              <h2 class="workspace-title">
+                <span class="workspace-icon">📐</span>
+                Agent Workspace
+              </h2>
+              <div class="workspace-controls">
+                <select class="layout-select" id="workspace-layout" onchange="window.AgentWorkspace?.setLayout(this.value)">
+                  <option value="stack">Stack</option>
+                  <option value="grid">Grid</option>
+                  <option value="columns">Columns</option>
+                </select>
+                <button class="btn btn-sm" onclick="window.AgentWorkspace?.clear()" title="Clear workspace">
+                  🗑️
+                </button>
+                <button class="btn btn-sm" onclick="window.Dashboard.toggleWorkspaceHistory()" title="Show history">
+                  📜
+                </button>
+              </div>
+            </div>
+            <div id="agent-workspace" class="workspace-content agent-workspace layout-stack">
+              <div class="workspace-empty">
+                <div class="empty-icon">📐</div>
+                <h3>Agent Workspace</h3>
+                <p>Dynamic components rendered by the agent will appear here.</p>
+                <p class="hint">Try asking: "Show me a table of GitHub repos" or "Create a form to collect user data"</p>
+              </div>
+            </div>
+            <div class="workspace-history collapsed" id="workspace-history">
+              <h4>Render History</h4>
+              <div class="history-list"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

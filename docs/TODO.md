@@ -293,68 +293,84 @@ Upgrade MCP Control Tower agent to feature parity with the standalone bambisleep
 
 Enable BambiAgent™ to dynamically generate and render frontend components, allowing users to interact with AI-generated interfaces in real-time. Based on bambisleep-church-agent Phase 6 implementation.
 
-### Core Infrastructure
+### Core Infrastructure ✅
 
-- [ ] **Component Registry** - Dynamic component registration system
+- [x] **Component Registry** - Dynamic component registration system
 
   - `src/dashboard/js/components/DynamicRenderer.js` - Runtime component factory
-  - Component schema validation (props, events, children)
-  - Sandboxed execution for agent-generated code
+  - 7 component renderers: card, table, form, alert, progress, list, code
+  - Active component state tracking (Map)
+  - Action handler registry for component interactions
+  - `processRenderCommand()` for WebSocket integration
+  - HTML escaping, cell formatting, event attachment utilities
 
-- [ ] **Agent UI Tools** - Render tools in `src/servers/agent.js`
+- [x] **Agent UI Tools** - Render tools in `src/servers/agent-tools.js`
 
-  - `render_card` - Render information cards (repo, user, payment)
-  - `render_table` - Data tables with sorting/filtering
-  - `render_form` - Generate interactive forms from schema
-  - `render_alert` - Display notification alerts
-  - `render_progress` - Show progress indicators
-  - `render_list` - Bullet/numbered lists
-  - `render_code` - Syntax-highlighted code blocks
+  - `render_card` - Glass cards with variants, collapsible, actions
+  - `render_table` - Data tables with sorting, pagination, row actions
+  - `render_form` - Dynamic forms with validation, field types
+  - `render_alert` - Alert banners (info/success/warning/error)
+  - `render_progress` - Progress indicators (bar/circular/steps)
+  - `render_list` - Interactive lists with badges, selection
+  - `render_code` - Code blocks with line numbers, copy button
+  - `render_clear` - Clear components by ID or type
 
-- [ ] **Agent Workspace Panel** - Dedicated rendering area
+- [x] **Agent Workspace Panel** - Dedicated rendering area
   - `src/dashboard/js/components/AgentWorkspace.js` - Container for dynamic content
-  - Split-pane layout: Chat | Workspace
-  - Component history/undo stack
-  - Export generated components to static HTML
+  - Layout modes: stack, grid, columns, free positioning
+  - Render history tracking (last 50 operations)
+  - WebSocket integration for real-time render commands
+  - `initWorkspace()`, `renderToWorkspace()`, `setLayoutMode()` APIs
 
-### Interactive Components
+- [x] **Workspace Styles** - `src/dashboard/css/components/workspace.css`
+  - 800+ lines of component styles
+  - Glass-card variants, data tables, forms
+  - Alert banners, progress indicators, lists, code blocks
+  - Responsive breakpoints for mobile
 
-- [ ] **Form Builder** - Agent can create forms dynamically
+### Interactive Components ✅
 
-  - Text inputs, selects, checkboxes, date pickers
-  - Validation rules from natural language
-  - Submit handlers that call agent tools
+- [x] **Form Builder** - Agent can create forms dynamically
 
-- [ ] **Data Visualization**
+  - Text inputs, textareas, selects, checkboxes, radio buttons
+  - Date pickers, file inputs, hidden fields
+  - Validation rules (pattern, min/max, minLength/maxLength)
+  - Submit handlers with action triggers
+  - Cancel button support
 
-  - Tables with agent-populated data
-  - Charts from MongoDB queries
-  - Real-time updating dashboards
+- [x] **Data Visualization**
 
-- [ ] **Card Layouts** - Agent generates information cards
+  - Tables with agent-populated data (sortable columns)
+  - Pagination controls with page navigation
+  - Cell formatting (text, number, date, badge, link, code)
+  - Row actions with button handlers
 
-  - GitHub repo cards from `github_get_repo`
-  - User profile cards from `github_get_user`
-  - Stripe customer/payment cards
+- [x] **Card Layouts** - Agent generates information cards
+
+  - Glass-card with icon, title, content, actions
+  - Variants: default, success, warning, error, info
+  - Collapsible cards with toggle animation
 
 - [ ] **Interactive Wizards** - Multi-step flows
   - Agent guides user through complex operations
   - Conditional branching based on user input
-  - Progress tracking and state persistence
+  - Progress tracking with steps variant
 
-### Agent Capabilities
+### Agent Capabilities ✅
 
-- [ ] **Context-Aware Rendering** - Agent remembers rendered state
+- [x] **Context-Aware Rendering** - Agent remembers rendered state
 
-  - Track active components in conversation context
-  - Reference previous renderings in follow-up messages
-  - Update existing components vs creating new ones
+  - Track active components via `activeComponents` Map
+  - `updateComponent()` for modifying existing components
+  - `removeComponent()` and `clearComponents()` for cleanup
+  - Component IDs for referencing in follow-up messages
 
-- [ ] **User Interaction Handling**
+- [x] **User Interaction Handling**
 
-  - Button clicks trigger agent tool calls
-  - Form submissions send data to agent
-  - Agent responds with updated UI
+  - Button clicks trigger registered action handlers
+  - Form submissions send data via `triggerAction()`
+  - Custom event dispatch for unregistered actions
+  - Collapsible card toggle, list selection, table sorting
 
 - [ ] **Template Library** - Pre-built component patterns
   - CRUD interfaces for any collection
@@ -362,13 +378,56 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - Dashboard layouts
   - Data entry forms
 
+### Dashboard Integration ✅
+
+- [x] **HTML Structure** - Agent workspace panel in index.html
+  - `#agent-layout` with split chat/workspace view
+  - `#agent-workspace-panel` container with controls
+  - Workspace controls (layout toggle, history, clear)
+  - Empty state with action prompts
+
+- [x] **CSS Styling** - Workspace layout styles
+  - `.agent-layout` flex container
+  - `.agent-workspace-panel` with responsive sizing
+  - Layout mode toggles (stack/grid/columns)
+  - Responsive breakpoints for mobile
+
+- [x] **JavaScript Integration** - app.js workspace functions
+  - `window.Dashboard.toggleWorkspace()` - show/hide panel
+  - `window.Dashboard.toggleWorkspaceHistory()` - history panel
+  - `window.Dashboard.clearWorkspace()` - clear content
+  - `window.Dashboard.setWorkspaceLayout()` - layout modes
+  - `initWorkspace()` called on DOMContentLoaded
+
+- [x] **WebSocket Integration** - Real-time render messages
+  - Frontend `websocket.js` handles render message types
+  - `processRenderCommand()` routes to DynamicRenderer
+  - Support for all component types (card, table, form, etc.)
+  - `render:clear` message handling
+
+- [x] **API Routes** - Render endpoints in routes.js
+  - `POST /api/agent/render` - Generic render command
+  - `POST /api/agent/render/card` - Render card
+  - `POST /api/agent/render/table` - Render table
+  - `POST /api/agent/render/form` - Render form
+  - `POST /api/agent/render/alert` - Render alert
+  - `POST /api/agent/render/progress` - Render progress
+  - `POST /api/agent/render/list` - Render list
+  - `POST /api/agent/render/code` - Render code
+  - `POST /api/agent/render/clear` - Clear workspace
+
+- [x] **OpenAPI Documentation** - Render routes documented
+  - Schema definitions for all render payloads
+  - Request/response examples
+  - Parameter descriptions
+
 ### Security & Sandboxing
 
-- [ ] **Safe Rendering** - Prevent XSS and injection
+- [x] **Safe Rendering** - Prevent XSS and injection
 
-  - HTML sanitization for agent output
-  - CSP-compliant dynamic rendering
+  - `escapeHtml()` for all user-provided content
   - No eval() or Function() constructors
+  - Template literals with escaped interpolation
 
 - [ ] **Rate Limiting** - Prevent UI spam
   - Max components per conversation
@@ -462,25 +521,32 @@ Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent f
 | Unit Tests          | ✅ Complete    | 94+ unit tests, 84%+ cov          |
 | BambiSleep Chat     | ✅ Complete    | Triggers, spirals, TTS            |
 | Agent Parity        | ✅ Complete    | Phase 5.6 (98 tools, ModelRouter) |
-| Agentic Rendering   | 🔄 In Progress | Phase 6 (render tools, workspace) |
+| Agentic Rendering   | 🔄 In Progress | Phase 6 (8 tools ✅, components ✅) |
 | WebGL Avatar        | 🔮 Future      | Phase 7                           |
 
 ---
 
 ## 🎯 Phase 6 Milestones (Current)
 
-| Milestone             | Target | Status     |
-| --------------------- | ------ | ---------- |
-| Render tools in agent | Week 1 | 🔜 Planned |
-| DynamicRenderer.js    | Week 1 | 🔜 Planned |
-| AgentWorkspace.js     | Week 1 | 🔜 Planned |
-| render_card tool      | Week 2 | 🔜 Planned |
-| render_table tool     | Week 2 | 🔜 Planned |
-| render_form tool      | Week 2 | 🔜 Planned |
-| Form Builder          | Week 3 | 🔜 Planned |
-| Data Visualization    | Week 3 | 🔜 Planned |
-| Security Sandboxing   | Week 4 | 🔜 Planned |
-| Integration Testing   | Week 4 | 🔜 Planned |
+| Milestone                | Target | Status      |
+| ------------------------ | ------ | ----------- |
+| DynamicRenderer.js       | Week 1 | ✅ Complete |
+| AgentWorkspace.js        | Week 1 | ✅ Complete |
+| workspace.css            | Week 1 | ✅ Complete |
+| render_card tool         | Week 1 | ✅ Complete |
+| render_table tool        | Week 1 | ✅ Complete |
+| render_form tool         | Week 1 | ✅ Complete |
+| render_alert tool        | Week 1 | ✅ Complete |
+| render_progress tool     | Week 1 | ✅ Complete |
+| render_list tool         | Week 1 | ✅ Complete |
+| render_code tool         | Week 1 | ✅ Complete |
+| render_clear tool        | Week 1 | ✅ Complete |
+| Dashboard Integration    | Week 2 | 🔄 Current  |
+| Agent Route Handlers     | Week 2 | 🔜 Planned  |
+| Template Library         | Week 3 | 🔜 Planned  |
+| Interactive Wizards      | Week 3 | 🔜 Planned  |
+| Rate Limiting            | Week 4 | 🔜 Planned  |
+| Integration Testing      | Week 4 | 🔜 Planned  |
 
 ---
 

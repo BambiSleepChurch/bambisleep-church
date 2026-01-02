@@ -942,6 +942,216 @@ export const openApiSpec = {
         },
       },
     },
+    
+    // ============ AGENT RENDER (Phase 6) ============
+    '/api/agent/render': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render component to workspace',
+        description: 'Broadcasts a render command to the Agent Workspace via WebSocket',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['type', 'data'],
+                properties: {
+                  type: { 
+                    type: 'string', 
+                    enum: ['card', 'table', 'form', 'alert', 'progress', 'list', 'code'],
+                    description: 'Component type to render'
+                  },
+                  data: { type: 'object', description: 'Component data' },
+                  options: { type: 'object', description: 'Rendering options' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Component rendered successfully' },
+        },
+      },
+    },
+    '/api/agent/render/card': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render card component',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  content: { type: 'string' },
+                  icon: { type: 'string' },
+                  variant: { type: 'string', enum: ['default', 'success', 'warning', 'error', 'info'] },
+                  actions: { type: 'array', items: { type: 'object' } },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'Card rendered' } },
+      },
+    },
+    '/api/agent/render/table': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render table component',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['columns', 'rows'],
+                properties: {
+                  title: { type: 'string' },
+                  columns: { type: 'array', items: { type: 'string' } },
+                  rows: { type: 'array', items: { type: 'array' } },
+                  sortable: { type: 'boolean' },
+                  filterable: { type: 'boolean' },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'Table rendered' } },
+      },
+    },
+    '/api/agent/render/form': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render form component',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['fields'],
+                properties: {
+                  title: { type: 'string' },
+                  fields: { 
+                    type: 'array', 
+                    items: { 
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string' },
+                        type: { type: 'string' },
+                        label: { type: 'string' },
+                        required: { type: 'boolean' },
+                      }
+                    } 
+                  },
+                  submitText: { type: 'string' },
+                  onSubmit: { type: 'string', description: 'Callback function name' },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'Form rendered' } },
+      },
+    },
+    '/api/agent/render/alert': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render alert component',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message'],
+                properties: {
+                  message: { type: 'string' },
+                  type: { type: 'string', enum: ['info', 'success', 'warning', 'error'] },
+                  dismissible: { type: 'boolean', default: true },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'Alert rendered' } },
+      },
+    },
+    '/api/agent/render/progress': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render progress component',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  label: { type: 'string' },
+                  value: { type: 'number', default: 0 },
+                  max: { type: 'number', default: 100 },
+                  showPercent: { type: 'boolean', default: true },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'Progress rendered' } },
+      },
+    },
+    '/api/agent/render/list': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render list component',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['items'],
+                properties: {
+                  title: { type: 'string' },
+                  items: { type: 'array', items: { type: 'string' } },
+                  ordered: { type: 'boolean', default: false },
+                  selectable: { type: 'boolean', default: false },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'List rendered' } },
+      },
+    },
+    '/api/agent/render/code': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render code component',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['code'],
+                properties: {
+                  title: { type: 'string' },
+                  code: { type: 'string' },
+                  language: { type: 'string', default: 'text' },
+                  showLineNumbers: { type: 'boolean', default: true },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'Code rendered' } },
+      },
+    },
+    '/api/agent/render/clear': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Clear workspace content',
+        description: 'Removes all rendered components from the Agent Workspace',
+        responses: { 200: { description: 'Workspace cleared' } },
+      },
+    },
 
     // ============ MODEL ROUTER ============
     '/api/model-router/select': {

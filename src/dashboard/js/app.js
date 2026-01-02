@@ -31,6 +31,7 @@ import {
     initModals,
     initSearchBar,
     initTheme,
+    initWorkspace,
     renderActivityFeed,
     renderClarityDashboard,
     renderServerGrid,
@@ -41,7 +42,8 @@ import {
     toggleTheme,
     updateStatsBar,
     updateSystemInfo,
-    updateWsIndicator
+    updateWsIndicator,
+    WorkspaceAPI
 } from './components/index.js';
 
 // Effects
@@ -326,6 +328,51 @@ window.Dashboard = {
     } else {
       // Desktop: collapse/expand
       sidebar?.classList.toggle('collapsed');
+    }
+  },
+
+  // Agent Workspace toggle
+  toggleWorkspace() {
+    const layout = document.getElementById('agent-layout');
+    const panel = document.getElementById('agent-workspace-panel');
+    const toggle = document.getElementById('workspace-toggle');
+    
+    if (!layout || !panel) return;
+    
+    const isCollapsed = panel.classList.toggle('collapsed');
+    layout.classList.toggle('workspace-collapsed', isCollapsed);
+    
+    if (toggle) {
+      toggle.innerHTML = isCollapsed ? '📂' : '📁';
+      toggle.title = isCollapsed ? 'Show Workspace' : 'Hide Workspace';
+    }
+    
+    addActivity('workspace:toggle', `Workspace ${isCollapsed ? 'hidden' : 'shown'}`);
+  },
+
+  // Workspace history panel toggle
+  toggleWorkspaceHistory() {
+    const historyPanel = document.getElementById('workspace-history');
+    if (!historyPanel) return;
+    
+    const isVisible = historyPanel.classList.toggle('visible');
+    addActivity('workspace:history', `History panel ${isVisible ? 'shown' : 'hidden'}`);
+  },
+
+  // Clear workspace content
+  clearWorkspace() {
+    if (WorkspaceAPI) {
+      WorkspaceAPI.clearWorkspace();
+      showToast('info', 'Cleared', 'Workspace content cleared');
+      addActivity('workspace:clear', 'Workspace cleared');
+    }
+  },
+
+  // Set workspace layout mode
+  setWorkspaceLayout(mode) {
+    if (WorkspaceAPI) {
+      WorkspaceAPI.setLayoutMode(mode);
+      addActivity('workspace:layout', `Layout set to ${mode}`);
     }
   },
 
@@ -626,6 +673,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize Agent Chat
   await AgentChatController.init();
+  
+  // Initialize Agent Workspace (Phase 6)
+  const workspaceContainer = document.getElementById('workspace-container');
+  if (workspaceContainer) {
+    initWorkspace(workspaceContainer);
+    console.log('🎨 Agent Workspace initialized');
+  }
   
   // Handle mobile menu button visibility
   const updateMobileMenuVisibility = () => {

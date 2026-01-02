@@ -5,6 +5,7 @@
 
 import { addActivity } from '../components/ActivityFeed.js';
 import { showToast } from '../components/Toast.js';
+import { processRenderCommand, WorkspaceAPI } from '../components/AgentWorkspace.js';
 import { WS_CONFIG, getWsUrl } from '../config.js';
 import { Actions } from '../state/store.js';
 
@@ -113,6 +114,62 @@ function handleMessage(event) {
         
       case 'PONG':
         // Heartbeat acknowledged
+        break;
+      
+      // Phase 6 - Render messages for Agent Workspace
+      case 'render':
+      case 'RENDER':
+        if (message.component && message.data) {
+          processRenderCommand({
+            type: message.component,
+            data: message.data,
+            options: message.options || {}
+          });
+          addActivity('render:component', `Rendered ${message.component}`, { level: 'info' });
+        }
+        break;
+        
+      case 'render:card':
+      case 'RENDER_CARD':
+        processRenderCommand({ type: 'card', data: message.data, options: message.options });
+        break;
+        
+      case 'render:table':
+      case 'RENDER_TABLE':
+        processRenderCommand({ type: 'table', data: message.data, options: message.options });
+        break;
+        
+      case 'render:form':
+      case 'RENDER_FORM':
+        processRenderCommand({ type: 'form', data: message.data, options: message.options });
+        break;
+        
+      case 'render:alert':
+      case 'RENDER_ALERT':
+        processRenderCommand({ type: 'alert', data: message.data, options: message.options });
+        break;
+        
+      case 'render:progress':
+      case 'RENDER_PROGRESS':
+        processRenderCommand({ type: 'progress', data: message.data, options: message.options });
+        break;
+        
+      case 'render:list':
+      case 'RENDER_LIST':
+        processRenderCommand({ type: 'list', data: message.data, options: message.options });
+        break;
+        
+      case 'render:code':
+      case 'RENDER_CODE':
+        processRenderCommand({ type: 'code', data: message.data, options: message.options });
+        break;
+        
+      case 'render:clear':
+      case 'RENDER_CLEAR':
+        if (WorkspaceAPI) {
+          WorkspaceAPI.clearWorkspace();
+          addActivity('render:clear', 'Workspace cleared', { level: 'info' });
+        }
         break;
         
       default:

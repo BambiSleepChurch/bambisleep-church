@@ -1835,6 +1835,153 @@ async function handleRequest(req, res) {
     return json(res, agentHandlers.deleteConversation(agentConvMatch[1]));
   }
 
+  // ============ AGENT RENDER ROUTES (Phase 6) ============
+  
+  // POST /api/agent/render - Render component to workspace
+  if (path === '/api/agent/render' && method === 'POST') {
+    const { type, data, options } = await parseBody(req);
+    
+    // Broadcast render command via WebSocket
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: type,
+        data,
+        options: options || {}
+      });
+    }
+    
+    return json(res, { 
+      success: true, 
+      type,
+      message: `Rendered ${type} component`
+    });
+  }
+  
+  // POST /api/agent/render/card - Render card component
+  if (path === '/api/agent/render/card' && method === 'POST') {
+    const { title, content, actions, icon, variant } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'card',
+        data: { title, content, actions, icon },
+        options: { variant: variant || 'default' }
+      });
+    }
+    
+    return json(res, { success: true, type: 'card' });
+  }
+  
+  // POST /api/agent/render/table - Render table component
+  if (path === '/api/agent/render/table' && method === 'POST') {
+    const { columns, rows, title, sortable, filterable } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'table',
+        data: { columns, rows, title },
+        options: { sortable, filterable }
+      });
+    }
+    
+    return json(res, { success: true, type: 'table' });
+  }
+  
+  // POST /api/agent/render/form - Render form component
+  if (path === '/api/agent/render/form' && method === 'POST') {
+    const { fields, onSubmit, title, submitText } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'form',
+        data: { fields, onSubmit, title },
+        options: { submitText: submitText || 'Submit' }
+      });
+    }
+    
+    return json(res, { success: true, type: 'form' });
+  }
+  
+  // POST /api/agent/render/alert - Render alert component
+  if (path === '/api/agent/render/alert' && method === 'POST') {
+    const { message, type: alertType, dismissible } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'alert',
+        data: { message, type: alertType || 'info' },
+        options: { dismissible: dismissible !== false }
+      });
+    }
+    
+    return json(res, { success: true, type: 'alert' });
+  }
+  
+  // POST /api/agent/render/progress - Render progress component
+  if (path === '/api/agent/render/progress' && method === 'POST') {
+    const { label, value, max, showPercent } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'progress',
+        data: { label, value: value || 0, max: max || 100 },
+        options: { showPercent: showPercent !== false }
+      });
+    }
+    
+    return json(res, { success: true, type: 'progress' });
+  }
+  
+  // POST /api/agent/render/list - Render list component
+  if (path === '/api/agent/render/list' && method === 'POST') {
+    const { items, title, ordered, selectable } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'list',
+        data: { items, title },
+        options: { ordered, selectable }
+      });
+    }
+    
+    return json(res, { success: true, type: 'list' });
+  }
+  
+  // POST /api/agent/render/code - Render code component
+  if (path === '/api/agent/render/code' && method === 'POST') {
+    const { code, language, title, showLineNumbers } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'code',
+        data: { code, language: language || 'text', title },
+        options: { showLineNumbers: showLineNumbers !== false }
+      });
+    }
+    
+    return json(res, { success: true, type: 'code' });
+  }
+  
+  // POST /api/agent/render/clear - Clear workspace
+  if (path === '/api/agent/render/clear' && method === 'POST') {
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render:clear',
+        data: {}
+      });
+    }
+    
+    return json(res, { success: true, message: 'Workspace cleared' });
+  }
+
   // ============ BAMBISLEEP-CHAT MCP ROUTES ============
   
   // --- Trigger Routes ---
