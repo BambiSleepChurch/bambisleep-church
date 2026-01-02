@@ -164,6 +164,12 @@ function handleMessage(event) {
         processRenderCommand({ type: 'code', data: message.data, options: message.options });
         break;
         
+      case 'render:wizard':
+      case 'RENDER_WIZARD':
+        processRenderCommand({ type: 'wizard', data: message.data, options: message.options });
+        addActivity('render:wizard', 'Rendered wizard', { level: 'info' });
+        break;
+        
       case 'render:clear':
       case 'RENDER_CLEAR':
         if (WorkspaceAPI) {

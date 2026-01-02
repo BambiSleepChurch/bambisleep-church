@@ -1895,6 +1895,48 @@ export const AGENT_TOOLS = [
     handler: 'renderCode',
   },
   {
+    name: 'render_wizard',
+    description: 'Render an interactive multi-step wizard in the agent workspace for complex workflows.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Unique wizard ID' },
+        title: { type: 'string', description: 'Wizard title' },
+        steps: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              title: { type: 'string', description: 'Step title' },
+              description: { type: 'string', description: 'Step description' },
+              fields: {
+                type: 'array',
+                items: { type: 'object' },
+                description: 'Form fields for this step',
+              },
+              component: {
+                type: 'object',
+                description: 'Embedded component to display (card, table, etc.)',
+              },
+              nextLabel: { type: 'string', description: 'Custom next button label' },
+              completeLabel: { type: 'string', description: 'Custom complete button label (for last step)' },
+            },
+            required: ['title'],
+          },
+          description: 'Array of wizard steps',
+        },
+        currentStep: { type: 'number', description: 'Current step index (0-based)' },
+        showProgress: { type: 'boolean', description: 'Show progress indicator' },
+        canGoBack: { type: 'boolean', description: 'Allow going back to previous steps' },
+        onComplete: { type: 'string', description: 'Action to trigger when wizard completes' },
+        onCancel: { type: 'string', description: 'Action to trigger when wizard is cancelled' },
+      },
+      required: ['id', 'steps'],
+    },
+    handler: 'renderWizard',
+  },
+  {
     name: 'render_clear',
     description: 'Clear rendered components from the agent workspace by ID or clear all.',
     category: TOOL_CATEGORIES.RENDER,
@@ -1902,7 +1944,7 @@ export const AGENT_TOOLS = [
       type: 'object',
       properties: {
         id: { type: 'string', description: 'Component ID to remove (omit to clear all)' },
-        type: { type: 'string', enum: ['card', 'table', 'form', 'alert', 'progress', 'list', 'code', 'all'], description: 'Clear all components of this type' },
+        type: { type: 'string', enum: ['card', 'table', 'form', 'alert', 'progress', 'list', 'code', 'wizard', 'all'], description: 'Clear all components of this type' },
       },
       required: [],
     },

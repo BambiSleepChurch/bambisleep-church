@@ -17,6 +17,7 @@ const COMPONENT_RENDERERS = {
   progress: renderProgress,
   list: renderList,
   code: renderCode,
+  wizard: renderWizard,
 };
 
 /**
@@ -606,6 +607,109 @@ function renderCode(props) {
   `;
 }
 
+/**
+ * Render interactive wizard component
+ * Multi-step flow with conditional branching
+ */
+function renderWizard(props) {
+  const {
+    id,
+    title,
+    steps = [],
+    currentStep = 0,
+    showProgress = true,
+    canGoBack = true,
+    onComplete,
+    onCancel,
+  } = props;
+
+  const wizardId = id || crypto.randomUUID();
+  const step = steps[currentStep] || {};
+  const isFirstStep = currentStep === 0;
+  const isLastStep = currentStep === steps.length - 1;
+
+  // Calculate progress percentage
+  const progressPercent = Math.round(((currentStep + 1) / steps.length) * 100);
+
+  return `
+    <div class="glass-card dynamic-wizard" data-wizard-id="${wizardId}" data-current-step="${currentStep}">
+      ${title ? `<h3 class="wizard-title">${escapeHtml(title)}</h3>` : ''}
+      
+      ${showProgress ? `
+        <div class="wizard-progress">
+          <div class="wizard-steps">
+            ${steps.map((s, idx) => `
+              <div class="wizard-step ${idx < currentStep ? 'completed' : ''} ${idx === currentStep ? 'active' : ''} ${idx > currentStep ? 'pending' : ''}">
+                <div class="step-indicator">
+                  ${idx < currentStep ? '✓' : idx + 1}
+                </div>
+                <span class="step-label">${escapeHtml(s.title || `Step ${idx + 1}`)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="wizard-progress-bar">
+            <div class="progress-fill" style="width: ${progressPercent}%"></div>
+          </div>
+          <div class="wizard-progress-text">${currentStep + 1} of ${steps.length} (${progressPercent}%)</div>
+        </div>
+      ` : ''}
+      
+      <div class="wizard-content">
+        ${step.description ? `<p class="wizard-description">${escapeHtml(step.description)}</p>` : ''}
+        
+        ${step.component ? renderWizardComponent(step.component) : ''}
+        
+        ${step.fields && step.fields.length > 0 ? `
+          <form class="wizard-form" data-step="${currentStep}">
+            ${step.fields.map(field => renderFormField(field)).join('')}
+          </form>
+        ` : ''}
+      </div>
+      
+      <div class="wizard-actions">
+        ${onCancel ? `
+          <button type="button" class="btn btn-secondary" data-action="wizard-cancel" data-wizard-id="${wizardId}">
+            Cancel
+          </button>
+        ` : ''}
+        
+        <div class="wizard-nav">
+          ${canGoBack && !isFirstStep ? `
+            <button type="button" class="btn btn-outline" data-action="wizard-back" data-wizard-id="${wizardId}">
+              ← Back
+            </button>
+          ` : ''}
+          
+          ${isLastStep ? `
+            <button type="button" class="btn btn-primary" data-action="wizard-complete" data-wizard-id="${wizardId}">
+              ${step.completeLabel || 'Complete'} ✓
+            </button>
+          ` : `
+            <button type="button" class="btn btn-primary" data-action="wizard-next" data-wizard-id="${wizardId}">
+              ${step.nextLabel || 'Next'} →
+            </button>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render component inside wizard step
+ */
+function renderWizardComponent(component) {
+  const { type, ...props } = component;
+  const renderer = COMPONENT_RENDERERS[type];
+  
+  if (!renderer || type === 'wizard') {
+    return `<div class="wizard-component-error">Unknown component: ${escapeHtml(type)}</div>`;
+  }
+  
+  // Wrap in a div without the glass-card class to avoid double styling
+  return `<div class="wizard-embedded-component">${renderer(props)}</div>`;
+}
+
 // =====================================================
 // UTILITIES
 // =====================================================
@@ -737,6 +841,60 @@ function attachEventListeners(element, props) {
       th.querySelector('.sort-icon')?.classList.add(newOrder);
       
       triggerAction('table-sort', { column: key, order: newOrder, componentId: props.id });
+    });
+  });
+
+  // Wizard navigation
+  element.querySelectorAll('[data-action^="wizard-"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const action = e.currentTarget.dataset.action;
+      const wizardId = e.currentTarget.dataset.wizardId;
+      const wizard = element.querySelector(`[data-wizard-id="${wizardId}"]`);
+      
+      if (!wizard) return;
+      
+      const currentStep = parseInt(wizard.dataset.currentStep) || 0;
+      
+      // Collect form data from current step if present
+      const stepForm = wizard.querySelector('.wizard-form');
+      let stepData = {};
+      if (stepForm) {
+        stepData = Object.fromEntries(new FormData(stepForm).entries());
+      }
+      
+      switch (action) {
+        case 'wizard-next':
+          triggerAction('wizard-next', { 
+            wizardId, 
+            currentStep, 
+            stepData, 
+            componentId: props.id 
+          });
+          break;
+          
+        case 'wizard-back':
+          triggerAction('wizard-back', { 
+            wizardId, 
+            currentStep, 
+            componentId: props.id 
+          });
+          break;
+          
+        case 'wizard-complete':
+          triggerAction('wizard-complete', { 
+            wizardId, 
+            stepData, 
+            componentId: props.id 
+          });
+          break;
+          
+        case 'wizard-cancel':
+          triggerAction('wizard-cancel', { 
+            wizardId, 
+            componentId: props.id 
+          });
+          break;
+      }
     });
   });
 }

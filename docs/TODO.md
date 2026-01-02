@@ -351,10 +351,15 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - Variants: default, success, warning, error, info
   - Collapsible cards with toggle animation
 
-- [ ] **Interactive Wizards** - Multi-step flows
+- [x] **Interactive Wizards** - Multi-step flows
   - Agent guides user through complex operations
+  - Step progress indicator with completed/active/pending states
   - Conditional branching based on user input
   - Progress tracking with steps variant
+  - `render_wizard` tool with steps array
+  - Embedded components (card, table, form) within steps
+  - Back/Next/Complete navigation with custom labels
+  - Cancel action support
 
 ### Agent Capabilities ✅
 

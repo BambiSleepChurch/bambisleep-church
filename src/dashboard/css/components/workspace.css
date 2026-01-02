@@ -879,3 +879,218 @@
     padding: var(--space-2);
   }
 }
+
+/* =====================================================
+   WIZARD COMPONENT
+   ===================================================== */
+
+.dynamic-wizard {
+  padding: var(--space-4);
+}
+
+.wizard-title {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+/* Wizard Progress */
+.wizard-progress {
+  margin-bottom: var(--space-6);
+}
+
+.wizard-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: var(--space-3);
+}
+
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.step-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  transition: all var(--transition-normal);
+  background: var(--surface-overlay);
+  border: 2px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.wizard-step.active .step-indicator {
+  background: var(--glow-cyan);
+  border-color: var(--glow-cyan);
+  color: white;
+  box-shadow: 0 0 20px var(--glow-cyan-alpha);
+}
+
+.wizard-step.completed .step-indicator {
+  background: var(--success-glow);
+  border-color: var(--success-glow);
+  color: white;
+}
+
+.wizard-step.pending .step-indicator {
+  opacity: 0.5;
+}
+
+.step-label {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 100px;
+}
+
+.wizard-step.active .step-label {
+  color: var(--glow-cyan);
+  font-weight: 500;
+}
+
+.wizard-step.completed .step-label {
+  color: var(--success-glow);
+}
+
+/* Progress bar connecting steps */
+.wizard-progress-bar {
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: var(--radius-full);
+  margin-top: calc(var(--space-3) * -1);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--glow-cyan), var(--glow-pink));
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+.wizard-progress-text {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Wizard Content */
+.wizard-content {
+  min-height: 200px;
+  padding: var(--space-4);
+  background: var(--surface-overlay);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.wizard-description {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.wizard-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Embedded component styling (remove double glass-card) */
+.wizard-embedded-component .glass-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.wizard-component-error {
+  padding: var(--space-3);
+  background: var(--error-bg);
+  border-radius: var(--radius-sm);
+  color: var(--error-text);
+  font-size: var(--text-sm);
+}
+
+/* Wizard Actions */
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wizard-nav {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.wizard-actions .btn {
+  min-width: 100px;
+}
+
+/* Wizard state animations */
+.wizard-step {
+  transition: all var(--transition-normal);
+}
+
+.wizard-step.completed .step-indicator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 50px;
+  height: 2px;
+  background: var(--success-glow);
+  transform: translateY(-50%);
+}
+
+.wizard-step:last-child .step-indicator::after {
+  display: none;
+}
+
+/* Wizard responsive */
+@media (max-width: 768px) {
+  .wizard-steps {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .wizard-step {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+  }
+  
+  .step-label {
+    margin-top: 0;
+    text-align: left;
+    max-width: none;
+  }
+  
+  .wizard-actions {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  
+  .wizard-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

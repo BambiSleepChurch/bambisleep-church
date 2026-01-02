@@ -1144,6 +1144,48 @@ export const openApiSpec = {
         responses: { 200: { description: 'Code rendered' } },
       },
     },
+    '/api/agent/render/wizard': {
+      post: {
+        tags: ['Agent'],
+        summary: 'Render interactive wizard component',
+        description: 'Renders a multi-step wizard for complex workflows with progress tracking',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['id', 'steps'],
+                properties: {
+                  id: { type: 'string', description: 'Unique wizard ID' },
+                  title: { type: 'string', description: 'Wizard title' },
+                  steps: { 
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        title: { type: 'string' },
+                        description: { type: 'string' },
+                        fields: { type: 'array', items: { type: 'object' } },
+                        component: { type: 'object' },
+                        nextLabel: { type: 'string' },
+                        completeLabel: { type: 'string' },
+                      },
+                    },
+                    description: 'Array of wizard steps'
+                  },
+                  currentStep: { type: 'number', default: 0 },
+                  showProgress: { type: 'boolean', default: true },
+                  canGoBack: { type: 'boolean', default: true },
+                  onComplete: { type: 'string', description: 'Action on completion' },
+                  onCancel: { type: 'string', description: 'Action on cancel' },
+                },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'Wizard rendered' } },
+      },
+    },
     '/api/agent/render/clear': {
       post: {
         tags: ['Agent'],

@@ -37,6 +37,7 @@ export const MessageTypes = {
   RENDER_PROGRESS: 'render:progress',
   RENDER_LIST: 'render:list',
   RENDER_CODE: 'render:code',
+  RENDER_WIZARD: 'render:wizard',
   RENDER_CLEAR: 'render:clear',
   RENDER_SPIRAL: 'render:spiral',
   RENDER_NOTIFICATION: 'render:notification',

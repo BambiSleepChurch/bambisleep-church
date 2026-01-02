@@ -1970,6 +1970,32 @@ async function handleRequest(req, res) {
     return json(res, { success: true, type: 'code' });
   }
   
+  // POST /api/agent/render/wizard - Render wizard component
+  if (path === '/api/agent/render/wizard' && method === 'POST') {
+    const { id, title, steps, currentStep, showProgress, canGoBack, onComplete, onCancel } = await parseBody(req);
+    
+    if (wsBroadcast) {
+      wsBroadcast({
+        type: 'render',
+        component: 'wizard',
+        data: { 
+          id, 
+          title, 
+          steps: steps || [],
+          currentStep: currentStep || 0,
+          onComplete,
+          onCancel
+        },
+        options: { 
+          showProgress: showProgress !== false, 
+          canGoBack: canGoBack !== false 
+        }
+      });
+    }
+    
+    return json(res, { success: true, type: 'wizard' });
+  }
+  
   // POST /api/agent/render/clear - Clear workspace
   if (path === '/api/agent/render/clear' && method === 'POST') {
     if (wsBroadcast) {
