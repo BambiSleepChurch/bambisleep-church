@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 6: Agentic Frontend Rendering** - Dynamic UI component system
+
+  - `DynamicRenderer.js` - Runtime component factory for agent-generated UI
+    - Component registry with 7 render types: card, table, form, alert, progress, list, code
+    - Active component state tracking with update/remove capabilities
+    - Action handler registry for component interactions
+    - WebSocket render command processing (`processRenderCommand`)
+    - Utilities: HTML escaping, cell formatting, event attachment
+
+  - `AgentWorkspace.js` - Container for agent-rendered dynamic content
+    - Layout modes: stack, grid, columns, free positioning
+    - WebSocket integration for real-time render commands
+    - Render history tracking (last 50 operations)
+    - Workspace controls: layout selector, clear button, history panel
+    - `initWorkspace()`, `renderToWorkspace()`, `setLayoutMode()` APIs
+
+  - `workspace.css` - Comprehensive styles for dynamic components
+    - Workspace container with layout mode classes
+    - Card component with variants (success, warning, error, info)
+    - Data table with sortable columns and pagination
+    - Form component with validation states
+    - Alert banners with dismiss functionality
+    - Progress indicators (bar, circular, steps variants)
+    - List component with selectable items
+    - Code block with line numbers and copy button
+    - Responsive breakpoints for mobile
+
+  - 8 new render tools in `agent-tools.js` (98 total):
+    - `render_card` - Glass card with header, content, actions
+    - `render_table` - Data table with sorting and pagination
+    - `render_form` - Dynamic form with validation
+    - `render_alert` - Alert banner (info/success/warning/error)
+    - `render_progress` - Progress indicator (bar/circular/steps)
+    - `render_list` - Interactive list with badges
+    - `render_code` - Code block with syntax highlighting
+    - `render_clear` - Clear components by ID or type
+
+  - WebSocket render message types for real-time UI updates
+    - `RENDER`, `RENDER_CARD`, `RENDER_TABLE`, `RENDER_FORM`
+    - `RENDER_ALERT`, `RENDER_PROGRESS`, `RENDER_LIST`, `RENDER_CODE`
+    - `RENDER_CLEAR`, `RENDER_SPIRAL`, `RENDER_NOTIFICATION`, `RENDER_MODAL`
+
 - **API Documentation** - OpenAPI 3.0 specification with Swagger UI
 
   - Full OpenAPI 3.0.3 spec with 80+ endpoints across 18 tags

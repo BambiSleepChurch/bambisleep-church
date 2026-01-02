@@ -54,6 +54,11 @@ This document provides comprehensive documentation for integrating with the Bamb
 │  │  │ Clarity │ │  Bambi  │  ← 14 MCP Server Handlers                          │  │
 │  │  │Analytics│ │  Chat   │                                                    │  │
 │  │  └─────────┘ └─────────┘                                                    │  │
+│  ├────────────────────────────────────────────────────────────────────────────┤  │
+│  │                   DynamicRenderer + AgentWorkspace (Phase 6)                │  │
+│  │  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │  │
+│  │  │  Card   │ │  Table  │ │   Form   │ │  Alert  │ │Progress │ │  List   │  │  │
+│  │  └─────────┘ └─────────┘ └──────────┘ └─────────┘ └─────────┘ └─────────┘  │  │
 │  └────────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                   │
 └──────────────────────────────────────────────────────────────────────────────────┘
@@ -697,6 +702,19 @@ ws.send(
 | `lmstudio_chat_vision` | Chat with images       | `prompt, images, options`  |
 | `lmstudio_embed`       | Generate embeddings    | `input, options`           |
 | `lmstudio_models`      | List available models  | —                          |
+
+### Render Tools (Phase 6)
+
+| Tool              | Description                         | Parameters                                          |
+| ----------------- | ----------------------------------- | --------------------------------------------------- |
+| `render_card`     | Render glass card in workspace      | `id, title, content, icon, variant, actions`        |
+| `render_table`    | Render data table with sorting      | `id, title, columns, rows, pagination, rowActions`  |
+| `render_form`     | Render dynamic form                 | `id, title, fields, submitAction, submitLabel`      |
+| `render_alert`    | Render alert banner                 | `id, message, type, title, dismissible, actions`    |
+| `render_progress` | Render progress indicator           | `id, label, value, max, variant, steps, animated`   |
+| `render_list`     | Render interactive list             | `id, title, items, variant, selectable, multiSelect`|
+| `render_code`     | Render code block                   | `id, title, code, language, lineNumbers, copyable`  |
+| `render_clear`    | Clear components by ID or type      | `id, type`                                          |
 
 ---
 
