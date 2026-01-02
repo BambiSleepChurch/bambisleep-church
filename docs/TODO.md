@@ -316,6 +316,7 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - `render_clear` - Clear components by ID or type
 
 - [x] **Agent Workspace Panel** - Dedicated rendering area
+
   - `src/dashboard/js/components/AgentWorkspace.js` - Container for dynamic content
   - Layout modes: stack, grid, columns, free positioning
   - Render history tracking (last 50 operations)
@@ -395,18 +396,21 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
 ### Dashboard Integration ✅
 
 - [x] **HTML Structure** - Agent workspace panel in index.html
+
   - `#agent-layout` with split chat/workspace view
   - `#agent-workspace-panel` container with controls
   - Workspace controls (layout toggle, history, clear)
   - Empty state with action prompts
 
 - [x] **CSS Styling** - Workspace layout styles
+
   - `.agent-layout` flex container
   - `.agent-workspace-panel` with responsive sizing
   - Layout mode toggles (stack/grid/columns)
   - Responsive breakpoints for mobile
 
 - [x] **JavaScript Integration** - app.js workspace functions
+
   - `window.Dashboard.toggleWorkspace()` - show/hide panel
   - `window.Dashboard.toggleWorkspaceHistory()` - history panel
   - `window.Dashboard.clearWorkspace()` - clear content
@@ -414,12 +418,14 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
   - `initWorkspace()` called on DOMContentLoaded
 
 - [x] **WebSocket Integration** - Real-time render messages
+
   - Frontend `websocket.js` handles render message types
   - `processRenderCommand()` routes to DynamicRenderer
   - Support for all component types (card, table, form, etc.)
   - `render:clear` message handling
 
 - [x] **API Routes** - Render endpoints in routes.js
+
   - `POST /api/agent/render` - Generic render command
   - `POST /api/agent/render/card` - Render card
   - `POST /api/agent/render/table` - Render table
@@ -502,14 +508,190 @@ Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent f
   - Lip sync interval callbacks
   - Queue management
 
-### Memory & Persistence
+---
 
-- [ ] Long-term memory with Knowledge Graph
-- [ ] User preference learning
-- [ ] Conversation summarization
-- [ ] Cross-session context retention
+## 🚀 Phase 7B: Memory & Persistence (Current)
 
-### Multi-Modal Support
+### Overview
+
+Comprehensive memory system enabling long-term learning, user preference retention, conversation summarization, and cross-session context. See `docs/MEMORY_PERSISTENCE_GAMEPLAN.md` for full architecture.
+
+### Phase A: Schema & Types (Foundation)
+
+- [ ] **`src/servers/memory-schema.js`** (~300 lines)
+  - [ ] `ENTITY_TYPES` constant - 12 entity type definitions
+  - [ ] `RELATION_TYPES` constant - 15 relation type definitions
+  - [ ] `OBSERVATION_SOURCES` constant - 7 source types
+  - [ ] `formatObservation(key, value, source, confidence)` utility
+  - [ ] `parseObservation(observationString)` parser
+  - [ ] `validateEntity(entity, type)` validation
+  - [ ] `calculateConfidence(source, age, occurrences)` scoring
+  - [ ] `applyDecay(confidence, daysSince, halfLife)` decay algorithm
+
+### Phase B: User Model System
+
+- [ ] **`src/servers/user-model.js`** (~500 lines)
+  - [ ] `UserPreferences` class
+    - [ ] `get(category, key)` - Get preference value
+    - [ ] `set(category, key, value, source)` - Set explicit preference
+    - [ ] `learn(category, key, value, confidence)` - Learn from behavior
+    - [ ] `getAll(category?)` - Get all preferences
+    - [ ] `export()` - Export preferences to JSON
+  - [ ] `UserPatterns` class
+    - [ ] `track(patternName, data)` - Record pattern occurrence
+    - [ ] `detect(behaviorData)` - Auto-detect patterns
+    - [ ] `get(patternName)` - Get pattern data
+    - [ ] `getConfident(minConfidence)` - Get high-confidence patterns
+    - [ ] `decay()` - Apply time-based decay
+  - [ ] `UserProfile` class
+    - [ ] `get(field)` - Get profile field
+    - [ ] `set(field, value)` - Set profile field
+    - [ ] `getExpertise(domain)` - Get skill level
+    - [ ] `updateExpertise(domain, level)` - Update skill
+    - [ ] `getCommunicationStyle()` - Get style preference
+  - [ ] `userModelHandlers` - API export
+- [ ] **`tests/servers/user-model.test.js`** (~200 lines)
+
+### Phase C: Conversation Memory
+
+- [ ] **`src/servers/conversation-memory.js`** (~600 lines)
+  - [ ] `ConversationStore` class
+    - [ ] `startSession()` - Begin new conversation
+    - [ ] `endSession(summary?)` - End with optional summary
+    - [ ] `addMessage(role, content, metadata)` - Add message
+    - [ ] `getSession(sessionId)` - Get session by ID
+    - [ ] `getSessions(filter)` - Query sessions
+    - [ ] `getRecentContext(limit)` - Get recent messages
+  - [ ] `Summarizer` class (LM Studio integration)
+    - [ ] `summarizeSession(sessionId)` - Summarize one session
+    - [ ] `summarizePeriod(start, end)` - Summarize date range
+    - [ ] `extractKeyPoints(messages)` - Extract key points
+    - [ ] `extractDecisions(messages)` - Extract decisions
+    - [ ] `compressToTokenLimit(text, maxTokens)` - Compress
+  - [ ] `ContextManager` class
+    - [ ] `getCurrentContext()` - Get active context
+    - [ ] `updateContext(key, value)` - Update context
+    - [ ] `getActiveTopics()` - Get current topics
+    - [ ] `getPendingTasks()` - Get open tasks
+    - [ ] `buildPromptContext(maxTokens)` - Build for LLM
+  - [ ] `conversationHandlers` - API export
+- [ ] **`tests/servers/conversation-memory.test.js`** (~250 lines)
+
+### Phase D: Workspace Memory
+
+- [ ] **`src/servers/workspace-memory.js`** (~400 lines)
+  - [ ] `ProjectTracker` class
+    - [ ] `analyzeProject(path)` - Analyze project structure
+    - [ ] `getProject(name)` - Get project by name
+    - [ ] `updateProject(name, data)` - Update project info
+    - [ ] `getStructure(name)` - Get project structure
+    - [ ] `getConventions(name)` - Get project conventions
+  - [ ] `FileKnowledge` class
+    - [ ] `learnFile(path, analysis)` - Store file knowledge
+    - [ ] `getFile(path)` - Get file knowledge
+    - [ ] `getFilesByPurpose(purpose)` - Search by purpose
+    - [ ] `getDependencies(path)` - Get file dependencies
+    - [ ] `getRecentlyModified(limit)` - Get recent files
+  - [ ] `PatternLearner` class
+    - [ ] `learnPattern(name, examples)` - Learn code pattern
+    - [ ] `getPattern(name)` - Get pattern
+    - [ ] `matchPattern(code)` - Match against patterns
+    - [ ] `getProjectPatterns(projectName)` - Get project patterns
+  - [ ] `workspaceHandlers` - API export
+- [ ] **`tests/servers/workspace-memory.test.js`** (~150 lines)
+
+### Phase E: Memory Manager
+
+- [ ] **`src/servers/memory-manager.js`** (~500 lines)
+  - [ ] `MemoryLifecycle` class
+    - [ ] `applyDecay()` - Apply confidence decay
+    - [ ] `cleanup(threshold)` - Remove low-confidence items
+    - [ ] `archive(olderThan)` - Archive old memories
+    - [ ] `restore(entityNames)` - Restore from archive
+    - [ ] `getStats()` - Get memory statistics
+  - [ ] `MemorySearch` class
+    - [ ] `search(query, options)` - Full-text search
+    - [ ] `searchByType(entityType, query)` - Type-filtered search
+    - [ ] `searchByTimeRange(start, end)` - Time-based search
+    - [ ] `searchByConfidence(min, max)` - Confidence range
+    - [ ] `getRelated(entityName, depth)` - Graph traversal
+  - [ ] `MemorySync` class
+    - [ ] `saveToMongoDB()` - Persist to MongoDB
+    - [ ] `loadFromMongoDB()` - Load from MongoDB
+    - [ ] `saveToFile(path)` - Backup to file
+    - [ ] `loadFromFile(path)` - Restore from file
+    - [ ] `getLastSyncTime()` - Get sync status
+  - [ ] `memoryManagerHandlers` - API export
+- [ ] **`tests/servers/memory-manager.test.js`** (~200 lines)
+
+### Phase F: API & Tools
+
+- [ ] **REST API Routes** (20+ endpoints in `routes.js`)
+  - [ ] User Model Routes
+    - [ ] `GET /api/user/profile`
+    - [ ] `PUT /api/user/profile`
+    - [ ] `GET /api/user/preferences`
+    - [ ] `PUT /api/user/preferences/:category`
+    - [ ] `GET /api/user/patterns`
+    - [ ] `GET /api/user/patterns/:name`
+  - [ ] Conversation Routes
+    - [ ] `GET /api/conversation/current`
+    - [ ] `GET /api/conversation/sessions`
+    - [ ] `GET /api/conversation/sessions/:id`
+    - [ ] `POST /api/conversation/sessions/:id/summarize`
+    - [ ] `GET /api/conversation/summaries`
+    - [ ] `GET /api/conversation/context`
+  - [ ] Workspace Routes
+    - [ ] `GET /api/workspace/projects`
+    - [ ] `GET /api/workspace/projects/:name`
+    - [ ] `GET /api/workspace/files/:path`
+  - [ ] Memory Manager Routes
+    - [ ] `GET /api/memory/search`
+    - [ ] `GET /api/memory/stats`
+    - [ ] `POST /api/memory/sync`
+    - [ ] `POST /api/memory/cleanup`
+    - [ ] `POST /api/memory/decay`
+- [ ] **Agent Tools** (20+ tools in `agent-tools.js`)
+  - [ ] User Model Tools
+    - [ ] `get_user_preference` / `set_user_preference`
+    - [ ] `learn_user_preference` / `track_user_pattern`
+    - [ ] `get_user_patterns` / `get_user_profile`
+    - [ ] `update_user_expertise`
+  - [ ] Conversation Tools
+    - [ ] `get_conversation_context` / `update_conversation_context`
+    - [ ] `get_conversation_history` / `search_conversations`
+    - [ ] `get_pending_tasks` / `mark_task_complete`
+  - [ ] Workspace Tools
+    - [ ] `get_project_context` / `learn_file_purpose`
+    - [ ] `get_file_knowledge` / `find_files_by_purpose`
+    - [ ] `learn_code_pattern`
+  - [ ] Memory Manager Tools
+    - [ ] `search_memory` / `get_related_memories`
+    - [ ] `get_memory_stats` / `sync_memory`
+- [ ] **OpenAPI Spec Updates** (`openapi.js`)
+
+### Phase G: Dashboard Integration
+
+- [ ] **`src/dashboard/js/components/MemoryDashboard.js`** (~300 lines)
+  - [ ] `renderMemoryDashboard()` - Main container
+  - [ ] `renderUserPreferences()` - Preferences editor
+  - [ ] `renderPatternsList()` - Detected patterns
+  - [ ] `renderConversationHistory()` - History timeline
+  - [ ] `renderMemoryStats()` - Statistics panel
+  - [ ] `renderMemorySearch()` - Search interface
+- [ ] **`src/dashboard/css/components/memory.css`** (~200 lines)
+  - [ ] `.memory-dashboard` styles
+  - [ ] `.preference-editor` styles
+  - [ ] `.pattern-card` styles
+  - [ ] `.conversation-timeline` styles
+  - [ ] `.memory-search` styles
+- [ ] **Documentation** - `docs/MEMORY_MCP_REFERENCE.md`
+
+---
+
+## 🔮 Phase 8: Multi-Modal Support (Future)
+
+### Media Generation & Handling
 
 - [ ] Image generation tool (HuggingFace Stable Diffusion)
 - [ ] Audio playback for responses
@@ -527,81 +709,94 @@ Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent f
 
 ## 📝 Progress Summary
 
-| Category            | Status         | Progress                          |
-| ------------------- | -------------- | --------------------------------- |
-| MCP Server Wrappers | ✅ Complete    | 14/14 (incl. BambiSleep Chat)     |
-| REST API Endpoints  | ✅ Complete    | 80+ endpoints                     |
-| Dashboard UI        | ✅ Complete    | Cyber goth design                 |
-| Agent Orchestrator  | ✅ Complete    | 98 tools + ModelRouter            |
-| Agent Personality   | ✅ Complete    | Bambi + event system              |
-| LM Studio Client    | ✅ Complete    | Vision, structured, tools         |
-| Agent Chat UI       | ✅ Complete    | Full conversation UI              |
-| WebSocket           | ✅ Complete    | Real-time updates                 |
-| Unit Tests          | ✅ Complete    | 94+ unit tests, 84%+ cov          |
-| BambiSleep Chat     | ✅ Complete    | Triggers, spirals, TTS            |
-| Agent Parity        | ✅ Complete    | Phase 5.6 (98 tools, ModelRouter) |
-| Agentic Rendering   | 🔄 In Progress | Phase 6 (8 tools ✅, components ✅) |
-| WebGL Avatar        | 🔮 Future      | Phase 7                           |
+| Category            | Status         | Progress                            |
+| ------------------- | -------------- | ----------------------------------- |
+| MCP Server Wrappers | ✅ Complete    | 14/14 (incl. BambiSleep Chat)       |
+| REST API Endpoints  | ✅ Complete    | 80+ endpoints                       |
+| Dashboard UI        | ✅ Complete    | Cyber goth design                   |
+| Agent Orchestrator  | ✅ Complete    | 102 tools + ModelRouter             |
+| Agent Personality   | ✅ Complete    | Bambi + event system                |
+| LM Studio Client    | ✅ Complete    | Vision, structured, tools           |
+| Agent Chat UI       | ✅ Complete    | Full conversation UI                |
+| WebSocket           | ✅ Complete    | Real-time updates                   |
+| Unit Tests          | ✅ Complete    | 94+ unit tests, 84%+ cov            |
+| BambiSleep Chat     | ✅ Complete    | Triggers, spirals, TTS              |
+| Agent Parity        | ✅ Complete    | Phase 5.6 (102 tools, ModelRouter)  |
+| Agentic Rendering   | ✅ Complete    | Phase 6 (13 tools, 8 components)    |
+| Memory & Persistence| 🚀 Current     | Phase 7B (7 sub-phases)             |
+| WebGL Avatar        | 🔮 Future      | Phase 7                             |
 
 ---
 
-## 🎯 Phase 6 Milestones (Current)
+## 🎯 Phase 7B Milestones (Current)
 
-| Milestone                | Target | Status      |
-| ------------------------ | ------ | ----------- |
-| DynamicRenderer.js       | Week 1 | ✅ Complete |
-| AgentWorkspace.js        | Week 1 | ✅ Complete |
-| workspace.css            | Week 1 | ✅ Complete |
-| render_card tool         | Week 1 | ✅ Complete |
-| render_table tool        | Week 1 | ✅ Complete |
-| render_form tool         | Week 1 | ✅ Complete |
-| render_alert tool        | Week 1 | ✅ Complete |
-| render_progress tool     | Week 1 | ✅ Complete |
-| render_list tool         | Week 1 | ✅ Complete |
-| render_code tool         | Week 1 | ✅ Complete |
-| render_clear tool        | Week 1 | ✅ Complete |
-| Dashboard Integration    | Week 2 | 🔄 Current  |
-| Agent Route Handlers     | Week 2 | 🔜 Planned  |
-| Template Library         | Week 3 | 🔜 Planned  |
-| Interactive Wizards      | Week 3 | 🔜 Planned  |
-| Rate Limiting            | Week 4 | 🔜 Planned  |
-| Integration Testing      | Week 4 | 🔜 Planned  |
+| Milestone             | Target   | Status      |
+| --------------------- | -------- | ----------- |
+| memory-schema.js      | Phase A  | 🔜 Planned  |
+| user-model.js         | Phase B  | 🔜 Planned  |
+| conversation-memory.js| Phase C  | 🔜 Planned  |
+| workspace-memory.js   | Phase D  | 🔜 Planned  |
+| memory-manager.js     | Phase E  | 🔜 Planned  |
+| API Routes (20+)      | Phase F  | 🔜 Planned  |
+| Agent Tools (20+)     | Phase F  | 🔜 Planned  |
+| MemoryDashboard.js    | Phase G  | 🔜 Planned  |
+| memory.css            | Phase G  | 🔜 Planned  |
+| Unit Tests (170+)     | Phase G  | 🔜 Planned  |
 
 ---
 
 ## 🛠️ Technical Notes
 
-### Agent UI Tool Schema
+### Memory Entity Type Schema
 
 ```javascript
-// Example: ui_render_component tool
-{
-  name: 'ui_render_component',
-  description: 'Render a UI component in the agent workspace',
-  parameters: {
-    type: 'string - component type (card, table, form, chart)',
-    props: 'object - component properties',
-    target: 'string - container selector (optional)',
-    id: 'string - unique component ID for updates'
-  },
-  handler: (args) => workspaceHandlers.render(args)
-}
+// Entity type prefixes for compartmentalization
+const ENTITY_TYPES = {
+  // User data
+  USER_PROFILE: 'user:profile',
+  USER_PREFERENCE: 'user:preference',
+  USER_PATTERN: 'user:pattern',
+  USER_EXPERTISE: 'user:expertise',
+  
+  // Conversation data
+  CONVERSATION_SESSION: 'conversation:session',
+  CONVERSATION_SUMMARY: 'conversation:summary',
+  CONVERSATION_CONTEXT: 'conversation:context',
+  
+  // Workspace data
+  WORKSPACE_PROJECT: 'workspace:project',
+  WORKSPACE_FILE: 'workspace:file',
+  WORKSPACE_PATTERN: 'workspace:pattern',
+  
+  // Memory metadata
+  MEMORY_INDEX: 'memory:index',
+  MEMORY_STATS: 'memory:stats'
+};
 ```
 
-### Component Schema Example
+### Observation Format Standard
 
 ```javascript
-// Agent generates this JSON, renderer creates DOM
-{
-  type: 'card',
-  id: 'repo-card-1',
-  props: {
-    title: 'bambisleep-church',
-    subtitle: 'BambiSleepChurch/bambisleep-church',
-    badges: ['Node.js', 'MCP', 'AI'],
-    actions: [
-      { label: 'View Issues', tool: 'github_list_issues', args: { owner: '...', repo: '...' } }
-    ]
-  }
-}
+// All observations are timestamped with metadata
+const observation = "[2024-01-02T10:30:00Z] prefers dark mode";
+
+// Structured observations use key: value format
+const structured = [
+  "[timestamp] key: theme",
+  "[timestamp] value: dark",
+  "[timestamp] source: explicit_setting",
+  "[timestamp] confidence: 1.0"
+];
 ```
+
+### Confidence Scoring
+
+| Source Type | Base Confidence | Decay Half-Life |
+|-------------|-----------------|-----------------|
+| explicit_setting | 1.0 | Never |
+| user_correction | 0.95 | 180 days |
+| direct_statement | 0.9 | 90 days |
+| repeated_behavior | 0.7-0.9 | 30 days |
+| single_observation | 0.5 | 14 days |
+| inference | 0.3-0.7 | 7 days |
+| default | 0.1 | Never |

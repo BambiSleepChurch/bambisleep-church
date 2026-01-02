@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `render_onboarding` - Onboarding wizard flow
 
   - WebSocket render message types for real-time UI updates
+
     - `RENDER`, `RENDER_CARD`, `RENDER_TABLE`, `RENDER_FORM`
     - `RENDER_ALERT`, `RENDER_PROGRESS`, `RENDER_LIST`, `RENDER_CODE`
     - `RENDER_WIZARD`, `RENDER_CLEAR`, `RENDER_SPIRAL`, `RENDER_NOTIFICATION`, `RENDER_MODAL`

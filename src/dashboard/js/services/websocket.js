@@ -4,9 +4,9 @@
  */
 
 import { addActivity } from '../components/ActivityFeed.js';
-import { showToast } from '../components/Toast.js';
 import { processRenderCommand, WorkspaceAPI } from '../components/AgentWorkspace.js';
-import { WS_CONFIG, getWsUrl } from '../config.js';
+import { showToast } from '../components/Toast.js';
+import { getWsUrl, WS_CONFIG } from '../config.js';
 import { Actions } from '../state/store.js';
 
 let ws = null;
