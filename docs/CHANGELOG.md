@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Phase 6: Agentic Frontend Rendering** - Dynamic UI component system
 
   - `DynamicRenderer.js` - Runtime component factory for agent-generated UI
+
     - Component registry with 7 render types: card, table, form, alert, progress, list, code
     - Active component state tracking with update/remove capabilities
     - Action handler registry for component interactions
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Utilities: HTML escaping, cell formatting, event attachment
 
   - `AgentWorkspace.js` - Container for agent-rendered dynamic content
+
     - Layout modes: stack, grid, columns, free positioning
     - WebSocket integration for real-time render commands
     - Render history tracking (last 50 operations)
@@ -26,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `initWorkspace()`, `renderToWorkspace()`, `setLayoutMode()` APIs
 
   - `workspace.css` - Comprehensive styles for dynamic components
+
     - Workspace container with layout mode classes
     - Card component with variants (success, warning, error, info)
     - Data table with sortable columns and pagination
@@ -37,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Responsive breakpoints for mobile
 
   - 8 new render tools in `agent-tools.js` (98 total):
+
     - `render_card` - Glass card with header, content, actions
     - `render_table` - Data table with sorting and pagination
     - `render_form` - Dynamic form with validation

@@ -705,16 +705,16 @@ ws.send(
 
 ### Render Tools (Phase 6)
 
-| Tool              | Description                         | Parameters                                          |
-| ----------------- | ----------------------------------- | --------------------------------------------------- |
-| `render_card`     | Render glass card in workspace      | `id, title, content, icon, variant, actions`        |
-| `render_table`    | Render data table with sorting      | `id, title, columns, rows, pagination, rowActions`  |
-| `render_form`     | Render dynamic form                 | `id, title, fields, submitAction, submitLabel`      |
-| `render_alert`    | Render alert banner                 | `id, message, type, title, dismissible, actions`    |
-| `render_progress` | Render progress indicator           | `id, label, value, max, variant, steps, animated`   |
-| `render_list`     | Render interactive list             | `id, title, items, variant, selectable, multiSelect`|
-| `render_code`     | Render code block                   | `id, title, code, language, lineNumbers, copyable`  |
-| `render_clear`    | Clear components by ID or type      | `id, type`                                          |
+| Tool              | Description                    | Parameters                                           |
+| ----------------- | ------------------------------ | ---------------------------------------------------- |
+| `render_card`     | Render glass card in workspace | `id, title, content, icon, variant, actions`         |
+| `render_table`    | Render data table with sorting | `id, title, columns, rows, pagination, rowActions`   |
+| `render_form`     | Render dynamic form            | `id, title, fields, submitAction, submitLabel`       |
+| `render_alert`    | Render alert banner            | `id, message, type, title, dismissible, actions`     |
+| `render_progress` | Render progress indicator      | `id, label, value, max, variant, steps, animated`    |
+| `render_list`     | Render interactive list        | `id, title, items, variant, selectable, multiSelect` |
+| `render_code`     | Render code block              | `id, title, code, language, lineNumbers, copyable`   |
+| `render_clear`    | Clear components by ID or type | `id, type`                                           |
 
 ---
 
