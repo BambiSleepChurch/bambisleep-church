@@ -18,7 +18,7 @@ import { fetchHandlers } from './fetch.js';
 import { githubHandlers } from './github.js';
 import { huggingfaceHandlers } from './huggingface.js';
 import { getLmStudioClient } from './lmstudio.js';
-import { memoryHandlers } from './memory.js';
+import { memoryHandlers } from './memory/graph.js';
 import { mongoHandlers } from './mongodb.js';
 import { thinkingHandlers } from './sequential-thinking.js';
 import { storageHandlers } from './storage.js';

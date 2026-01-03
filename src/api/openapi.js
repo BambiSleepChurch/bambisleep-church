@@ -35,6 +35,10 @@ export const openApiSpec = {
     { name: 'Health', description: 'Health check and system status' },
     { name: 'Servers', description: 'MCP server management' },
     { name: 'Memory', description: 'Knowledge graph operations' },
+    { name: 'UserModel', description: 'User preferences, patterns, and profiles' },
+    { name: 'Conversation', description: 'Conversation sessions and context management' },
+    { name: 'Workspace', description: 'Project and file knowledge tracking' },
+    { name: 'MemoryManager', description: 'Memory lifecycle, search, and sync' },
     { name: 'GitHub', description: 'GitHub API integration' },
     { name: 'HuggingFace', description: 'ML model inference' },
     { name: 'LMStudio', description: 'LM Studio LLM operations' },
@@ -1290,6 +1294,792 @@ export const openApiSpec = {
         summary: 'OpenAPI specification',
         responses: {
           200: { description: 'OpenAPI 3.0 spec' },
+        },
+      },
+    },
+
+    // ============ USER MODEL ============
+    '/api/user/preferences': {
+      get: {
+        tags: ['UserModel'],
+        summary: 'Get all user preferences',
+        parameters: [
+          { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Filter by category' },
+        ],
+        responses: {
+          200: { description: 'User preferences by category' },
+        },
+      },
+    },
+    '/api/user/preferences/{category}/{key}': {
+      get: {
+        tags: ['UserModel'],
+        summary: 'Get a specific preference',
+        parameters: [
+          { name: 'category', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'key', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Preference value' },
+        },
+      },
+      put: {
+        tags: ['UserModel'],
+        summary: 'Set a preference',
+        parameters: [
+          { name: 'category', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'key', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  value: { description: 'Preference value' },
+                  source: { type: 'string', description: 'Source of preference' },
+                },
+                required: ['value'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Preference set' },
+        },
+      },
+    },
+    '/api/user/preferences/learn': {
+      post: {
+        tags: ['UserModel'],
+        summary: 'Learn a preference from observation',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  category: { type: 'string' },
+                  key: { type: 'string' },
+                  value: { description: 'Observed value' },
+                  confidence: { type: 'number', minimum: 0, maximum: 1 },
+                },
+                required: ['category', 'key', 'value'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Preference learned' },
+        },
+      },
+    },
+    '/api/user/profile': {
+      get: {
+        tags: ['UserModel'],
+        summary: 'Get user profile',
+        responses: {
+          200: { description: 'User profile data' },
+        },
+      },
+    },
+    '/api/user/profile/{field}': {
+      put: {
+        tags: ['UserModel'],
+        summary: 'Update profile field',
+        parameters: [
+          { name: 'field', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  value: { description: 'Field value' },
+                },
+                required: ['value'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Profile updated' },
+        },
+      },
+    },
+    '/api/user/patterns': {
+      get: {
+        tags: ['UserModel'],
+        summary: 'Get user patterns',
+        parameters: [
+          { name: 'minConfidence', in: 'query', schema: { type: 'number' }, description: 'Minimum confidence threshold' },
+        ],
+        responses: {
+          200: { description: 'User patterns' },
+        },
+      },
+      post: {
+        tags: ['UserModel'],
+        summary: 'Track a pattern occurrence',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string', description: 'Pattern name' },
+                  data: { type: 'object', description: 'Pattern context data' },
+                },
+                required: ['name'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Pattern tracked' },
+        },
+      },
+    },
+    '/api/user/patterns/detect': {
+      post: {
+        tags: ['UserModel'],
+        summary: 'Detect patterns in behavior data',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  code: { type: 'string', description: 'Code to analyze' },
+                  message: { type: 'string', description: 'Message to analyze' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Detected patterns' },
+        },
+      },
+    },
+    '/api/user/expertise/{domain}': {
+      get: {
+        tags: ['UserModel'],
+        summary: 'Get expertise level for domain',
+        parameters: [
+          { name: 'domain', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Expertise data' },
+        },
+      },
+      put: {
+        tags: ['UserModel'],
+        summary: 'Update expertise level',
+        parameters: [
+          { name: 'domain', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  level: { type: 'string', enum: ['beginner', 'intermediate', 'advanced', 'expert'] },
+                  confidence: { type: 'number', minimum: 0, maximum: 1 },
+                },
+                required: ['level'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Expertise updated' },
+        },
+      },
+    },
+
+    // ============ CONVERSATION ============
+    '/api/conversation/session': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'Get current session',
+        responses: {
+          200: { description: 'Current session data' },
+        },
+      },
+      post: {
+        tags: ['Conversation'],
+        summary: 'Start new session',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  topic: { type: 'string' },
+                  metadata: { type: 'object' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Session started' },
+        },
+      },
+      delete: {
+        tags: ['Conversation'],
+        summary: 'End current session',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  summary: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Session ended' },
+        },
+      },
+    },
+    '/api/conversation/session/{sessionId}': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'Get session by ID',
+        parameters: [
+          { name: 'sessionId', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Session data' },
+          404: { description: 'Session not found' },
+        },
+      },
+    },
+    '/api/conversation/sessions': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'List sessions',
+        parameters: [
+          { name: 'status', in: 'query', schema: { type: 'string' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+        ],
+        responses: {
+          200: { description: 'Session list' },
+        },
+      },
+    },
+    '/api/conversation/messages': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'Get message buffer',
+        responses: {
+          200: { description: 'Current message buffer' },
+        },
+      },
+      post: {
+        tags: ['Conversation'],
+        summary: 'Add message to session',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  role: { type: 'string', enum: ['user', 'assistant', 'system'] },
+                  content: { type: 'string' },
+                  metadata: { type: 'object' },
+                },
+                required: ['role', 'content'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Message added' },
+        },
+      },
+    },
+    '/api/conversation/context': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'Get current context',
+        responses: {
+          200: { description: 'Conversation context' },
+        },
+      },
+      put: {
+        tags: ['Conversation'],
+        summary: 'Update context',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  key: { type: 'string' },
+                  value: { description: 'Context value' },
+                },
+                required: ['key', 'value'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Context updated' },
+        },
+      },
+      delete: {
+        tags: ['Conversation'],
+        summary: 'Reset context',
+        responses: {
+          200: { description: 'Context reset' },
+        },
+      },
+    },
+    '/api/conversation/topics': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'Get active topics',
+        responses: {
+          200: { description: 'Active topics list' },
+        },
+      },
+    },
+    '/api/conversation/tasks': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'Get pending tasks',
+        responses: {
+          200: { description: 'Pending tasks list' },
+        },
+      },
+      post: {
+        tags: ['Conversation'],
+        summary: 'Add pending task',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  task: { type: 'string' },
+                  priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+                },
+                required: ['task'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Task added' },
+        },
+      },
+      delete: {
+        tags: ['Conversation'],
+        summary: 'Complete a task',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  task: { type: 'string' },
+                },
+                required: ['task'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Task completed' },
+        },
+      },
+    },
+    '/api/conversation/summarize': {
+      post: {
+        tags: ['Conversation'],
+        summary: 'Summarize session',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  sessionId: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Session summary' },
+        },
+      },
+    },
+    '/api/conversation/search': {
+      get: {
+        tags: ['Conversation'],
+        summary: 'Search conversation history',
+        parameters: [
+          { name: 'query', in: 'query', required: true, schema: { type: 'string' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+        ],
+        responses: {
+          200: { description: 'Search results' },
+        },
+      },
+    },
+
+    // ============ WORKSPACE ============
+    '/api/workspace/project': {
+      post: {
+        tags: ['Workspace'],
+        summary: 'Analyze/register project',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string', description: 'Project root path' },
+                  analysis: { type: 'object', description: 'Pre-computed analysis' },
+                },
+                required: ['path'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Project registered' },
+        },
+      },
+    },
+    '/api/workspace/project/{name}': {
+      get: {
+        tags: ['Workspace'],
+        summary: 'Get project details',
+        parameters: [
+          { name: 'name', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Project data' },
+          404: { description: 'Project not found' },
+        },
+      },
+      put: {
+        tags: ['Workspace'],
+        summary: 'Update project',
+        parameters: [
+          { name: 'name', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: { type: 'object' },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Project updated' },
+        },
+      },
+    },
+    '/api/workspace/projects': {
+      get: {
+        tags: ['Workspace'],
+        summary: 'List all projects',
+        responses: {
+          200: { description: 'Project list' },
+        },
+      },
+    },
+    '/api/workspace/project/{name}/conventions': {
+      get: {
+        tags: ['Workspace'],
+        summary: 'Get project conventions',
+        parameters: [
+          { name: 'name', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Project conventions' },
+        },
+      },
+    },
+    '/api/workspace/file': {
+      post: {
+        tags: ['Workspace'],
+        summary: 'Learn about a file',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string' },
+                  analysis: {
+                    type: 'object',
+                    properties: {
+                      purpose: { type: 'string' },
+                      exports: { type: 'array', items: { type: 'string' } },
+                      imports: { type: 'array', items: { type: 'string' } },
+                    },
+                  },
+                },
+                required: ['path', 'analysis'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'File knowledge stored' },
+        },
+      },
+    },
+    '/api/workspace/file/{path}': {
+      get: {
+        tags: ['Workspace'],
+        summary: 'Get file knowledge',
+        parameters: [
+          { name: 'path', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'File knowledge' },
+          404: { description: 'File not found' },
+        },
+      },
+    },
+    '/api/workspace/files/purpose/{purpose}': {
+      get: {
+        tags: ['Workspace'],
+        summary: 'Find files by purpose',
+        parameters: [
+          { name: 'purpose', in: 'path', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Matching files' },
+        },
+      },
+    },
+    '/api/workspace/pattern': {
+      post: {
+        tags: ['Workspace'],
+        summary: 'Learn a code pattern',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  examples: { type: 'array', items: { type: 'string' } },
+                  project: { type: 'string' },
+                },
+                required: ['name', 'examples'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Pattern learned' },
+        },
+      },
+    },
+    '/api/workspace/patterns': {
+      get: {
+        tags: ['Workspace'],
+        summary: 'List all patterns',
+        parameters: [
+          { name: 'project', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Pattern list' },
+        },
+      },
+    },
+
+    // ============ MEMORY MANAGER ============
+    '/api/memory-manager/stats': {
+      get: {
+        tags: ['MemoryManager'],
+        summary: 'Get memory statistics',
+        responses: {
+          200: {
+            description: 'Memory stats',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    totalEntities: { type: 'integer' },
+                    totalRelations: { type: 'integer' },
+                    byType: { type: 'object' },
+                    lastDecay: { type: 'string', format: 'date-time' },
+                    lastSync: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/memory-manager/search': {
+      get: {
+        tags: ['MemoryManager'],
+        summary: 'Search memory',
+        parameters: [
+          { name: 'query', in: 'query', required: true, schema: { type: 'string' } },
+          { name: 'entityType', in: 'query', schema: { type: 'string' } },
+          { name: 'minConfidence', in: 'query', schema: { type: 'number' } },
+          { name: 'maxConfidence', in: 'query', schema: { type: 'number' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+        ],
+        responses: {
+          200: { description: 'Search results' },
+        },
+      },
+    },
+    '/api/memory-manager/search/type/{entityType}': {
+      get: {
+        tags: ['MemoryManager'],
+        summary: 'Search by entity type',
+        parameters: [
+          { name: 'entityType', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'query', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Entities of type' },
+        },
+      },
+    },
+    '/api/memory-manager/search/time': {
+      get: {
+        tags: ['MemoryManager'],
+        summary: 'Search by time range',
+        parameters: [
+          { name: 'start', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+          { name: 'end', in: 'query', required: true, schema: { type: 'string', format: 'date-time' } },
+        ],
+        responses: {
+          200: { description: 'Entities in time range' },
+        },
+      },
+    },
+    '/api/memory-manager/related/{entityName}': {
+      get: {
+        tags: ['MemoryManager'],
+        summary: 'Get related entities',
+        parameters: [
+          { name: 'entityName', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'depth', in: 'query', schema: { type: 'integer', default: 1 } },
+        ],
+        responses: {
+          200: { description: 'Related entities' },
+        },
+      },
+    },
+    '/api/memory-manager/decay': {
+      post: {
+        tags: ['MemoryManager'],
+        summary: 'Apply confidence decay',
+        responses: {
+          200: { description: 'Decay applied' },
+        },
+      },
+    },
+    '/api/memory-manager/cleanup': {
+      post: {
+        tags: ['MemoryManager'],
+        summary: 'Cleanup low-confidence entities',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  threshold: { type: 'number', default: 0.1 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Cleanup complete' },
+        },
+      },
+    },
+    '/api/memory-manager/archive': {
+      post: {
+        tags: ['MemoryManager'],
+        summary: 'Archive old entities to MongoDB',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  olderThanDays: { type: 'integer', default: 90 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Archive complete' },
+        },
+      },
+    },
+    '/api/memory-manager/sync/mongodb': {
+      post: {
+        tags: ['MemoryManager'],
+        summary: 'Sync to MongoDB',
+        responses: {
+          200: { description: 'Sync complete' },
+        },
+      },
+      get: {
+        tags: ['MemoryManager'],
+        summary: 'Load from MongoDB',
+        responses: {
+          200: { description: 'Loaded from MongoDB' },
+        },
+      },
+    },
+    '/api/memory-manager/sync/file': {
+      post: {
+        tags: ['MemoryManager'],
+        summary: 'Save to file',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Saved to file' },
+        },
+      },
+      get: {
+        tags: ['MemoryManager'],
+        summary: 'Load from file',
+        parameters: [
+          { name: 'path', in: 'query', required: true, schema: { type: 'string' } },
+        ],
+        responses: {
+          200: { description: 'Loaded from file' },
         },
       },
     },

@@ -510,182 +510,208 @@ Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent f
 
 ---
 
-## 🚀 Phase 7B: Memory & Persistence (Current)
+## ✅ Phase 7B: Memory & Persistence (Complete)
 
 ### Overview
 
 Comprehensive memory system enabling long-term learning, user preference retention, conversation summarization, and cross-session context. See `docs/MEMORY_PERSISTENCE_GAMEPLAN.md` for full architecture.
 
-### Phase A: Schema & Types (Foundation)
+### Phase A: Schema & Types (Foundation) ✅
 
-- [ ] **`src/servers/memory-schema.js`** (~300 lines)
-  - [ ] `ENTITY_TYPES` constant - 12 entity type definitions
-  - [ ] `RELATION_TYPES` constant - 15 relation type definitions
-  - [ ] `OBSERVATION_SOURCES` constant - 7 source types
-  - [ ] `formatObservation(key, value, source, confidence)` utility
-  - [ ] `parseObservation(observationString)` parser
-  - [ ] `validateEntity(entity, type)` validation
-  - [ ] `calculateConfidence(source, age, occurrences)` scoring
-  - [ ] `applyDecay(confidence, daysSince, halfLife)` decay algorithm
+- [x] **`src/servers/memory-schema.js`** (~490 lines)
+  - [x] `ENTITY_TYPES` constant - 12 entity type definitions
+  - [x] `RELATION_TYPES` constant - 15 relation type definitions
+  - [x] `OBSERVATION_SOURCES` constant - 7 source types
+  - [x] `formatObservation(key, value, source, confidence)` utility
+  - [x] `parseObservation(observationString)` parser
+  - [x] `validateEntity(entity, type)` validation
+  - [x] `calculateConfidence(source, age, occurrences)` scoring
+  - [x] `applyDecay(confidence, daysSince, halfLife)` decay algorithm
 
-### Phase B: User Model System
+### Phase B: User Model System ✅
 
-- [ ] **`src/servers/user-model.js`** (~500 lines)
-  - [ ] `UserPreferences` class
-    - [ ] `get(category, key)` - Get preference value
-    - [ ] `set(category, key, value, source)` - Set explicit preference
-    - [ ] `learn(category, key, value, confidence)` - Learn from behavior
-    - [ ] `getAll(category?)` - Get all preferences
-    - [ ] `export()` - Export preferences to JSON
-  - [ ] `UserPatterns` class
-    - [ ] `track(patternName, data)` - Record pattern occurrence
-    - [ ] `detect(behaviorData)` - Auto-detect patterns
-    - [ ] `get(patternName)` - Get pattern data
-    - [ ] `getConfident(minConfidence)` - Get high-confidence patterns
-    - [ ] `decay()` - Apply time-based decay
-  - [ ] `UserProfile` class
-    - [ ] `get(field)` - Get profile field
-    - [ ] `set(field, value)` - Set profile field
-    - [ ] `getExpertise(domain)` - Get skill level
-    - [ ] `updateExpertise(domain, level)` - Update skill
-    - [ ] `getCommunicationStyle()` - Get style preference
-  - [ ] `userModelHandlers` - API export
-- [ ] **`tests/servers/user-model.test.js`** (~200 lines)
+- [x] **`src/servers/user-model.js`** (~664 lines)
+  - [x] `UserPreferences` class
+    - [x] `get(category, key)` - Get preference value
+    - [x] `set(category, key, value, source)` - Set explicit preference
+    - [x] `learn(category, key, value, confidence)` - Learn from behavior
+    - [x] `getAll(category?)` - Get all preferences
+    - [x] `export()` - Export preferences to JSON
+  - [x] `UserPatterns` class
+    - [x] `track(patternName, data)` - Record pattern occurrence
+    - [x] `detect(behaviorData)` - Auto-detect patterns
+    - [x] `get(patternName)` - Get pattern data
+    - [x] `getConfident(minConfidence)` - Get high-confidence patterns
+    - [x] `decay()` - Apply time-based decay
+  - [x] `UserProfile` class
+    - [x] `get(field)` - Get profile field
+    - [x] `set(field, value)` - Set profile field
+    - [x] `getExpertise(domain)` - Get skill level
+    - [x] `updateExpertise(domain, level)` - Update skill
+    - [x] `getCommunicationStyle()` - Get style preference
+  - [x] `userModelHandlers` - API export
+- [x] **`tests/servers/user-model.test.js`** (~280 lines)
 
-### Phase C: Conversation Memory
+### Phase C: Conversation Memory ✅
 
-- [ ] **`src/servers/conversation-memory.js`** (~600 lines)
-  - [ ] `ConversationStore` class
-    - [ ] `startSession()` - Begin new conversation
-    - [ ] `endSession(summary?)` - End with optional summary
-    - [ ] `addMessage(role, content, metadata)` - Add message
-    - [ ] `getSession(sessionId)` - Get session by ID
-    - [ ] `getSessions(filter)` - Query sessions
-    - [ ] `getRecentContext(limit)` - Get recent messages
-  - [ ] `Summarizer` class (LM Studio integration)
-    - [ ] `summarizeSession(sessionId)` - Summarize one session
-    - [ ] `summarizePeriod(start, end)` - Summarize date range
-    - [ ] `extractKeyPoints(messages)` - Extract key points
-    - [ ] `extractDecisions(messages)` - Extract decisions
-    - [ ] `compressToTokenLimit(text, maxTokens)` - Compress
-  - [ ] `ContextManager` class
-    - [ ] `getCurrentContext()` - Get active context
-    - [ ] `updateContext(key, value)` - Update context
-    - [ ] `getActiveTopics()` - Get current topics
-    - [ ] `getPendingTasks()` - Get open tasks
-    - [ ] `buildPromptContext(maxTokens)` - Build for LLM
-  - [ ] `conversationHandlers` - API export
-- [ ] **`tests/servers/conversation-memory.test.js`** (~250 lines)
+- [x] **`src/servers/conversation-memory.js`** (~813 lines)
+  - [x] `ConversationStore` class
+    - [x] `startSession()` - Begin new conversation
+    - [x] `endSession(summary?)` - End with optional summary
+    - [x] `addMessage(role, content, metadata)` - Add message
+    - [x] `getSession(sessionId)` - Get session by ID
+    - [x] `getSessions(filter)` - Query sessions
+    - [x] `getRecentContext(limit)` - Get recent messages
+  - [x] `Summarizer` class (LM Studio integration)
+    - [x] `summarizeSession(sessionId)` - Summarize one session
+    - [x] `summarizePeriod(start, end)` - Summarize date range
+    - [x] `extractKeyPoints(messages)` - Extract key points
+    - [x] `extractDecisions(messages)` - Extract decisions
+    - [x] `compressToTokenLimit(text, maxTokens)` - Compress
+  - [x] `ContextManager` class
+    - [x] `getCurrentContext()` - Get active context
+    - [x] `updateContext(key, value)` - Update context
+    - [x] `getActiveTopics()` - Get current topics
+    - [x] `getPendingTasks()` - Get open tasks
+    - [x] `buildPromptContext(maxTokens)` - Build for LLM
+  - [x] `conversationHandlers` - API export
+- [x] **`tests/servers/conversation-memory.test.js`** (~310 lines)
 
-### Phase D: Workspace Memory
+### Phase D: Workspace Memory ✅
 
-- [ ] **`src/servers/workspace-memory.js`** (~400 lines)
-  - [ ] `ProjectTracker` class
-    - [ ] `analyzeProject(path)` - Analyze project structure
-    - [ ] `getProject(name)` - Get project by name
-    - [ ] `updateProject(name, data)` - Update project info
-    - [ ] `getStructure(name)` - Get project structure
-    - [ ] `getConventions(name)` - Get project conventions
-  - [ ] `FileKnowledge` class
-    - [ ] `learnFile(path, analysis)` - Store file knowledge
-    - [ ] `getFile(path)` - Get file knowledge
-    - [ ] `getFilesByPurpose(purpose)` - Search by purpose
-    - [ ] `getDependencies(path)` - Get file dependencies
-    - [ ] `getRecentlyModified(limit)` - Get recent files
-  - [ ] `PatternLearner` class
-    - [ ] `learnPattern(name, examples)` - Learn code pattern
-    - [ ] `getPattern(name)` - Get pattern
-    - [ ] `matchPattern(code)` - Match against patterns
-    - [ ] `getProjectPatterns(projectName)` - Get project patterns
-  - [ ] `workspaceHandlers` - API export
-- [ ] **`tests/servers/workspace-memory.test.js`** (~150 lines)
+- [x] **`src/servers/workspace-memory.js`** (~654 lines)
+  - [x] `ProjectTracker` class
+    - [x] `analyzeProject(path)` - Analyze project structure
+    - [x] `getProject(name)` - Get project by name
+    - [x] `updateProject(name, data)` - Update project info
+    - [x] `getStructure(name)` - Get project structure
+    - [x] `getConventions(name)` - Get project conventions
+  - [x] `FileKnowledge` class
+    - [x] `learnFile(path, analysis)` - Store file knowledge
+    - [x] `getFile(path)` - Get file knowledge
+    - [x] `getFilesByPurpose(purpose)` - Search by purpose
+    - [x] `getDependencies(path)` - Get file dependencies
+    - [x] `getRecentlyModified(limit)` - Get recent files
+  - [x] `PatternLearner` class
+    - [x] `learnPattern(name, examples)` - Learn code pattern
+    - [x] `getPattern(name)` - Get pattern
+    - [x] `matchPattern(code)` - Match against patterns
+    - [x] `getProjectPatterns(projectName)` - Get project patterns
+  - [x] `workspaceHandlers` - API export
+- [x] **`tests/servers/workspace-memory.test.js`** (~280 lines)
 
-### Phase E: Memory Manager
+### Phase E: Memory Manager ✅
 
-- [ ] **`src/servers/memory-manager.js`** (~500 lines)
-  - [ ] `MemoryLifecycle` class
-    - [ ] `applyDecay()` - Apply confidence decay
-    - [ ] `cleanup(threshold)` - Remove low-confidence items
-    - [ ] `archive(olderThan)` - Archive old memories
-    - [ ] `restore(entityNames)` - Restore from archive
-    - [ ] `getStats()` - Get memory statistics
-  - [ ] `MemorySearch` class
-    - [ ] `search(query, options)` - Full-text search
-    - [ ] `searchByType(entityType, query)` - Type-filtered search
-    - [ ] `searchByTimeRange(start, end)` - Time-based search
-    - [ ] `searchByConfidence(min, max)` - Confidence range
-    - [ ] `getRelated(entityName, depth)` - Graph traversal
-  - [ ] `MemorySync` class
-    - [ ] `saveToMongoDB()` - Persist to MongoDB
-    - [ ] `loadFromMongoDB()` - Load from MongoDB
-    - [ ] `saveToFile(path)` - Backup to file
-    - [ ] `loadFromFile(path)` - Restore from file
-    - [ ] `getLastSyncTime()` - Get sync status
-  - [ ] `memoryManagerHandlers` - API export
-- [ ] **`tests/servers/memory-manager.test.js`** (~200 lines)
+- [x] **`src/servers/memory-manager.js`** (~790 lines)
+  - [x] `MemoryLifecycle` class
+    - [x] `applyDecay()` - Apply confidence decay
+    - [x] `cleanup(threshold)` - Remove low-confidence items
+    - [x] `archive(olderThan)` - Archive old memories
+    - [x] `restore(entityNames)` - Restore from archive
+    - [x] `getStats()` - Get memory statistics
+  - [x] `MemorySearch` class
+    - [x] `search(query, options)` - Full-text search
+    - [x] `searchByType(entityType, query)` - Type-filtered search
+    - [x] `searchByTimeRange(start, end)` - Time-based search
+    - [x] `searchByConfidence(min, max)` - Confidence range
+    - [x] `getRelated(entityName, depth)` - Graph traversal
+  - [x] `MemorySync` class
+    - [x] `saveToMongoDB()` - Persist to MongoDB
+    - [x] `loadFromMongoDB()` - Load from MongoDB
+    - [x] `saveToFile(path)` - Backup to file
+    - [x] `loadFromFile(path)` - Restore from file
+    - [x] `getLastSyncTime()` - Get sync status
+  - [x] `memoryManagerHandlers` - API export
+- [x] **`tests/servers/memory-manager.test.js`** (~320 lines)
 
-### Phase F: API & Tools
+### Phase F: API & Tools ✅
 
-- [ ] **REST API Routes** (20+ endpoints in `routes.js`)
-  - [ ] User Model Routes
-    - [ ] `GET /api/user/profile`
-    - [ ] `PUT /api/user/profile`
-    - [ ] `GET /api/user/preferences`
-    - [ ] `PUT /api/user/preferences/:category`
-    - [ ] `GET /api/user/patterns`
-    - [ ] `GET /api/user/patterns/:name`
-  - [ ] Conversation Routes
-    - [ ] `GET /api/conversation/current`
-    - [ ] `GET /api/conversation/sessions`
-    - [ ] `GET /api/conversation/sessions/:id`
-    - [ ] `POST /api/conversation/sessions/:id/summarize`
-    - [ ] `GET /api/conversation/summaries`
-    - [ ] `GET /api/conversation/context`
-  - [ ] Workspace Routes
-    - [ ] `GET /api/workspace/projects`
-    - [ ] `GET /api/workspace/projects/:name`
-    - [ ] `GET /api/workspace/files/:path`
-  - [ ] Memory Manager Routes
-    - [ ] `GET /api/memory/search`
-    - [ ] `GET /api/memory/stats`
-    - [ ] `POST /api/memory/sync`
-    - [ ] `POST /api/memory/cleanup`
-    - [ ] `POST /api/memory/decay`
-- [ ] **Agent Tools** (20+ tools in `agent-tools.js`)
-  - [ ] User Model Tools
-    - [ ] `get_user_preference` / `set_user_preference`
-    - [ ] `learn_user_preference` / `track_user_pattern`
-    - [ ] `get_user_patterns` / `get_user_profile`
-    - [ ] `update_user_expertise`
-  - [ ] Conversation Tools
-    - [ ] `get_conversation_context` / `update_conversation_context`
-    - [ ] `get_conversation_history` / `search_conversations`
-    - [ ] `get_pending_tasks` / `mark_task_complete`
-  - [ ] Workspace Tools
-    - [ ] `get_project_context` / `learn_file_purpose`
-    - [ ] `get_file_knowledge` / `find_files_by_purpose`
-    - [ ] `learn_code_pattern`
-  - [ ] Memory Manager Tools
-    - [ ] `search_memory` / `get_related_memories`
-    - [ ] `get_memory_stats` / `sync_memory`
-- [ ] **OpenAPI Spec Updates** (`openapi.js`)
+- [x] **REST API Routes** (30+ endpoints in `routes.js`)
+  - [x] User Model Routes
+    - [x] `GET /api/user/profile`
+    - [x] `PUT /api/user/profile`
+    - [x] `GET /api/user/preferences`
+    - [x] `PUT /api/user/preferences/:category`
+    - [x] `GET /api/user/patterns`
+    - [x] `GET /api/user/patterns/:name`
+    - [x] `POST /api/user/patterns`
+    - [x] `POST /api/user/expertise`
+  - [x] Conversation Routes
+    - [x] `GET /api/conversation/current`
+    - [x] `GET /api/conversation/sessions`
+    - [x] `POST /api/conversation/sessions`
+    - [x] `GET /api/conversation/sessions/:id`
+    - [x] `POST /api/conversation/sessions/:id/end`
+    - [x] `POST /api/conversation/sessions/:id/summarize`
+    - [x] `GET /api/conversation/summaries`
+    - [x] `GET /api/conversation/context`
+    - [x] `PUT /api/conversation/context`
+    - [x] `GET /api/conversation/topics`
+    - [x] `GET /api/conversation/tasks`
+  - [x] Workspace Routes
+    - [x] `GET /api/workspace/projects`
+    - [x] `POST /api/workspace/projects`
+    - [x] `GET /api/workspace/projects/:name`
+    - [x] `GET /api/workspace/projects/:name/conventions`
+    - [x] `GET /api/workspace/files`
+    - [x] `POST /api/workspace/files`
+    - [x] `GET /api/workspace/patterns`
+    - [x] `POST /api/workspace/patterns`
+  - [x] Memory Manager Routes
+    - [x] `GET /api/memory/stats`
+    - [x] `POST /api/memory/search/advanced`
+    - [x] `GET /api/memory/related/:name`
+    - [x] `POST /api/memory/decay`
+    - [x] `POST /api/memory/cleanup`
+    - [x] `POST /api/memory/archive`
+    - [x] `POST /api/memory/restore`
+    - [x] `POST /api/memory/sync`
+    - [x] `POST /api/memory/sync/load`
+    - [x] `POST /api/memory/export`
+    - [x] `POST /api/memory/import`
+- [x] **Agent Tools** (30+ tools in `agent-tools.js`)
+  - [x] User Model Tools
+    - [x] `user_get_preference` / `user_set_preference`
+    - [x] `user_learn_preference` / `user_track_pattern`
+    - [x] `user_get_patterns` / `user_get_profile`
+    - [x] `user_update_profile` / `user_get_expertise`
+    - [x] `user_update_expertise`
+  - [x] Conversation Tools
+    - [x] `conversation_start_session` / `conversation_end_session`
+    - [x] `conversation_add_message` / `conversation_get_context`
+    - [x] `conversation_update_context` / `conversation_get_history`
+    - [x] `conversation_summarize` / `conversation_get_topics`
+    - [x] `conversation_get_tasks` / `conversation_search`
+  - [x] Workspace Tools
+    - [x] `workspace_analyze_project` / `workspace_get_project`
+    - [x] `workspace_get_conventions` / `workspace_learn_file`
+    - [x] `workspace_get_file` / `workspace_find_files`
+    - [x] `workspace_learn_pattern` / `workspace_get_patterns`
+  - [x] Memory Manager Tools
+    - [x] `memory_get_stats` / `memory_search_advanced`
+    - [x] `memory_get_related` / `memory_apply_decay`
+    - [x] `memory_cleanup` / `memory_archive`
+    - [x] `memory_sync_mongo` / `memory_load_mongo`
+    - [x] `memory_export_file` / `memory_import_file`
+- [x] **OpenAPI Spec Updates** (`openapi.js`) - 40+ new route definitions
 
-### Phase G: Dashboard Integration
+### Phase G: Dashboard Integration ✅
 
-- [ ] **`src/dashboard/js/components/MemoryDashboard.js`** (~300 lines)
-  - [ ] `renderMemoryDashboard()` - Main container
-  - [ ] `renderUserPreferences()` - Preferences editor
-  - [ ] `renderPatternsList()` - Detected patterns
-  - [ ] `renderConversationHistory()` - History timeline
-  - [ ] `renderMemoryStats()` - Statistics panel
-  - [ ] `renderMemorySearch()` - Search interface
-- [ ] **`src/dashboard/css/components/memory.css`** (~200 lines)
-  - [ ] `.memory-dashboard` styles
-  - [ ] `.preference-editor` styles
-  - [ ] `.pattern-card` styles
-  - [ ] `.conversation-timeline` styles
-  - [ ] `.memory-search` styles
-- [ ] **Documentation** - `docs/MEMORY_MCP_REFERENCE.md`
+- [x] **`src/dashboard/js/components/MemoryDashboard.js`** (~700 lines)
+  - [x] `renderMemoryDashboard()` - Main container with tabs
+  - [x] `renderUserPreferences()` - Preferences editor
+  - [x] `renderPatternsList()` - Detected patterns grid
+  - [x] `renderConversationHistory()` - History timeline
+  - [x] `renderMemoryStats()` - Statistics panel
+  - [x] `renderMemorySearch()` - Search interface with filters
+  - [x] `initMemoryDashboard()` - Controller with API integration
+- [x] **`src/dashboard/css/components/memory.css`** (~500 lines)
+  - [x] `.memory-dashboard` styles
+  - [x] `.preference-editor` styles
+  - [x] `.pattern-card` styles
+  - [x] `.conversation-timeline` styles
+  - [x] `.memory-search` styles
+- [x] **Documentation** - `docs/MEMORY_MCP_REFERENCE.md` (~700 lines)
 
 ---
 
@@ -709,39 +735,39 @@ Comprehensive memory system enabling long-term learning, user preference retenti
 
 ## 📝 Progress Summary
 
-| Category            | Status         | Progress                            |
-| ------------------- | -------------- | ----------------------------------- |
-| MCP Server Wrappers | ✅ Complete    | 14/14 (incl. BambiSleep Chat)       |
-| REST API Endpoints  | ✅ Complete    | 80+ endpoints                       |
-| Dashboard UI        | ✅ Complete    | Cyber goth design                   |
-| Agent Orchestrator  | ✅ Complete    | 102 tools + ModelRouter             |
-| Agent Personality   | ✅ Complete    | Bambi + event system                |
-| LM Studio Client    | ✅ Complete    | Vision, structured, tools           |
-| Agent Chat UI       | ✅ Complete    | Full conversation UI                |
-| WebSocket           | ✅ Complete    | Real-time updates                   |
-| Unit Tests          | ✅ Complete    | 94+ unit tests, 84%+ cov            |
-| BambiSleep Chat     | ✅ Complete    | Triggers, spirals, TTS              |
-| Agent Parity        | ✅ Complete    | Phase 5.6 (102 tools, ModelRouter)  |
-| Agentic Rendering   | ✅ Complete    | Phase 6 (13 tools, 8 components)    |
-| Memory & Persistence| 🚀 Current     | Phase 7B (7 sub-phases)             |
-| WebGL Avatar        | 🔮 Future      | Phase 7                             |
+| Category             | Status      | Progress                           |
+| -------------------- | ----------- | ---------------------------------- |
+| MCP Server Wrappers  | ✅ Complete | 14/14 (incl. BambiSleep Chat)      |
+| REST API Endpoints   | ✅ Complete | 120+ endpoints                     |
+| Dashboard UI         | ✅ Complete | Cyber goth design                  |
+| Agent Orchestrator   | ✅ Complete | 132 tools + ModelRouter            |
+| Agent Personality    | ✅ Complete | Bambi + event system               |
+| LM Studio Client     | ✅ Complete | Vision, structured, tools          |
+| Agent Chat UI        | ✅ Complete | Full conversation UI               |
+| WebSocket            | ✅ Complete | Real-time updates                  |
+| Unit Tests           | ✅ Complete | 94+ unit tests, 84%+ cov           |
+| BambiSleep Chat      | ✅ Complete | Triggers, spirals, TTS             |
+| Agent Parity         | ✅ Complete | Phase 5.6 (102 tools, ModelRouter) |
+| Agentic Rendering    | ✅ Complete | Phase 6 (13 tools, 8 components)   |
+| Memory & Persistence | ✅ Complete | Phase 7B (5 modules, 40 routes)    |
+| WebGL Avatar         | 🔮 Future   | Phase 7                            |
 
 ---
 
-## 🎯 Phase 7B Milestones (Current)
+## 🎯 Phase 7B Milestones (Complete ✅)
 
-| Milestone             | Target   | Status      |
-| --------------------- | -------- | ----------- |
-| memory-schema.js      | Phase A  | 🔜 Planned  |
-| user-model.js         | Phase B  | 🔜 Planned  |
-| conversation-memory.js| Phase C  | 🔜 Planned  |
-| workspace-memory.js   | Phase D  | 🔜 Planned  |
-| memory-manager.js     | Phase E  | 🔜 Planned  |
-| API Routes (20+)      | Phase F  | 🔜 Planned  |
-| Agent Tools (20+)     | Phase F  | 🔜 Planned  |
-| MemoryDashboard.js    | Phase G  | 🔜 Planned  |
-| memory.css            | Phase G  | 🔜 Planned  |
-| Unit Tests (170+)     | Phase G  | 🔜 Planned  |
+| Milestone              | Target  | Status      |
+| ---------------------- | ------- | ----------- |
+| memory-schema.js       | Phase A | ✅ Complete |
+| user-model.js          | Phase B | ✅ Complete |
+| conversation-memory.js | Phase C | ✅ Complete |
+| workspace-memory.js    | Phase D | ✅ Complete |
+| memory-manager.js      | Phase E | ✅ Complete |
+| API Routes (40+)       | Phase F | ✅ Complete |
+| Agent Tools (30+)      | Phase F | ✅ Complete |
+| MemoryDashboard.js     | Phase G | ✅ Complete |
+| memory.css             | Phase G | ✅ Complete |
+| Unit Tests             | Phase G | 🔜 Planned  |
 
 ---
 
@@ -753,24 +779,24 @@ Comprehensive memory system enabling long-term learning, user preference retenti
 // Entity type prefixes for compartmentalization
 const ENTITY_TYPES = {
   // User data
-  USER_PROFILE: 'user:profile',
-  USER_PREFERENCE: 'user:preference',
-  USER_PATTERN: 'user:pattern',
-  USER_EXPERTISE: 'user:expertise',
-  
+  USER_PROFILE: "user:profile",
+  USER_PREFERENCE: "user:preference",
+  USER_PATTERN: "user:pattern",
+  USER_EXPERTISE: "user:expertise",
+
   // Conversation data
-  CONVERSATION_SESSION: 'conversation:session',
-  CONVERSATION_SUMMARY: 'conversation:summary',
-  CONVERSATION_CONTEXT: 'conversation:context',
-  
+  CONVERSATION_SESSION: "conversation:session",
+  CONVERSATION_SUMMARY: "conversation:summary",
+  CONVERSATION_CONTEXT: "conversation:context",
+
   // Workspace data
-  WORKSPACE_PROJECT: 'workspace:project',
-  WORKSPACE_FILE: 'workspace:file',
-  WORKSPACE_PATTERN: 'workspace:pattern',
-  
+  WORKSPACE_PROJECT: "workspace:project",
+  WORKSPACE_FILE: "workspace:file",
+  WORKSPACE_PATTERN: "workspace:pattern",
+
   // Memory metadata
-  MEMORY_INDEX: 'memory:index',
-  MEMORY_STATS: 'memory:stats'
+  MEMORY_INDEX: "memory:index",
+  MEMORY_STATS: "memory:stats",
 };
 ```
 
@@ -785,18 +811,18 @@ const structured = [
   "[timestamp] key: theme",
   "[timestamp] value: dark",
   "[timestamp] source: explicit_setting",
-  "[timestamp] confidence: 1.0"
+  "[timestamp] confidence: 1.0",
 ];
 ```
 
 ### Confidence Scoring
 
-| Source Type | Base Confidence | Decay Half-Life |
-|-------------|-----------------|-----------------|
-| explicit_setting | 1.0 | Never |
-| user_correction | 0.95 | 180 days |
-| direct_statement | 0.9 | 90 days |
-| repeated_behavior | 0.7-0.9 | 30 days |
-| single_observation | 0.5 | 14 days |
-| inference | 0.3-0.7 | 7 days |
-| default | 0.1 | Never |
+| Source Type        | Base Confidence | Decay Half-Life |
+| ------------------ | --------------- | --------------- |
+| explicit_setting   | 1.0             | Never           |
+| user_correction    | 0.95            | 180 days        |
+| direct_statement   | 0.9             | 90 days         |
+| repeated_behavior  | 0.7-0.9         | 30 days         |
+| single_observation | 0.5             | 14 days         |
+| inference          | 0.3-0.7         | 7 days          |
+| default            | 0.1             | Never           |

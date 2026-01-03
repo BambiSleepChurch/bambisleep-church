@@ -3,7 +3,7 @@
  * Memory MCP Server Wrapper - Knowledge Graph Operations
  */
 
-import { createLogger } from '../utils/logger.js';
+import { createLogger } from '../../utils/logger.js';
 
 const logger = createLogger('memory');
 

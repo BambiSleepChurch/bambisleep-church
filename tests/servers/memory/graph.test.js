@@ -5,7 +5,7 @@
 
 import assert from 'node:assert';
 import { beforeEach, describe, it } from 'node:test';
-import { memoryGraph, memoryHandlers } from '../../src/servers/memory.js';
+import { memoryGraph, memoryHandlers } from '../../../src/servers/memory/graph.js';
 
 describe('Memory Module', () => {
   // Reset graph before each test

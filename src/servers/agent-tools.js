@@ -29,6 +29,10 @@ export const TOOL_CATEGORIES = Object.freeze({
   LMSTUDIO: 'lmstudio',
   HUGGINGFACE: 'huggingface',
   RENDER: 'render',
+  USER_MODEL: 'user-model',
+  CONVERSATION: 'conversation',
+  WORKSPACE: 'workspace',
+  MEMORY_MANAGER: 'memory-manager',
 });
 
 /**
@@ -225,6 +229,528 @@ export const AGENT_TOOLS = [
       required: ['names'],
     },
     handler: 'openNodes',
+  },
+
+  // =====================================================
+  // USER MODEL TOOLS
+  // =====================================================
+  {
+    name: 'user_get_preference',
+    description: 'Get a user preference value by category and key.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        category: { type: 'string', description: 'Preference category (e.g., theme, editor, ai)' },
+        key: { type: 'string', description: 'Preference key' },
+      },
+      required: ['category', 'key'],
+    },
+    handler: 'getPreference',
+  },
+  {
+    name: 'user_set_preference',
+    description: 'Set a user preference value explicitly.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        category: { type: 'string', description: 'Preference category' },
+        key: { type: 'string', description: 'Preference key' },
+        value: { description: 'Preference value (any type)' },
+        source: { type: 'string', description: 'Source of preference (explicit, inferred, default)' },
+      },
+      required: ['category', 'key', 'value'],
+    },
+    handler: 'setPreference',
+  },
+  {
+    name: 'user_learn_preference',
+    description: 'Learn a preference from user behavior with confidence.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        category: { type: 'string', description: 'Preference category' },
+        key: { type: 'string', description: 'Preference key' },
+        value: { description: 'Observed value' },
+        confidence: { type: 'number', description: 'Confidence level (0-1)' },
+      },
+      required: ['category', 'key', 'value'],
+    },
+    handler: 'learnPreference',
+  },
+  {
+    name: 'user_get_profile',
+    description: 'Get user profile information.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        field: { type: 'string', description: 'Specific field to get (optional)' },
+      },
+      required: [],
+    },
+    handler: 'getProfile',
+  },
+  {
+    name: 'user_update_profile',
+    description: 'Update user profile field.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        field: { type: 'string', description: 'Profile field to update' },
+        value: { description: 'New value' },
+      },
+      required: ['field', 'value'],
+    },
+    handler: 'updateProfile',
+  },
+  {
+    name: 'user_track_pattern',
+    description: 'Track a user behavior pattern.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Pattern name' },
+        data: { type: 'object', description: 'Pattern data' },
+      },
+      required: ['name', 'data'],
+    },
+    handler: 'trackPattern',
+  },
+  {
+    name: 'user_get_patterns',
+    description: 'Get detected user patterns.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        minConfidence: { type: 'number', description: 'Minimum confidence threshold (0-1)' },
+      },
+      required: [],
+    },
+    handler: 'getPatterns',
+  },
+  {
+    name: 'user_get_expertise',
+    description: 'Get user expertise level in a domain.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        domain: { type: 'string', description: 'Domain (e.g., javascript, python, devops)' },
+      },
+      required: ['domain'],
+    },
+    handler: 'getExpertise',
+  },
+  {
+    name: 'user_update_expertise',
+    description: 'Update user expertise level in a domain.',
+    category: TOOL_CATEGORIES.USER_MODEL,
+    parameters: {
+      type: 'object',
+      properties: {
+        domain: { type: 'string', description: 'Domain' },
+        level: { type: 'string', enum: ['beginner', 'intermediate', 'advanced', 'expert'], description: 'Expertise level' },
+      },
+      required: ['domain', 'level'],
+    },
+    handler: 'updateExpertise',
+  },
+
+  // =====================================================
+  // CONVERSATION MEMORY TOOLS
+  // =====================================================
+  {
+    name: 'conversation_start_session',
+    description: 'Start a new conversation session.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {
+        topic: { type: 'string', description: 'Initial topic (optional)' },
+        metadata: { type: 'object', description: 'Session metadata' },
+      },
+      required: [],
+    },
+    handler: 'startSession',
+  },
+  {
+    name: 'conversation_end_session',
+    description: 'End the current conversation session.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {
+        summary: { type: 'string', description: 'Optional session summary' },
+      },
+      required: [],
+    },
+    handler: 'endSession',
+  },
+  {
+    name: 'conversation_add_message',
+    description: 'Add a message to the current session.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {
+        role: { type: 'string', enum: ['user', 'assistant', 'system'], description: 'Message role' },
+        content: { type: 'string', description: 'Message content' },
+        metadata: { type: 'object', description: 'Optional metadata' },
+      },
+      required: ['role', 'content'],
+    },
+    handler: 'addMessage',
+  },
+  {
+    name: 'conversation_get_context',
+    description: 'Get current conversation context.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'getCurrentContext',
+  },
+  {
+    name: 'conversation_update_context',
+    description: 'Update conversation context.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {
+        key: { type: 'string', description: 'Context key' },
+        value: { description: 'Context value' },
+      },
+      required: ['key', 'value'],
+    },
+    handler: 'updateContext',
+  },
+  {
+    name: 'conversation_get_history',
+    description: 'Get conversation history for current session or by ID.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {
+        sessionId: { type: 'string', description: 'Session ID (optional, defaults to current)' },
+        limit: { type: 'number', description: 'Max messages to return' },
+      },
+      required: [],
+    },
+    handler: 'getHistory',
+  },
+  {
+    name: 'conversation_summarize',
+    description: 'Summarize a conversation session using LLM.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {
+        sessionId: { type: 'string', description: 'Session ID to summarize' },
+      },
+      required: [],
+    },
+    handler: 'summarizeSession',
+  },
+  {
+    name: 'conversation_get_topics',
+    description: 'Get active conversation topics.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'getActiveTopics',
+  },
+  {
+    name: 'conversation_get_tasks',
+    description: 'Get pending tasks from conversation.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'getPendingTasks',
+  },
+  {
+    name: 'conversation_search',
+    description: 'Search across conversation history.',
+    category: TOOL_CATEGORIES.CONVERSATION,
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        limit: { type: 'number', description: 'Max results' },
+      },
+      required: ['query'],
+    },
+    handler: 'searchConversations',
+  },
+
+  // =====================================================
+  // WORKSPACE MEMORY TOOLS
+  // =====================================================
+  {
+    name: 'workspace_analyze_project',
+    description: 'Analyze and register a project.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'Project root path' },
+        analysis: { type: 'object', description: 'Pre-computed analysis data' },
+      },
+      required: ['path'],
+    },
+    handler: 'analyzeProject',
+  },
+  {
+    name: 'workspace_get_project',
+    description: 'Get project information.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Project name' },
+      },
+      required: ['name'],
+    },
+    handler: 'getProject',
+  },
+  {
+    name: 'workspace_get_conventions',
+    description: 'Get project coding conventions.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Project name' },
+      },
+      required: ['name'],
+    },
+    handler: 'getConventions',
+  },
+  {
+    name: 'workspace_learn_file',
+    description: 'Store knowledge about a file.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'File path' },
+        analysis: {
+          type: 'object',
+          properties: {
+            purpose: { type: 'string', description: 'File purpose' },
+            exports: { type: 'array', items: { type: 'string' } },
+            imports: { type: 'array', items: { type: 'string' } },
+            patterns: { type: 'array', items: { type: 'string' } },
+          },
+        },
+      },
+      required: ['path', 'analysis'],
+    },
+    handler: 'learnFile',
+  },
+  {
+    name: 'workspace_get_file',
+    description: 'Get stored knowledge about a file.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'File path' },
+      },
+      required: ['path'],
+    },
+    handler: 'getFile',
+  },
+  {
+    name: 'workspace_find_files',
+    description: 'Find files by purpose.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        purpose: { type: 'string', description: 'Purpose to search for' },
+      },
+      required: ['purpose'],
+    },
+    handler: 'getFilesByPurpose',
+  },
+  {
+    name: 'workspace_learn_pattern',
+    description: 'Learn a code pattern from examples.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Pattern name' },
+        examples: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Code examples',
+        },
+        project: { type: 'string', description: 'Associated project name' },
+      },
+      required: ['name', 'examples'],
+    },
+    handler: 'learnPattern',
+  },
+  {
+    name: 'workspace_get_patterns',
+    description: 'Get learned code patterns.',
+    category: TOOL_CATEGORIES.WORKSPACE,
+    parameters: {
+      type: 'object',
+      properties: {
+        project: { type: 'string', description: 'Filter by project name' },
+      },
+      required: [],
+    },
+    handler: 'getPatterns',
+  },
+
+  // =====================================================
+  // MEMORY MANAGER TOOLS
+  // =====================================================
+  {
+    name: 'memory_get_stats',
+    description: 'Get memory system statistics.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'getStats',
+  },
+  {
+    name: 'memory_search_advanced',
+    description: 'Advanced memory search with filters.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        entityType: { type: 'string', description: 'Filter by entity type' },
+        minConfidence: { type: 'number', description: 'Min confidence (0-1)' },
+        maxConfidence: { type: 'number', description: 'Max confidence (0-1)' },
+        startDate: { type: 'string', description: 'Start date (ISO)' },
+        endDate: { type: 'string', description: 'End date (ISO)' },
+        limit: { type: 'number', description: 'Max results' },
+      },
+      required: [],
+    },
+    handler: 'search',
+  },
+  {
+    name: 'memory_get_related',
+    description: 'Get entities related to a given entity.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {
+        entityName: { type: 'string', description: 'Entity name' },
+        depth: { type: 'number', description: 'Traversal depth (default: 1)' },
+      },
+      required: ['entityName'],
+    },
+    handler: 'getRelated',
+  },
+  {
+    name: 'memory_apply_decay',
+    description: 'Apply confidence decay to all entities.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'applyDecay',
+  },
+  {
+    name: 'memory_cleanup',
+    description: 'Remove low-confidence entities.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {
+        threshold: { type: 'number', description: 'Confidence threshold (default: 0.1)' },
+      },
+      required: [],
+    },
+    handler: 'cleanup',
+  },
+  {
+    name: 'memory_archive',
+    description: 'Archive old entities to MongoDB.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {
+        olderThanDays: { type: 'number', description: 'Archive entities older than this (default: 90)' },
+      },
+      required: [],
+    },
+    handler: 'archive',
+  },
+  {
+    name: 'memory_sync_mongo',
+    description: 'Sync memory graph to MongoDB.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'syncToMongo',
+  },
+  {
+    name: 'memory_load_mongo',
+    description: 'Load memory graph from MongoDB.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'loadFromMongo',
+  },
+  {
+    name: 'memory_export_file',
+    description: 'Export memory graph to file.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'Output file path' },
+      },
+      required: [],
+    },
+    handler: 'exportToFile',
+  },
+  {
+    name: 'memory_import_file',
+    description: 'Import memory graph from file.',
+    category: TOOL_CATEGORIES.MEMORY_MANAGER,
+    parameters: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'Input file path' },
+      },
+      required: ['path'],
+    },
+    handler: 'importFromFile',
   },
 
   // =====================================================

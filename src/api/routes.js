@@ -16,7 +16,11 @@ import { githubHandlers } from '../servers/github.js';
 import { huggingfaceHandlers } from '../servers/huggingface.js';
 import { registry } from '../servers/index.js';
 import { lmstudioHandlers } from '../servers/lmstudio.js';
-import { memoryHandlers } from '../servers/memory.js';
+import { conversationHandlers } from '../servers/memory/conversation.js';
+import { memoryHandlers } from '../servers/memory/graph.js';
+import { memoryManagerHandlers } from '../servers/memory/manager.js';
+import { userModelHandlers } from '../servers/memory/user-model.js';
+import { workspaceHandlers } from '../servers/memory/workspace.js';
 import { getModelRouter, MODEL_PROFILES, TASK_BEST_MODELS, TASK_TYPES } from '../servers/model-router.js';
 import { mongoHandlers } from '../servers/mongodb.js';
 import { patreonHandlers } from '../servers/patreon.js';
@@ -258,6 +262,457 @@ async function handleRequest(req, res) {
     const query = url.searchParams.get('q') || '';
     const result = memoryHandlers.searchNodes(query);
     return json(res, { results: result });
+  }
+
+  // ============ USER MODEL ROUTES ============
+
+  // GET /api/user/profile - Get user profile
+  if (path === '/api/user/profile' && method === 'GET') {
+    try {
+      const profile = userModelHandlers.getProfile();
+      return json(res, profile);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // PUT /api/user/profile - Update user profile
+  if (path === '/api/user/profile' && method === 'PUT') {
+    try {
+      const body = await parseBody(req);
+      const result = userModelHandlers.updateProfile(body);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/user/preferences - Get all preferences
+  if (path === '/api/user/preferences' && method === 'GET') {
+    try {
+      const category = url.searchParams.get('category');
+      const preferences = userModelHandlers.getPreferences(category);
+      return json(res, preferences);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/user/preferences/:category - Get preferences by category
+  const userPrefMatch = path.match(/^\/api\/user\/preferences\/([^/]+)$/);
+  if (userPrefMatch && method === 'GET') {
+    try {
+      const category = userPrefMatch[1];
+      const preferences = userModelHandlers.getPreferences(category);
+      return json(res, preferences);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // PUT /api/user/preferences/:category - Update preferences by category
+  if (userPrefMatch && method === 'PUT') {
+    try {
+      const category = userPrefMatch[1];
+      const body = await parseBody(req);
+      const result = userModelHandlers.setPreferences(category, body);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/user/patterns - Get user patterns
+  if (path === '/api/user/patterns' && method === 'GET') {
+    try {
+      const minConfidence = parseFloat(url.searchParams.get('minConfidence')) || 0;
+      const patterns = userModelHandlers.getPatterns(minConfidence);
+      return json(res, patterns);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/user/patterns/:name - Get specific pattern
+  const userPatternMatch = path.match(/^\/api\/user\/patterns\/([^/]+)$/);
+  if (userPatternMatch && method === 'GET') {
+    try {
+      const name = userPatternMatch[1];
+      const pattern = userModelHandlers.getPattern(name);
+      return json(res, pattern);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/user/patterns - Track a new pattern
+  if (path === '/api/user/patterns' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = userModelHandlers.trackPattern(body.name, body.data);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/user/expertise - Update expertise level
+  if (path === '/api/user/expertise' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = userModelHandlers.updateExpertise(body.domain, body.level);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // ============ CONVERSATION MEMORY ROUTES ============
+
+  // GET /api/conversation/current - Get current session
+  if (path === '/api/conversation/current' && method === 'GET') {
+    try {
+      const session = conversationHandlers.getCurrentSession();
+      return json(res, session);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/conversation/sessions - Start new session
+  if (path === '/api/conversation/sessions' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const session = conversationHandlers.startSession(body);
+      return json(res, session);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/conversation/sessions - List sessions
+  if (path === '/api/conversation/sessions' && method === 'GET') {
+    try {
+      const limit = parseInt(url.searchParams.get('limit')) || 20;
+      const status = url.searchParams.get('status');
+      const sessions = conversationHandlers.getSessions({ limit, status });
+      return json(res, sessions);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/conversation/sessions/:id - Get session by ID
+  const convSessionMatch = path.match(/^\/api\/conversation\/sessions\/([^/]+)$/);
+  if (convSessionMatch && method === 'GET') {
+    try {
+      const sessionId = convSessionMatch[1];
+      const session = conversationHandlers.getSession(sessionId);
+      return json(res, session);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/conversation/sessions/:id/end - End session
+  const convEndMatch = path.match(/^\/api\/conversation\/sessions\/([^/]+)\/end$/);
+  if (convEndMatch && method === 'POST') {
+    try {
+      const sessionId = convEndMatch[1];
+      const body = await parseBody(req);
+      const result = conversationHandlers.endSession(sessionId, body.summary);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/conversation/sessions/:id/summarize - Summarize session
+  const convSummaryMatch = path.match(/^\/api\/conversation\/sessions\/([^/]+)\/summarize$/);
+  if (convSummaryMatch && method === 'POST') {
+    try {
+      const sessionId = convSummaryMatch[1];
+      const result = await conversationHandlers.summarizeSession(sessionId);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/conversation/summaries - Get all summaries
+  if (path === '/api/conversation/summaries' && method === 'GET') {
+    try {
+      const limit = parseInt(url.searchParams.get('limit')) || 10;
+      const summaries = conversationHandlers.getSummaries(limit);
+      return json(res, summaries);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/conversation/context - Get current context
+  if (path === '/api/conversation/context' && method === 'GET') {
+    try {
+      const context = conversationHandlers.getCurrentContext();
+      return json(res, context);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // PUT /api/conversation/context - Update context
+  if (path === '/api/conversation/context' && method === 'PUT') {
+    try {
+      const body = await parseBody(req);
+      const result = conversationHandlers.updateContext(body.key, body.value);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/conversation/topics - Get active topics
+  if (path === '/api/conversation/topics' && method === 'GET') {
+    try {
+      const topics = conversationHandlers.getActiveTopics();
+      return json(res, topics);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/conversation/tasks - Get pending tasks
+  if (path === '/api/conversation/tasks' && method === 'GET') {
+    try {
+      const tasks = conversationHandlers.getPendingTasks();
+      return json(res, tasks);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // ============ WORKSPACE MEMORY ROUTES ============
+
+  // GET /api/workspace/projects - List projects
+  if (path === '/api/workspace/projects' && method === 'GET') {
+    try {
+      const projects = workspaceHandlers.getProjects();
+      return json(res, projects);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/workspace/projects - Analyze/register project
+  if (path === '/api/workspace/projects' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const project = workspaceHandlers.analyzeProject(body.path, body.analysis);
+      return json(res, project);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/workspace/projects/:name - Get project by name
+  const workspaceProjectMatch = path.match(/^\/api\/workspace\/projects\/([^/]+)$/);
+  if (workspaceProjectMatch && method === 'GET') {
+    try {
+      const name = workspaceProjectMatch[1];
+      const project = workspaceHandlers.getProject(name);
+      return json(res, project);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/workspace/projects/:name/conventions - Get project conventions
+  const workspaceConvMatch = path.match(/^\/api\/workspace\/projects\/([^/]+)\/conventions$/);
+  if (workspaceConvMatch && method === 'GET') {
+    try {
+      const name = workspaceConvMatch[1];
+      const conventions = workspaceHandlers.getConventions(name);
+      return json(res, conventions);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/workspace/files - Learn file knowledge
+  if (path === '/api/workspace/files' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = workspaceHandlers.learnFile(body.path, body.analysis);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/workspace/files - Get file knowledge
+  if (path === '/api/workspace/files' && method === 'GET') {
+    try {
+      const filePath = url.searchParams.get('path');
+      const purpose = url.searchParams.get('purpose');
+      
+      if (filePath) {
+        const file = workspaceHandlers.getFile(filePath);
+        return json(res, file);
+      } else if (purpose) {
+        const files = workspaceHandlers.getFilesByPurpose(purpose);
+        return json(res, files);
+      } else {
+        const files = workspaceHandlers.getRecentFiles(20);
+        return json(res, files);
+      }
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/workspace/patterns - Get code patterns
+  if (path === '/api/workspace/patterns' && method === 'GET') {
+    try {
+      const project = url.searchParams.get('project');
+      const patterns = workspaceHandlers.getPatterns(project);
+      return json(res, patterns);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/workspace/patterns - Learn code pattern
+  if (path === '/api/workspace/patterns' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = workspaceHandlers.learnPattern(body.name, body.examples, body.project);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // ============ MEMORY MANAGER ROUTES ============
+
+  // GET /api/memory/stats - Get memory statistics
+  if (path === '/api/memory/stats' && method === 'GET') {
+    try {
+      const stats = memoryManagerHandlers.getStats();
+      return json(res, stats);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/search/advanced - Advanced memory search
+  if (path === '/api/memory/search/advanced' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const results = memoryManagerHandlers.search(body);
+      return json(res, results);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // GET /api/memory/related/:name - Get related entities
+  const memoryRelatedMatch = path.match(/^\/api\/memory\/related\/([^/]+)$/);
+  if (memoryRelatedMatch && method === 'GET') {
+    try {
+      const name = decodeURIComponent(memoryRelatedMatch[1]);
+      const depth = parseInt(url.searchParams.get('depth')) || 1;
+      const related = memoryManagerHandlers.getRelated(name, depth);
+      return json(res, related);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/decay - Apply confidence decay
+  if (path === '/api/memory/decay' && method === 'POST') {
+    try {
+      const result = memoryManagerHandlers.applyDecay();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/cleanup - Clean low-confidence entities
+  if (path === '/api/memory/cleanup' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const threshold = body.threshold || 0.1;
+      const result = memoryManagerHandlers.cleanup(threshold);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/archive - Archive old entities
+  if (path === '/api/memory/archive' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const olderThanDays = body.olderThanDays || 90;
+      const result = await memoryManagerHandlers.archive(olderThanDays);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/restore - Restore from archive
+  if (path === '/api/memory/restore' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await memoryManagerHandlers.restore(body.entityNames);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/sync - Sync to MongoDB
+  if (path === '/api/memory/sync' && method === 'POST') {
+    try {
+      const result = await memoryManagerHandlers.syncToMongo();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/sync/load - Load from MongoDB
+  if (path === '/api/memory/sync/load' && method === 'POST') {
+    try {
+      const result = await memoryManagerHandlers.loadFromMongo();
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/export - Export to file
+  if (path === '/api/memory/export' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await memoryManagerHandlers.exportToFile(body.path);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
+  }
+
+  // POST /api/memory/import - Import from file
+  if (path === '/api/memory/import' && method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const result = await memoryManagerHandlers.importFromFile(body.path);
+      return json(res, result);
+    } catch (error) {
+      return json(res, { error: error.message }, 500);
+    }
   }
 
   // ============ GITHUB MCP ROUTES ============
