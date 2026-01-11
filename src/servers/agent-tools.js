@@ -2604,6 +2604,96 @@ export const AGENT_TOOLS = [
     },
     handler: 'renderOnboarding',
   },
+
+  // =====================================================
+  // AVATAR CONTROL TOOLS (Phase 7)
+  // =====================================================
+  {
+    name: 'avatar_set_expression',
+    description: 'Set avatar facial expression (happy, sleepy, alert, reset, confused, comfort, giggle).',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        expression: {
+          type: 'string',
+          enum: ['happy', 'sleepy', 'alert', 'reset', 'confused', 'comfort', 'giggle'],
+          description: 'Expression to set',
+        },
+      },
+      required: ['expression'],
+    },
+    handler: 'avatarSetExpression',
+  },
+  {
+    name: 'avatar_speak',
+    description: 'Make the avatar speak text with lip sync animation.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        text: { type: 'string', description: 'Text to speak' },
+        preset: {
+          type: 'string',
+          enum: ['bambi', 'machine', 'robot', 'human', 'whisper'],
+          description: 'Voice preset (default: bambi)',
+        },
+        interrupt: { type: 'boolean', description: 'Interrupt current speech' },
+      },
+      required: ['text'],
+    },
+    handler: 'avatarSpeak',
+  },
+  {
+    name: 'avatar_stop_speaking',
+    description: 'Stop avatar from speaking.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'avatarStopSpeaking',
+  },
+  {
+    name: 'avatar_set_theme',
+    description: 'Set avatar theme (neon or inverted).',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {
+        theme: {
+          type: 'string',
+          enum: ['neon', 'inverted'],
+          description: 'Avatar theme',
+        },
+      },
+      required: ['theme'],
+    },
+    handler: 'avatarSetTheme',
+  },
+  {
+    name: 'avatar_start',
+    description: 'Start avatar rendering.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'avatarStart',
+  },
+  {
+    name: 'avatar_stop',
+    description: 'Stop avatar rendering.',
+    category: TOOL_CATEGORIES.RENDER,
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+    handler: 'avatarStop',
+  },
 ];
 
 /**

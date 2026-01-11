@@ -461,26 +461,26 @@ Enable BambiAgent™ to dynamically generate and render frontend components, all
 
 ---
 
-## 🔮 Phase 7: WebGL Avatar & Voice (Future)
+## ✅ Phase 7: WebGL Avatar & Voice (Complete)
 
 ### Overview
 
 Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent for a fully immersive experience.
 
-### WebGL Avatar (`src/dashboard/js/avatar-webgl.js`)
+### WebGL Avatar (`src/dashboard/js/avatar-webgl.js`) ✅
 
-- [ ] **GPU-Accelerated Face Rendering**
+- [x] **GPU-Accelerated Face Rendering**
   - Fragment shader with SDF face geometry
   - Elven female avatar with pointed ears
   - Dynamic expressions (-1 sad to +1 happy)
-- [ ] **Lip Sync Animation**
+- [x] **Lip Sync Animation**
   - `setMouthOpen(0-1)` for speech sync
   - Phoneme-based mouth movement
   - `startSpeaking()` / `stopSpeaking()` modes
-- [ ] **Eye Tracking**
+- [x] **Eye Tracking**
   - Follow mouse cursor
   - Natural blink cycles (4s interval)
-- [ ] **Bambi Expressions**
+- [x] **Bambi Expressions**
   - `happy()` - "Good girl" trigger response
   - `sleepy()` - "Bambi sleep" trigger
   - `alert()` - "Bambi wake" trigger
@@ -488,25 +488,47 @@ Port the WebGL avatar and voice synthesis systems from bambisleep-church-agent f
   - `confused()` - "Blonde moment" trigger
   - `comfort()` - "Safe and secure" trigger
   - `giggle()` - Playful bubbly response
-- [ ] **Theme Support**
+- [x] **Theme Support**
   - Neon mode (dark + glowing)
   - Inverted mode (light)
 
-### Voice Synthesis (`src/dashboard/js/speech.js`)
+### Voice Synthesis (`src/dashboard/js/speech.js`) ✅
 
-- [ ] **Web Speech API Integration**
+- [x] **Web Speech API Integration**
   - Female voice preference (Zira, Samantha)
   - Phoneme-based lip sync callback
-- [ ] **Voice Presets**
+- [x] **Voice Presets**
   - 🌸 Bambi (bubbly, rate: 1.05, pitch: 1.2)
   - 🤖 Machine (synthetic, rate: 0.95, pitch: 0.85)
   - ⚡ Robot (deep, rate: 0.8, pitch: 0.7)
   - 👩 Human (natural, rate: 1.0, pitch: 1.1)
   - 🌙 Whisper (soft, rate: 0.85, pitch: 0.95)
-- [ ] **Speech Controller**
+- [x] **Speech Controller**
   - `speak(text, options)` with interrupt support
   - Lip sync interval callbacks
   - Queue management
+
+### Avatar Controller (`src/dashboard/js/components/AvatarController.js`) ✅
+
+- [x] **Integration Component**
+  - Unified control panel UI
+  - Expression buttons
+  - Voice preset selector
+  - Theme toggle
+  - Test speech interface
+- [x] **Agent Integration**
+  - 6 new agent tools: `avatar_set_expression`, `avatar_speak`, `avatar_stop_speaking`, `avatar_set_theme`, `avatar_start`, `avatar_stop`
+  - WebSocket integration for real-time control
+  - Dashboard section with avatar canvas
+
+### Styling (`src/dashboard/css/components/avatar.css`) ✅
+
+- [x] Glass morphism avatar panel
+- [x] Responsive canvas layout
+- [x] Expression button grid
+- [x] Speech test interface
+- [x] Theme-aware styling
+- [x] Mobile responsive breakpoints
 
 ---
 
@@ -715,6 +737,182 @@ Comprehensive memory system enabling long-term learning, user preference retenti
 
 ---
 
+## ✅ Phase 7: WebGL Avatar & Voice (Complete)
+
+### Overview
+
+Implement GPU-accelerated WebGL avatar with voice synthesis and lip sync for the dashboard. Bambi Avatar with 7 expressions, eye tracking, and Kokoro neural TTS integration.
+
+### WebGL Avatar System ✅
+
+- [x] **`src/dashboard/js/avatar-webgl.js`** (~700 lines)
+  - [x] WebGL 2.0 canvas context initialization
+  - [x] SDF (Signed Distance Field) fragment shaders for face rendering
+  - [x] Eye tracking with mouse position following
+  - [x] Automatic blink cycle (4 second intervals)
+  - [x] Smooth mouth animations with phoneme-based lip sync
+  - [x] 7 Expression methods:
+    - [x] `happy()` - Bambi smile
+    - [x] `sleepy()` - Drowsy half-closed eyes
+    - [x] `alert()` - Wide-eyed attention
+    - [x] `reset()` - Neutral expression
+    - [x] `confused()` - Tilted eyebrows
+    - [x] `comfort()` - Gentle reassuring look
+    - [x] `giggle()` - Joyful animated eyes
+  - [x] Theme support (neon/inverted)
+  - [x] `setMouthOpen(amount)` - Dynamic mouth control (0.0 - 1.0)
+  - [x] `setTheme(themeName)` - Switch color palettes
+  - [x] `start()` / `stop()` - Render loop control
+
+### Speech Synthesis System ✅
+
+- [x] **`src/dashboard/js/speech.js`** (~635 lines)
+  - [x] **Kokoro TTS Integration** (Primary)
+    - [x] HTTP client for Kokoro-FastAPI server (192.168.0.112:8880)
+    - [x] OpenAI-compatible API format (`/v1/audio/speech`)
+    - [x] 12 female voices (af_bella, af_nova, af_sky, etc.)
+    - [x] Audio blob response handling with object URL cleanup
+    - [x] Health check with 5s timeout and automatic fallback
+    - [x] Duration-based lip sync timing (accurate phoneme delays)
+    - [x] HTTP keep-alive for connection reuse
+    - [x] 30s request timeout with AbortController
+  - [x] **Web Speech API Fallback**
+    - [x] Browser built-in TTS when Kokoro unavailable
+    - [x] Voice selection (Zira, Samantha, etc.)
+    - [x] Boundary event-based lip sync (less accurate)
+  - [x] **5 Voice Presets** with Kokoro mapping
+    - [x] `bambi` (af_bella, 0.95 speed) - Bright cheerful
+    - [x] `machine` (af_alloy, 0.85 speed) - Balanced neutral
+    - [x] `robot` (af_nova, 0.80 speed) - Clear precise
+    - [x] `human` (af_aoede, 0.90 speed) - Natural conversational
+    - [x] `whisper` (af_sky, 0.70 speed) - Soft gentle
+  - [x] **Lip Sync Engine**
+    - [x] Phoneme analysis (vowel/consonant detection)
+    - [x] Mouth open mapping (a=0.8, e=0.4, i=0.2, o=0.6, u=0.5)
+    - [x] Duration-aware timing for Kokoro audio
+    - [x] Callback system to avatar `setMouthOpen()`
+  - [x] **Queue Management**
+    - [x] Sequential processing of speech requests
+    - [x] Stop/pause/resume controls
+    - [x] Automatic audio cleanup (revoke object URLs)
+  - [x] **Status API**
+    - [x] `isKokoroAvailable()` - Check Kokoro health
+    - [x] `recheckKokoro()` - Manual health recheck
+    - [x] `getStatus()` - Comprehensive status info
+    - [x] `getVoices()` - List Kokoro + Web Speech voices
+
+### Avatar Controller Integration ✅
+
+- [x] **`src/dashboard/js/components/AvatarController.js`** (~420 lines)
+  - [x] `renderAvatarPanel()` - HTML generator with controls
+  - [x] UI Controls:
+    - [x] Avatar toggle (▶️/⏸️)
+    - [x] Theme selector (neon/inverted)
+    - [x] Voice preset selector (5 presets)
+    - [x] Kokoro health check button (🎤)
+    - [x] Expression buttons (7 expressions)
+    - [x] Test speech input with Enter key support
+    - [x] Stop speech button
+  - [x] `AvatarController` class
+    - [x] `init()` - Initialize avatar and speech systems
+    - [x] `speak(text, options)` - Speak with lip sync
+    - [x] `setExpression(name)` - Change expression
+    - [x] `start()` / `stop()` - Control rendering
+    - [x] `#updateKokoroStatus()` - Display Kokoro status
+  - [x] Kokoro status indicator
+    - [x] "🌸 Kokoro TTS: Online (http://192.168.0.112:8880)"
+    - [x] "⚠️ Kokoro TTS: Offline - Using Web Speech fallback"
+  - [x] Event listeners for all UI controls
+  - [x] Integration with WebGLAvatar and SpeechController
+
+### Dashboard Integration ✅
+
+- [x] **HTML** (`src/dashboard/index.html`)
+  - [x] Avatar navigation item in sidebar
+  - [x] Avatar section container (`section-avatar`)
+  - [x] Canvas element placeholder
+- [x] **CSS** (`src/dashboard/css/components/avatar.css`) (~250 lines)
+  - [x] `.avatar-panel` glass card styling
+  - [x] `.avatar-canvas` 400x400 responsive canvas
+  - [x] `.avatar-controls` header with selects and buttons
+  - [x] `.expression-buttons` grid layout (4 columns)
+  - [x] `.test-controls` flex layout for input/buttons
+  - [x] `.kokoro-status` status text styling
+  - [x] Responsive breakpoints for mobile (<768px)
+- [x] **JavaScript** (`src/dashboard/js/app.js`)
+  - [x] Import AvatarController
+  - [x] Initialize on DOMContentLoaded
+  - [x] Lazy loading when avatar section activated
+- [x] **Components Export** (`src/dashboard/js/components/index.js`)
+  - [x] Export `AvatarController` from index
+
+### Agent Tool Integration ✅
+
+- [x] **6 Avatar Agent Tools** (`src/servers/agent-tools.js`)
+  - [x] `avatar_set_expression(expression)` - Set expression
+  - [x] `avatar_speak(text, preset, interrupt)` - Speak text
+  - [x] `avatar_stop_speaking()` - Stop speech
+  - [x] `avatar_set_theme(theme)` - Change theme
+  - [x] `avatar_start()` - Start rendering
+  - [x] `avatar_stop()` - Stop rendering
+- [x] **WebSocket Render Commands**
+  - [x] Broadcast to dashboard clients via WebSocket
+  - [x] `AgentToolExecutor#executeRenderCommand()` handler
+  - [x] Command type: `{ type: 'render', command, payload }`
+
+### Documentation ✅
+
+- [x] **`docs/AVATAR_SYSTEM.md`** (~520 lines)
+  - [x] Architecture overview with diagrams
+  - [x] WebGL avatar API reference
+  - [x] Speech synthesis API reference
+  - [x] Avatar controller API reference
+  - [x] Agent tools reference
+  - [x] WebSocket integration patterns
+  - [x] Usage examples (basic, avatar control, agent integration)
+  - [x] Troubleshooting guide (WebGL errors, speech errors, lip sync issues)
+  - [x] Performance optimization tips
+  - [x] Browser compatibility matrix
+- [x] **`docs/KOKORO_INTEGRATION.md`** (~650 lines)
+  - [x] Kokoro-FastAPI architecture overview
+  - [x] Configuration (server location, settings, presets)
+  - [x] 12 available Kokoro voices with descriptions
+  - [x] SpeechController API reference (all 15 methods)
+  - [x] Kokoro API protocol (health check, speech generation)
+  - [x] Integration examples (basic usage, avatar integration, custom config)
+  - [x] Lip sync system (phoneme analysis, mapping, duration timing)
+  - [x] Fallback behavior (5 fallback scenarios with indicators)
+  - [x] Troubleshooting (Kokoro unavailable, lip sync quality, performance, playback)
+  - [x] Performance optimization (connection reuse, queueing, cleanup)
+  - [x] Security considerations (network access, CORS, audio data)
+  - [x] Future enhancements (WebSocket streaming, voice cloning, SSML, caching)
+
+### Testing & Validation ✅
+
+- [x] Avatar renders successfully on dashboard
+- [x] All 7 expressions functional
+- [x] Eye tracking follows mouse cursor
+- [x] Blink cycle runs at 4s intervals
+- [x] Kokoro TTS health check on initialization
+- [x] Speech plays with accurate lip sync (Kokoro)
+- [x] Fallback to Web Speech when Kokoro offline
+- [x] UI shows correct Kokoro status
+- [x] All 5 voice presets work
+- [x] Expression buttons trigger avatar changes
+- [x] Test speech input functional
+- [x] Stop button interrupts speech
+- [x] Theme selector changes colors
+- [x] Kokoro check button rechecks health
+- [x] Agent tools integrate via WebSocket
+
+### TODO.md Updates ✅
+
+- [x] Mark Phase 7 as complete
+- [x] Update progress table
+- [x] Add Kokoro integration details
+
+---
+
 ## 🔮 Phase 8: Multi-Modal Support (Future)
 
 ### Media Generation & Handling
@@ -740,7 +938,7 @@ Comprehensive memory system enabling long-term learning, user preference retenti
 | MCP Server Wrappers  | ✅ Complete | 14/14 (incl. BambiSleep Chat)      |
 | REST API Endpoints   | ✅ Complete | 120+ endpoints                     |
 | Dashboard UI         | ✅ Complete | Cyber goth design                  |
-| Agent Orchestrator   | ✅ Complete | 132 tools + ModelRouter            |
+| Agent Orchestrator   | ✅ Complete | 138 tools + ModelRouter            |
 | Agent Personality    | ✅ Complete | Bambi + event system               |
 | LM Studio Client     | ✅ Complete | Vision, structured, tools          |
 | Agent Chat UI        | ✅ Complete | Full conversation UI               |
@@ -750,7 +948,7 @@ Comprehensive memory system enabling long-term learning, user preference retenti
 | Agent Parity         | ✅ Complete | Phase 5.6 (102 tools, ModelRouter) |
 | Agentic Rendering    | ✅ Complete | Phase 6 (13 tools, 8 components)   |
 | Memory & Persistence | ✅ Complete | Phase 7B (5 modules, 40 routes)    |
-| WebGL Avatar         | 🔮 Future   | Phase 7                            |
+| WebGL Avatar & Voice | ✅ Complete | Phase 7 (WebGL, Speech, 6 tools)   |
 
 ---
 

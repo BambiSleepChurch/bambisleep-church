@@ -77,6 +77,10 @@
           <span class="nav-item-icon">🤖</span>
           <span class="nav-item-text">Agent Chat</span>
         </a>
+        <a class="nav-item" data-section="avatar" onclick="window.Dashboard.showSection('avatar')">
+          <span class="nav-item-icon">🌸</span>
+          <span class="nav-item-text">Avatar</span>
+        </a>
         <a class="nav-item" data-section="api-builder" onclick="window.Dashboard.showSection('api-builder')">
           <span class="nav-item-icon">🔧</span>
           <span class="nav-item-text">API Builder</span>
@@ -321,6 +325,22 @@
       </div>
     </section>
 
+    <!-- Avatar Section -->
+    <section id="section-avatar" class="dashboard-section">
+      <div class="section-header">
+        <h2 class="section-title">🌸 Bambi Avatar</h2>
+        <div class="section-actions">
+          <button onclick="window.AvatarController?.toggle()" class="btn btn-primary" id="avatar-main-toggle">▶️ Start</button>
+        </div>
+      </div>
+      <div id="avatar-container-main">
+        <div class="glass-card skeleton-card">
+          <div class="skeleton skeleton-title skeleton-centered"></div>
+          <div class="skeleton skeleton-text skeleton-narrow skeleton-centered"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Agent Section -->
     <section id="section-agent" class="dashboard-section">
       <div class="section-header">
@@ -346,7 +366,7 @@
                 Agent Workspace
               </h2>
               <div class="workspace-controls">
-                <select class="layout-select" id="workspace-layout" onchange="window.AgentWorkspace?.setLayout(this.value)">
+                <select class="layout-select" id="workspace-layout" title="Workspace layout" onchange="window.AgentWorkspace?.setLayout(this.value)">
                   <option value="stack">Stack</option>
                   <option value="grid">Grid</option>
                   <option value="columns">Columns</option>

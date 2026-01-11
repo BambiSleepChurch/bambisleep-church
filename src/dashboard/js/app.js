@@ -395,6 +395,11 @@ window.Dashboard = {
     });
     document.querySelector(`.nav-item[data-section="${sectionId}"]`)?.classList.add('active');
     
+    // Section-specific initialization
+    if (sectionId === 'avatar') {
+      this.initAvatarSection();
+    }
+    
     // Close sidebar on mobile
     if (window.innerWidth <= 1024) {
       const sidebar = document.getElementById('sidebar');
@@ -405,6 +410,20 @@ window.Dashboard = {
     
     // Track section change
     addActivity('navigation', `Navigated to ${sectionId}`);
+  },
+
+  // Initialize avatar section
+  async initAvatarSection() {
+    const container = document.getElementById('avatar-container-main');
+    if (!container || container.hasAttribute('data-initialized')) return;
+    
+    const { renderAvatarPanel, initAvatarController } = await import('./components/AvatarController.js');
+    container.innerHTML = renderAvatarPanel();
+    
+    window.AvatarController = await initAvatarController();
+    container.setAttribute('data-initialized', 'true');
+    
+    console.log('🌸 Avatar section loaded');
   },
 
   // Show keyboard shortcuts
@@ -673,6 +692,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize Agent Chat
   await AgentChatController.init();
+  
+  // Initialize Avatar Controller (Phase 7)
+  if (window.AvatarController) {
+    await window.AvatarController.init();
+    console.log('🌸 Avatar system initialized');
+  }
   
   // Initialize Agent Workspace (Phase 6)
   const workspaceContainer = document.getElementById('workspace-container');

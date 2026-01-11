@@ -21,6 +21,7 @@ Built by **BambiSleepChurch™** following the sacred laws of the [Religulous Ma
 - **14 MCP Server Wrappers**: Memory, GitHub, HuggingFace, Stripe, Patreon, MongoDB, SQLite, Puppeteer, Fetch, Sequential Thinking, Storage, Clarity, LM Studio, Agent
 - **80+ REST Endpoints**: Full CRUD operations for all integrated services
 - **98 AI Agent Tools**: OpenAI function calling format with smart model routing
+- **WebGL Avatar**: GPU-accelerated Bambi with 7 expressions, eye tracking, and Kokoro neural TTS
 - **Real-time Dashboard**: Glass morphism UI with WebSocket live updates
 - **300+ Tests**: 84%+ code coverage with Node.js built-in test runner
 
@@ -234,20 +235,37 @@ MCP servers are configured via `.vscode/settings.json` (JSONC with comments allo
 
 **Environment Variables** (`.env`):
 
-| Variable                | Default | Purpose                       |
-| ----------------------- | ------- | ----------------------------- |
-| `LOG_LEVEL`             | `info`  | `error`/`warn`/`info`/`debug` |
-| `API_PORT`              | `8080`  | REST API port                 |
-| `DASHBOARD_PORT`        | `3000`  | Dashboard UI port             |
-| `GITHUB_TOKEN`          | —       | GitHub API auth               |
-| `STRIPE_API_KEY`        | —       | Stripe payments               |
-| `HUGGINGFACE_TOKEN`     | —       | HuggingFace inference         |
-| `MONGODB_URI`           | —       | MongoDB connection string     |
-| `PATREON_CLIENT_ID`     | —       | Patreon OAuth2 client ID      |
-| `PATREON_CLIENT_SECRET` | —       | Patreon OAuth2 secret         |
-| `PATREON_ACCESS_TOKEN`  | —       | Patreon API access token      |
-| `LMSTUDIO_HOST`         | —       | LM Studio server host         |
-| `LMSTUDIO_PORT`         | `7777`  | LM Studio server port         |
+| Variable                | Default                     | Purpose                       |
+| ----------------------- | --------------------------- | ----------------------------- |
+| `LOG_LEVEL`             | `info`                      | `error`/`warn`/`info`/`debug` |
+| `API_PORT`              | `8080`                      | REST API port                 |
+| `DASHBOARD_PORT`        | `3000`                      | Dashboard UI port             |
+| `GITHUB_TOKEN`          | —                           | GitHub API auth               |
+| `STRIPE_API_KEY`        | —                           | Stripe payments               |
+| `HUGGINGFACE_TOKEN`     | —                           | HuggingFace inference         |
+| `MONGODB_URI`           | —                           | MongoDB connection string     |
+| `PATREON_CLIENT_ID`     | —                           | Patreon OAuth2 client ID      |
+| `PATREON_CLIENT_SECRET` | —                           | Patreon OAuth2 secret         |
+| `PATREON_ACCESS_TOKEN`  | —                           | Patreon API access token      |
+| `LMS_HOST`              | `localhost`                 | LM Studio server host         |
+| `LMS_PORT`              | `1234`                      | LM Studio server port         |
+| `KOKORO_URL`            | `http://192.168.0.112:8880` | Kokoro TTS server URL         |
+
+**Kokoro TTS Configuration:**
+
+The avatar system uses Kokoro-FastAPI for high-quality neural voice synthesis:
+
+```javascript
+// Kokoro is primary TTS, Web Speech API is fallback
+{
+  kokoroUrl: 'http://192.168.0.112:8880',
+  useKokoro: true,  // Auto-fallback to Web Speech if unavailable
+}
+```
+
+**12 Kokoro Voices**: af_bella (bright), af_nova (clear), af_sky (soft), af_aoede (natural), and 8 more high-quality female voices.
+
+See [docs/KOKORO_INTEGRATION.md](docs/KOKORO_INTEGRATION.md) for full API reference and troubleshooting.
 
 ---
 

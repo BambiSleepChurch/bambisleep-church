@@ -1,0 +1,254 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * Avatar Panel Styles
+ */
+
+/* ==================== Avatar Panel ==================== */
+
+.avatar-panel {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.avatar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.avatar-title {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.avatar-icon {
+  font-size: 1.5em;
+}
+
+.avatar-controls {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.avatar-select {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatar-select:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--accent-primary);
+}
+
+.avatar-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ==================== Avatar Canvas ==================== */
+
+.avatar-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.avatar-canvas {
+  width: 400px;
+  height: 400px;
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.avatar-canvas:hover {
+  transform: scale(1.02);
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 40px var(--accent-glow);
+}
+
+.avatar-status {
+  margin-top: var(--space-md);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* ==================== Expressions ==================== */
+
+.avatar-expressions {
+  margin-bottom: var(--space-lg);
+}
+
+.expressions-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.expression-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.expression-buttons .btn {
+  flex: 1 1 auto;
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+/* ==================== Test Speech ==================== */
+
+.avatar-test {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--glass-border);
+}
+
+.test-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.test-controls {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.test-input {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  transition: all 0.2s ease;
+}
+
+.test-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.test-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ==================== Responsive ==================== */
+
+@media (max-width: 768px) {
+  .avatar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .avatar-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .avatar-canvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .expression-buttons {
+    flex-direction: column;
+  }
+
+  .expression-buttons .btn {
+    width: 100%;
+  }
+
+  .test-controls {
+    flex-direction: column;
+  }
+
+  .test-input {
+    width: 100%;
+  }
+
+  .test-controls .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .avatar-title {
+    font-size: var(--text-lg);
+  }
+
+  .avatar-icon {
+    font-size: 1.2em;
+  }
+
+  .avatar-select {
+    font-size: var(--text-xs);
+    padding: var(--space-xs);
+  }
+}
+
+/* ==================== Animations ==================== */
+
+@keyframes avatar-pulse {
+  0%, 100% {
+    box-shadow: 
+      var(--shadow-lg),
+      0 0 20px var(--accent-glow);
+  }
+  50% {
+    box-shadow: 
+      var(--shadow-lg),
+      0 0 40px var(--accent-glow),
+      0 0 60px var(--accent-glow);
+  }
+}
+
+.avatar-canvas.speaking {
+  animation: avatar-pulse 2s ease-in-out infinite;
+}
+
+/* ==================== Dark Mode Overrides ==================== */
+
+[data-theme="dark"] .avatar-canvas {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+}
+
+[data-theme="light"] .avatar-canvas {
+  background: linear-gradient(135deg, #f0f0f5 0%, #e0e0ea 100%);
+}

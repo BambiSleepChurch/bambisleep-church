@@ -7,6 +7,7 @@ export * from './ActivityFeed.js';
 export * from './AgentChat.js';
 export * from './AgentWorkspace.js';
 export * from './ApiBuilder.js';
+export * from './AvatarController.js';
 export * from './ClarityDashboard.js';
 export * from './ComponentTemplates.js';
 export * from './ConfigActions.js';
