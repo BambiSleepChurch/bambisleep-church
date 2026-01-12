@@ -768,7 +768,7 @@ Implement GPU-accelerated WebGL avatar with voice synthesis and lip sync for the
 
 - [x] **`src/dashboard/js/speech.js`** (~635 lines)
   - [x] **Kokoro TTS Integration** (Primary)
-    - [x] HTTP client for Kokoro-FastAPI server (192.168.0.112:8880)
+    - [x] HTTP client for Kokoro-FastAPI server (192.168.0.122:8880)
     - [x] OpenAI-compatible API format (`/v1/audio/speech`)
     - [x] 12 female voices (af_bella, af_nova, af_sky, etc.)
     - [x] Audio blob response handling with object URL cleanup
@@ -820,7 +820,7 @@ Implement GPU-accelerated WebGL avatar with voice synthesis and lip sync for the
     - [x] `start()` / `stop()` - Control rendering
     - [x] `#updateKokoroStatus()` - Display Kokoro status
   - [x] Kokoro status indicator
-    - [x] "🌸 Kokoro TTS: Online (http://192.168.0.112:8880)"
+    - [x] "🌸 Kokoro TTS: Online (http://192.168.0.122:8880)"
     - [x] "⚠️ Kokoro TTS: Offline - Using Web Speech fallback"
   - [x] Event listeners for all UI controls
   - [x] Integration with WebGLAvatar and SpeechController

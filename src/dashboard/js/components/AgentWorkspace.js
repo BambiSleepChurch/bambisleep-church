@@ -7,10 +7,10 @@
  */
 
 import DynamicRenderer, {
-  clearComponents,
-  getAllComponents,
-  processRenderCommand,
-  registerActionHandler,
+    clearComponents,
+    getAllComponents,
+    processRenderCommand,
+    registerActionHandler,
 } from './DynamicRenderer.js';
 
 /**
@@ -503,6 +503,22 @@ function updateHistoryDisplay(container) {
       </div>
     `).join('');
 }
+
+/**
+ * Workspace API - returned by initWorkspace
+ * Re-exported for external use (e.g., WebSocket handlers)
+ */
+export const WorkspaceAPI = {
+  render: renderToWorkspace,
+  clear: clearWorkspace,
+  setLayout: setLayoutMode,
+  getComponents: getAllComponents,
+  connectWs: connectWebSocket,
+  disconnectWs: disconnectWebSocket,
+};
+
+// Re-export processRenderCommand from DynamicRenderer for WebSocket handler
+export { processRenderCommand };
 
 export default {
   initWorkspace,

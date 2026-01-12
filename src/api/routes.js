@@ -2689,6 +2689,56 @@ async function handleRequest(req, res) {
     return json(res, bambisleepChatHandlers.session.getAllSessions());
   }
 
+  // ============ BAMBISLEEP ALIAS ROUTES (for frontend) ============
+  // Aliases for /api/bambisleep-chat/* as /api/bambisleep/*
+  
+  // GET /api/bambisleep/triggers
+  if (path === '/api/bambisleep/triggers' && method === 'GET') {
+    return json(res, bambisleepChatHandlers.triggers.getAllTriggers());
+  }
+
+  // GET /api/bambisleep/spirals - Get spiral presets
+  if (path === '/api/bambisleep/spirals' && method === 'GET') {
+    return json(res, bambisleepChatHandlers.spiral.getColorPresets());
+  }
+
+  // GET /api/bambisleep/voices - Get available TTS voices
+  if (path === '/api/bambisleep/voices' && method === 'GET') {
+    return json(res, bambisleepChatHandlers.tts.getVoices());
+  }
+
+  // GET /api/bambisleep/status - Get BambiSleep status
+  if (path === '/api/bambisleep/status' && method === 'GET') {
+    return json(res, {
+      status: 'active',
+      triggerCount: bambisleepChatHandlers.triggers.getAllTriggers().length,
+      spiralCount: Object.keys(bambisleepChatHandlers.spiral.getColorPresets()).length,
+      voiceCount: bambisleepChatHandlers.tts.getVoices().length,
+      ttsEngines: bambisleepChatHandlers.tts.getEngines(),
+      features: ['triggers', 'spirals', 'tts', 'collar', 'effects']
+    });
+  }
+
+  // POST /api/bambisleep/speak - Speak text with TTS
+  if (path === '/api/bambisleep/speak' && method === 'POST') {
+    const body = await parseBody(req);
+    const result = await bambisleepChatHandlers.tts.speak(body.text, body.options);
+    return json(res, result);
+  }
+
+  // POST /api/bambisleep/expression - Set avatar expression
+  if (path === '/api/bambisleep/expression' && method === 'POST') {
+    const body = await parseBody(req);
+    // This would integrate with the avatar controller
+    return json(res, { expression: body.expression, success: true });
+  }
+
+  // POST /api/bambisleep/spiral/play - Play spiral animation
+  if (path === '/api/bambisleep/spiral/play' && method === 'POST') {
+    const body = await parseBody(req);
+    return json(res, bambisleepChatHandlers.spiral.initSession(body.sessionId || 'default', body.options));
+  }
+
   // ============ MODEL ROUTER ROUTES ============
 
   // GET /api/model-router/config - Get router configuration

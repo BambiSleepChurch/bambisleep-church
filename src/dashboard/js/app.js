@@ -23,11 +23,13 @@ import { initWebSocket } from './services/websocket.js';
 import {
     addActivity,
     AgentChatController,
+    AgentToolsAPI,
     clearActivityFeed,
     closeAllModals,
     exportConfigs,
     getModal,
     importConfigs,
+    initAgentTools,
     initModals,
     initSearchBar,
     initTheme,
@@ -139,6 +141,52 @@ const SERVER_ACTIONS = {
         return api.resetClarity();
       }
       return null;
+    },
+  },
+  patreon: {
+    identity: (api) => api.fetchPatreonIdentity(),
+    campaigns: (api) => api.fetchPatreonCampaigns(),
+    members: async (api) => {
+      const campaignId = prompt('Campaign ID:');
+      return campaignId ? api.fetchPatreonMembers(campaignId) : null;
+    },
+    posts: async (api) => {
+      const campaignId = prompt('Campaign ID:');
+      return campaignId ? api.fetchPatreonPosts(campaignId) : null;
+    },
+    webhooks: (api) => api.fetchPatreonWebhooks(),
+  },
+  lmstudio: {
+    status: (api) => api.fetchLMStudioStatus(),
+    models: (api) => api.fetchLMStudioModels(),
+    chat: async (api) => {
+      const message = prompt('Enter message:');
+      if (!message) return null;
+      return api.createLMStudioCompletion({
+        messages: [{ role: 'user', content: message }],
+      });
+    },
+    load: async (api) => {
+      const modelPath = prompt('Model path:');
+      return modelPath ? api.loadLMStudioModel(modelPath) : null;
+    },
+    suggest: async (api) => {
+      const taskType = prompt('Task type (reasoning/creative/instruction/chat/toolUse):') || 'chat';
+      return api.fetchModelRouterSuggestions(taskType);
+    },
+  },
+  bambisleep: {
+    triggers: (api) => api.fetchBambiSleepTriggers(),
+    spirals: (api) => api.fetchBambiSleepSpirals(),
+    speak: async (api) => {
+      const text = prompt('Text to speak:');
+      return text ? api.speakBambiSleepText(text) : null;
+    },
+    voices: (api) => api.fetchBambiSleepVoices(),
+    status: (api) => api.fetchBambiSleepStatus(),
+    expression: async (api) => {
+      const expr = prompt('Expression (happy/sleepy/alert/confused/comfort/giggle):') || 'happy';
+      return api.setBambiSleepExpression(expr);
     },
   },
 };
@@ -255,8 +303,15 @@ window.Dashboard = {
 
   // Server-specific actions (dispatch table pattern)
   async serverAction(serverType, action) {
-    const resultEl = document.querySelector(`[id^="server-action-result"]`);
-    if (resultEl) resultEl.innerHTML = '<em>Loading...</em>';
+    // Find result container in the active section
+    const activeSection = document.querySelector('.dashboard-section[style*="display: block"]') || 
+                          document.querySelector(`#section-${serverType}`);
+    const resultEl = activeSection?.querySelector('.result-container');
+    
+    if (resultEl) {
+      resultEl.classList.remove('hidden');
+      resultEl.innerHTML = '<div class="loading-spinner"></div><em>Loading...</em>';
+    }
 
     try {
       const api = await import('./services/api.js');
@@ -264,14 +319,19 @@ window.Dashboard = {
       
       if (resultEl && result) {
         resultEl.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+      } else if (resultEl) {
+        resultEl.innerHTML = '<p class="text-muted">No data returned</p>';
       }
       
       addActivity(`${serverType}:${action}`, `Executed ${action} on ${serverType}`);
       showToast('success', 'Action Complete', `${serverType}:${action}`);
       
     } catch (error) {
-      if (resultEl) resultEl.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+      if (resultEl) {
+        resultEl.innerHTML = `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
+      }
       showToast('error', 'Action Failed', error.message);
+      console.error('Server action error:', error);
     }
   },
 
@@ -704,6 +764,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (workspaceContainer) {
     initWorkspace(workspaceContainer);
     console.log('🎨 Agent Workspace initialized');
+  }
+  
+  // Initialize Agent Tools dashboard
+  const agentTools = initAgentTools();
+  if (agentTools) {
+    // Expose full API to window
+    window.AgentTools = {
+      ...agentTools,
+      ...AgentToolsAPI
+    };
+    console.log('🔧 Agent Tools initialized - 154 tools ready');
   }
   
   // Handle mobile menu button visibility

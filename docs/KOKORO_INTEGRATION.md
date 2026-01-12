@@ -4,6 +4,8 @@
 
 The BambiSleep™ Church MCP Control Tower avatar system integrates with Kokoro-FastAPI, a neural text-to-speech (TTS) system that provides high-quality, consistent voice synthesis with superior phoneme accuracy for lip sync.
 
+**🔴 Current Status**: Kokoro server OFFLINE - System automatically uses Web Speech API fallback
+
 ## Architecture
 
 ```
@@ -13,10 +15,10 @@ The BambiSleep™ Church MCP Control Tower avatar system integrates with Kokoro-
 └──────────┬──────────┘
            │
            ▼
-┌─────────────────────┐
-│  SpeechController   │
-│  (speech.js)        │
-└──────────┬──────────┘
+┌─────────────────────┐      ┌──────────────────┐
+│  SpeechController   │──────│  Debug Logging   │
+│  (speech.js)        │      │  (Enhanced)      │
+└──────────┬──────────┘      └──────────────────┘
            │
       ┌────┴────┐
       │         │
@@ -24,7 +26,8 @@ The BambiSleep™ Church MCP Control Tower avatar system integrates with Kokoro-
 ┌──────────┐ ┌─────────────────┐
 │ Kokoro   │ │  Web Speech API │
 │ TTS API  │ │   (Fallback)    │
-│ (Primary)│ │                 │
+│ PRIMARY  │ │   ACTIVE NOW    │
+│ OFFLINE  │ │                 │
 └──────────┘ └─────────────────┘
 ```
 
@@ -32,30 +35,43 @@ The BambiSleep™ Church MCP Control Tower avatar system integrates with Kokoro-
 
 ### Server Location
 
-Kokoro TTS server runs at: **http://192.168.0.112:8880**
+Kokoro TTS server configured at: **http://192.168.0.122:8880**
 
-### Default Settings
+### Enhanced Settings (v2.0)
 
 ```javascript
 {
-  kokoroUrl: 'http://192.168.0.112:8880',
-  useKokoro: true,          // Enable Kokoro (falls back to Web Speech if unavailable)
+  kokoroUrl: 'http://192.168.0.122:8880',
+  useKokoro: true,          // Enable Kokoro (auto-falls back if unavailable)
   healthCheckTimeout: 5000, // 5 seconds
+  healthCheckRetries: 2,    // NEW: Retry failed health checks
   requestTimeout: 30000,    // 30 seconds
+  maxTextLength: 500,       // NEW: Limit text for stability
+  debugMode: true,          // NEW: Enhanced debug logging
 }
 ```
 
-### Voice Presets
+### Voice Presets (15 Total)
 
-Each voice preset maps to a Kokoro voice:
+**Enhanced presets with Kokoro voice mappings:**
 
-| Preset    | Kokoro Voice | Speed | Description                   |
-| --------- | ------------ | ----- | ----------------------------- |
-| `bambi`   | `af_bella`   | 0.95  | Bright, cheerful female voice |
-| `machine` | `af_alloy`   | 0.85  | Balanced, neutral tone        |
-| `robot`   | `af_nova`    | 0.80  | Clear, precise articulation   |
-| `human`   | `af_aoede`   | 0.90  | Natural, conversational       |
-| `whisper` | `af_sky`     | 0.70  | Soft, gentle delivery         |
+| Preset         | Emoji | Kokoro Voice | Speed | Description                |
+| -------------- | ----- | ------------ | ----- | -------------------------- |
+| `bambi`        | 🌸    | `af_bella`   | 0.95  | Bright, cheerful (default) |
+| `gentle`       | 💕    | `af_heart`   | 0.92  | Warm and soothing          |
+| `confident`    | 💪    | `af_jadzia`  | 1.00  | Strong and assured         |
+| `professional` | 💼    | `af_sarah`   | 0.98  | Clear and articulate       |
+| `energetic`    | ⚡    | `af_nova`    | 1.05  | Vibrant and lively         |
+| `calm`         | 🌊    | `af_river`   | 0.88  | Peaceful and relaxing      |
+| `airy`         | ☁️    | `af_sky`     | 0.90  | Light and ethereal         |
+| `natural`      | 👩    | `af_jessica` | 1.00  | Authentic conversational   |
+| `clear`        | 🔊    | `af_kore`    | 0.95  | Crisp and precise          |
+| `smooth`       | 🎵    | `af_nicole`  | 0.93  | Silky and melodious        |
+| `balanced`     | ⚖️    | `af_alloy`   | 0.98  | Neutral and well-rounded   |
+| `warm`         | 🔥    | `af_aoede`   | 0.94  | Rich and inviting          |
+| `whisper`      | 🌙    | `af_sky`     | 0.85  | Soft and intimate          |
+| `machine`      | 🤖    | `af_kore`    | 0.90  | Synthetic robotic          |
+| `robot`        | 🔧    | `af_alloy`   | 0.80  | Deep mechanical            |
 
 ## Available Kokoro Voices
 
@@ -64,19 +80,175 @@ Each voice preset maps to a Kokoro voice:
 ```javascript
 const KOKORO_VOICES = {
   af_alloy: { name: "Alloy", quality: "balanced" },
-  af_aoede: { name: "Aoede", quality: "natural" },
+  af_aoede: { name: "Aoede", quality: "warm" },
   af_bella: { name: "Bella", quality: "bright" },
-  af_echo: { name: "Echo", quality: "warm" },
-  af_fable: { name: "Fable", quality: "storyteller" },
-  af_kore: { name: "Kore", quality: "energetic" },
-  af_nova: { name: "Nova", quality: "clear" },
-  af_onyx: { name: "Onyx", quality: "deep" },
-  af_shimmer: { name: "Shimmer", quality: "sparkling" },
-  af_sky: { name: "Sky", quality: "soft" },
-  af_stella: { name: "Stella", quality: "stellar" },
-  af_thalia: { name: "Thalia", quality: "theatrical" },
+  af_heart: { name: "Heart", quality: "gentle" },
+  af_jadzia: { name: "Jadzia", quality: "confident" },
+  af_jessica: { name: "Jessica", quality: "natural" },
+  af_kore: { name: "Kore", quality: "clear" },
+  af_nicole: { name: "Nicole", quality: "smooth" },
+  af_nova: { name: "Nova", quality: "energetic" },
+  af_river: { name: "River", quality: "calm" },
+  af_sarah: { name: "Sarah", quality: "professional" },
+  af_sky: { name: "Sky", quality: "airy" },
 };
 ```
+
+## Enhanced Features (v2.0)
+
+### 🔍 Debug System
+
+- **Health Check Retries**: Automatically retries failed connections (default: 2 attempts)
+- **Detailed Logging**: Comprehensive console logging for troubleshooting
+- **Performance Metrics**: Response time, file size, and quality monitoring
+- **Error Classification**: Distinguishes timeouts, network errors, and API errors
+
+### 🎯 Phoneme Accuracy
+
+Enhanced phoneme analysis for realistic lip sync:
+
+- **Digraph Support**: Handles 'th', 'sh', 'ch', 'oo', 'ee'
+- **Consonant Classification**: Bilabial, dental, velar grouping
+- **Realistic Mouth Mapping**: 15 phoneme types with accurate mouth positions
+- **Timing Precision**: Syncs phonemes to audio duration
+
+### 🎵 Voice Quality Upgrades
+
+- **15 Voice Presets**: Expanded from 5 to 15 unique personalities
+- **Fine-Tuned Speeds**: Optimized speed values for each character type
+- **Volume Control**: Per-preset volume adjustments
+- **Fallback Optimization**: Enhanced Web Speech API parameters
+
+## Debugging & Testing
+
+### Quick Status Check
+
+```javascript
+// In browser console
+const status = window.AvatarController?.speech?.getStatus();
+console.log(status);
+```
+
+Expected output:
+
+```javascript
+{
+  kokoroAvailable: false,           // Currently offline
+  kokoroUrl: "http://192.168.0.122:8880",
+  useKokoro: true,
+  currentPreset: "bambi",
+  currentPresetDetails: {
+    name: "Bambi",
+    emoji: "🌸",
+    kokoroVoice: "af_bella",
+    speed: 0.95
+  },
+  isSpeaking: false,
+  queueLength: 0,
+  webSpeechVoice: "Microsoft Zira Desktop - English (United States)",
+  webSpeechAvailable: true,
+  audioElement: "none"
+}
+```
+
+### PowerShell Test Suite
+
+Run comprehensive diagnostics:
+
+```powershell
+# Full test suite
+.\tests\test-kokoro.ps1
+
+# Custom Kokoro URL
+.\tests\test-kokoro.ps1 -KokoroUrl "http://localhost:8880"
+
+# Verbose mode
+.\tests\test-kokoro.ps1 -Verbose
+```
+
+Test coverage:
+
+1. ✅ Health endpoint (`/health`)
+2. ✅ Models list (`/v1/models`)
+3. ✅ Voices list (`/v1/audio/voices`)
+4. ✅ TTS synthesis (`/v1/audio/speech`)
+5. ✅ Voice preset quality tests
+
+### Manual Kokoro Testing
+
+```powershell
+# Test health endpoint
+Invoke-WebRequest -Uri "http://192.168.0.122:8880/health" -Method GET
+
+# Test TTS synthesis
+$body = @{
+  model = "kokoro"
+  voice = "af_bella"
+  input = "Hello world!"
+  response_format = "mp3"
+  speed = 1.0
+} | ConvertTo-Json
+
+Invoke-WebRequest `
+  -Uri "http://192.168.0.122:8880/v1/audio/speech" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body $body `
+  -OutFile "test.mp3"
+```
+
+## Troubleshooting
+
+### Kokoro Server Offline
+
+**Symptoms:**
+
+- ⚠️ Status shows "Kokoro TTS: OFFLINE"
+- Console shows: "Kokoro TTS server unavailable"
+- Fallback to Web Speech API activated
+
+**Solutions:**
+
+1. **Check Server Status**
+
+   ```powershell
+   Test-NetConnection -ComputerName 192.168.0.122 -Port 8880
+   ```
+
+2. **Start Kokoro Server**
+
+   - Ensure Kokoro-FastAPI is running
+   - Verify port 8880 is not blocked
+   - Check firewall settings
+
+3. **Update URL**
+
+   ```javascript
+   // In browser console
+   window.AvatarController.speech.recheckKokoro();
+   ```
+
+4. **Use Alternative URL**
+   - Localhost: `http://localhost:8880`
+   - Network: `http://192.168.x.x:8880`
+
+### Slow Response Times
+
+**Optimization tips:**
+
+- Limit text length to 500 characters
+- Use faster voices (af_nova, af_kore)
+- Increase speed values (0.95 → 1.1)
+- Check network latency
+
+### Lip Sync Issues
+
+**Improvements made:**
+
+- Enhanced phoneme detection (digraphs, consonant types)
+- Better mouth position mapping (15 phoneme types)
+- Timing sync to audio duration
+- Smooth transitions with easing
 
 ## API Reference
 
@@ -88,7 +260,7 @@ const KOKORO_VOICES = {
 const speech = createSpeechController({
   preset: "bambi", // Voice preset name
   onLipSync: (mouthOpen) => {}, // Lip sync callback (0.0 - 1.0)
-  kokoroUrl: "http://192.168.0.112:8880", // Kokoro server URL
+  kokoroUrl: "http://192.168.0.122:8880", // Kokoro server URL
   useKokoro: true, // Enable Kokoro (default: true)
 });
 ```
@@ -280,7 +452,7 @@ await avatar.speak("Welcome to BambiSleep Church!");
 ### Manual Kokoro Call
 
 ```javascript
-const response = await fetch("http://192.168.0.112:8880/v1/audio/speech", {
+const response = await fetch("http://192.168.0.122:8880/v1/audio/speech", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -373,7 +545,7 @@ The system automatically falls back to Web Speech API when:
 **UI Status:**
 
 ```
-🌸 Kokoro TTS: Online (http://192.168.0.112:8880)
+🌸 Kokoro TTS: Online (http://192.168.0.122:8880)
 ⚠️ Kokoro TTS: Offline - Using Web Speech fallback
 ```
 
@@ -397,8 +569,8 @@ console.warn("🎤 Kokoro failed, falling back to Web Speech:", error.message);
 
 **Solutions:**
 
-1. Verify server is running: `curl http://192.168.0.112:8880/health`
-2. Check network connectivity to 192.168.0.112
+1. Verify server is running: `curl http://192.168.0.122:8880/health`
+2. Check network connectivity to 192.168.0.122
 3. Ensure port 8880 is not blocked by firewall
 4. Click 🎤 button in dashboard to recheck health
 
@@ -480,7 +652,7 @@ audio.onended = () => {
 
 ### Network Access
 
-- Kokoro server is on local network (192.168.0.112)
+- Kokoro server is on local network (192.168.0.122)
 - No external API keys required
 - No data sent outside local network
 

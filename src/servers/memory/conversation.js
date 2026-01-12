@@ -7,10 +7,10 @@ import { createLogger } from '../../utils/logger.js';
 import { lmstudioHandlers } from '../lmstudio.js';
 import { memoryGraph } from './graph.js';
 import {
-  ENTITY_TYPES,
-  RELATION_TYPES,
-  getDaysSince,
-  parseObservations
+    ENTITY_TYPES,
+    RELATION_TYPES,
+    getDaysSince,
+    parseObservations
 } from './schema.js';
 
 const logger = createLogger('conversation-memory');
@@ -744,6 +744,16 @@ export const conversationHandlers = {
 
   getMessageBuffer() {
     return getConversationStore().getMessageBuffer();
+  },
+
+  // Alias for getRecentContext - used by agent tools
+  getHistory(args = {}) {
+    const { sessionId, limit = 50 } = args;
+    if (sessionId) {
+      const session = getConversationStore().getSession(sessionId);
+      return session?.messages || [];
+    }
+    return getConversationStore().getRecentContext(limit);
   },
 
   // Summarization handlers

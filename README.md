@@ -83,6 +83,8 @@ npm test
 - **3000**: Control Tower Dashboard 🖥️
 - **8080**: REST API + WebSocket 🔌
 
+**Testing**: See [TESTING.md](TESTING.md) for comprehensive test guide
+
 ---
 
 ## 📁 Project Structure 📁
@@ -249,7 +251,7 @@ MCP servers are configured via `.vscode/settings.json` (JSONC with comments allo
 | `PATREON_ACCESS_TOKEN`  | —                           | Patreon API access token      |
 | `LMS_HOST`              | `localhost`                 | LM Studio server host         |
 | `LMS_PORT`              | `1234`                      | LM Studio server port         |
-| `KOKORO_URL`            | `http://192.168.0.112:8880` | Kokoro TTS server URL         |
+| `KOKORO_URL`            | `http://192.168.0.122:8880` | Kokoro TTS server URL         |
 
 **Kokoro TTS Configuration:**
 
@@ -258,7 +260,7 @@ The avatar system uses Kokoro-FastAPI for high-quality neural voice synthesis:
 ```javascript
 // Kokoro is primary TTS, Web Speech API is fallback
 {
-  kokoroUrl: 'http://192.168.0.112:8880',
+  kokoroUrl: 'http://192.168.0.122:8880',
   useKokoro: true,  // Auto-fallback to Web Speech if unavailable
 }
 ```

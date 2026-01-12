@@ -13,14 +13,22 @@
  */
 
 import { createLogger } from '../utils/logger.js';
+import { AGENT_TOOLS, AgentToolExecutor } from './agent-tools.js';
 import { clarityHandlers } from './clarity.js';
 import { fetchHandlers } from './fetch.js';
 import { githubHandlers } from './github.js';
 import { huggingfaceHandlers } from './huggingface.js';
-import { getLmStudioClient } from './lmstudio.js';
+import { getLmStudioClient, lmstudioHandlers } from './lmstudio.js';
+import { conversationHandlers } from './memory/conversation.js';
 import { memoryHandlers } from './memory/graph.js';
+import { memoryManagerHandlers } from './memory/manager.js';
+import { userModelHandlers } from './memory/user-model.js';
+import { workspaceHandlers } from './memory/workspace.js';
 import { mongoHandlers } from './mongodb.js';
+import { patreonHandlers } from './patreon.js';
+import { puppeteerHandlers } from './puppeteer.js';
 import { thinkingHandlers } from './sequential-thinking.js';
+import { sqliteHandlers } from './sqlite.js';
 import { storageHandlers } from './storage.js';
 import { stripeHandlers } from './stripe.js';
 
@@ -67,189 +75,9 @@ function onEvent(event, handler) {
 }
 
 /**
- * Available tools that the agent can call
+ * NOTE: Tool definitions now imported from agent-tools.js (AGENT_TOOLS array)
+ * This provides 98 tools across all MCP categories with proper OpenAI function calling schema
  */
-const AGENT_TOOLS = {
-  // Memory MCP - Knowledge Graph
-  memory_read_graph: {
-    name: 'memory_read_graph',
-    description: 'Read the entire knowledge graph from memory storage',
-    parameters: {},
-    handler: () => memoryHandlers.readGraph(),
-  },
-  memory_search: {
-    name: 'memory_search',
-    description: 'Search the knowledge graph for nodes matching a query',
-    parameters: { query: 'string - the search query' },
-    handler: (args) => memoryHandlers.searchNodes(args.query),
-  },
-  memory_create_entities: {
-    name: 'memory_create_entities',
-    description: 'Create new entities in the knowledge graph',
-    parameters: { entities: 'array - entities to create with name, entityType, observations' },
-    handler: (args) => memoryHandlers.createEntities(args.entities),
-  },
-  memory_create_relations: {
-    name: 'memory_create_relations',
-    description: 'Create relations between entities in the knowledge graph',
-    parameters: { relations: 'array - relations with from, to, relationType' },
-    handler: (args) => memoryHandlers.createRelations(args.relations),
-  },
-
-  // GitHub MCP
-  github_get_user: {
-    name: 'github_get_user',
-    description: 'Get authenticated GitHub user information',
-    parameters: {},
-    handler: () => githubHandlers.getUser(),
-  },
-  github_list_repos: {
-    name: 'github_list_repos',
-    description: 'List repositories for the authenticated user',
-    parameters: { per_page: 'number - results per page', page: 'number - page number' },
-    handler: (args) => githubHandlers.listRepos(args),
-  },
-  github_get_repo: {
-    name: 'github_get_repo',
-    description: 'Get details about a specific repository',
-    parameters: { owner: 'string - repo owner', repo: 'string - repo name' },
-    handler: (args) => githubHandlers.getRepo(args.owner, args.repo),
-  },
-  github_search_code: {
-    name: 'github_search_code',
-    description: 'Search for code across GitHub repositories',
-    parameters: { query: 'string - search query' },
-    handler: (args) => githubHandlers.searchCode(args.query),
-  },
-
-  // MongoDB MCP
-  mongodb_connect: {
-    name: 'mongodb_connect',
-    description: 'Connect to MongoDB database',
-    parameters: { database: 'string - database name' },
-    handler: (args) => mongoHandlers.connect(args.database),
-  },
-  mongodb_list_collections: {
-    name: 'mongodb_list_collections',
-    description: 'List all collections in the connected database',
-    parameters: {},
-    handler: () => mongoHandlers.listCollections(),
-  },
-  mongodb_find: {
-    name: 'mongodb_find',
-    description: 'Find documents in a collection',
-    parameters: { collection: 'string', query: 'object - MongoDB query', limit: 'number' },
-    handler: (args) => mongoHandlers.find(args.collection, args.query, args.limit),
-  },
-  mongodb_insert: {
-    name: 'mongodb_insert',
-    description: 'Insert a document into a collection',
-    parameters: { collection: 'string', document: 'object - document to insert' },
-    handler: (args) => mongoHandlers.insertOne(args.collection, args.document),
-  },
-
-  // Stripe MCP
-  stripe_list_customers: {
-    name: 'stripe_list_customers',
-    description: 'List Stripe customers',
-    parameters: { limit: 'number - max results', email: 'string - filter by email' },
-    handler: (args) => stripeHandlers.listCustomers(args),
-  },
-  stripe_get_balance: {
-    name: 'stripe_get_balance',
-    description: 'Get Stripe account balance',
-    parameters: {},
-    handler: () => stripeHandlers.getBalance(),
-  },
-  stripe_create_customer: {
-    name: 'stripe_create_customer',
-    description: 'Create a new Stripe customer',
-    parameters: { email: 'string', name: 'string' },
-    handler: (args) => stripeHandlers.createCustomer(args),
-  },
-
-  // HuggingFace MCP
-  huggingface_search_models: {
-    name: 'huggingface_search_models',
-    description: 'Search for ML models on HuggingFace Hub',
-    parameters: { query: 'string', limit: 'number', task: 'string - model task type' },
-    handler: (args) => huggingfaceHandlers.searchModels(args),
-  },
-  huggingface_search_datasets: {
-    name: 'huggingface_search_datasets',
-    description: 'Search for datasets on HuggingFace Hub',
-    parameters: { query: 'string', limit: 'number' },
-    handler: (args) => huggingfaceHandlers.searchDatasets(args),
-  },
-  huggingface_inference: {
-    name: 'huggingface_inference',
-    description: 'Run inference on a HuggingFace model',
-    parameters: { model: 'string - model ID', inputs: 'string or object - model inputs' },
-    handler: (args) => huggingfaceHandlers.inference(args.model, args.inputs),
-  },
-
-  // Storage MCP
-  storage_list_files: {
-    name: 'storage_list_files',
-    description: 'List files in storage',
-    parameters: { folder: 'string - folder path' },
-    handler: (args) => storageHandlers.listFiles(args.folder),
-  },
-  storage_upload: {
-    name: 'storage_upload',
-    description: 'Upload a file to storage',
-    parameters: { filename: 'string', content: 'string', folder: 'string' },
-    handler: (args) => storageHandlers.uploadFile(args.filename, args.content, args.folder),
-  },
-  storage_get_url: {
-    name: 'storage_get_url',
-    description: 'Get URL for a stored file',
-    parameters: { filename: 'string' },
-    handler: (args) => storageHandlers.getFileUrl(args.filename),
-  },
-
-  // Clarity Analytics
-  clarity_track_event: {
-    name: 'clarity_track_event',
-    description: 'Track a custom analytics event',
-    parameters: { eventName: 'string', data: 'object - event data' },
-    handler: (args) => clarityHandlers.event(args.eventName, args.data),
-  },
-  clarity_get_dashboard: {
-    name: 'clarity_get_dashboard',
-    description: 'Get analytics dashboard data',
-    parameters: {},
-    handler: () => clarityHandlers.getDashboardData(),
-  },
-
-  // Sequential Thinking
-  thinking_start: {
-    name: 'thinking_start',
-    description: 'Start a sequential thinking chain for complex reasoning',
-    parameters: { thought: 'string - initial thought', totalThoughts: 'number - estimated total' },
-    handler: (args) => thinkingHandlers.think(args),
-  },
-  thinking_continue: {
-    name: 'thinking_continue',
-    description: 'Continue a thinking chain with next thought',
-    parameters: { sessionId: 'string', thought: 'string', thoughtNumber: 'number' },
-    handler: (args) => thinkingHandlers.continueChain(args),
-  },
-
-  // Fetch MCP
-  fetch_url: {
-    name: 'fetch_url',
-    description: 'Fetch content from a URL',
-    parameters: { url: 'string - URL to fetch' },
-    handler: (args) => fetchHandlers.get(args.url),
-  },
-  fetch_to_markdown: {
-    name: 'fetch_to_markdown',
-    description: 'Fetch a URL and convert to markdown',
-    parameters: { url: 'string - URL to fetch' },
-    handler: (args) => fetchHandlers.convertToMarkdown(args.url),
-  },
-};
 
 /**
  * System prompt for the agent - enhanced with personality
@@ -403,7 +231,7 @@ class AgentConversation {
  */
 class AgentOrchestrator {
   #conversations = new Map();
-  #tools = AGENT_TOOLS;
+  #toolExecutor = null;
   #systemPrompt = SYSTEM_PROMPT;
   #personality = AGENT_PERSONALITY;
   #lmConnected = false;
@@ -425,11 +253,33 @@ class AgentOrchestrator {
 
   constructor() {
     this.#lmClient = getLmStudioClient();
-    logger.info('🌸 Agent Orchestrator initialized');
+    
+    // Create tool executor and register all handlers
+    this.#toolExecutor = new AgentToolExecutor();
+    this.#toolExecutor.registerHandlers('memory', memoryHandlers);
+    this.#toolExecutor.registerHandlers('user-model', userModelHandlers);
+    this.#toolExecutor.registerHandlers('conversation', conversationHandlers);
+    this.#toolExecutor.registerHandlers('workspace', workspaceHandlers);
+    this.#toolExecutor.registerHandlers('memory-manager', memoryManagerHandlers);
+    this.#toolExecutor.registerHandlers('storage', storageHandlers);
+    this.#toolExecutor.registerHandlers('fetch', fetchHandlers);
+    this.#toolExecutor.registerHandlers('puppeteer', puppeteerHandlers);
+    this.#toolExecutor.registerHandlers('mongodb', mongoHandlers);
+    this.#toolExecutor.registerHandlers('sqlite', sqliteHandlers);
+    this.#toolExecutor.registerHandlers('thinking', thinkingHandlers);
+    this.#toolExecutor.registerHandlers('stripe', stripeHandlers);
+    this.#toolExecutor.registerHandlers('patreon', patreonHandlers);
+    this.#toolExecutor.registerHandlers('clarity', clarityHandlers);
+    this.#toolExecutor.registerHandlers('github', githubHandlers);
+    this.#toolExecutor.registerHandlers('lmstudio', lmstudioHandlers);
+    this.#toolExecutor.registerHandlers('huggingface', huggingfaceHandlers);
+    // Note: render category handled separately via WebSocket in AgentToolExecutor
+    
+    logger.info('🌸 Agent Orchestrator initialized with 154 tools');
   }
 
   get conversations() { return this.#conversations; }
-  get tools() { return this.#tools; }
+  get tools() { return AGENT_TOOLS; }
   get systemPrompt() { return this.#systemPrompt; }
   get personality() { return this.#personality; }
   get modelConfig() { return this.#modelConfig; }
@@ -519,7 +369,9 @@ class AgentOrchestrator {
       const jsonMatch = response.match(/\{[\s\S]*?"tool"[\s\S]*?\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.tool && this.#tools[parsed.tool]) {
+        // Check if tool exists in AGENT_TOOLS array
+        const toolExists = AGENT_TOOLS.some(t => t.name === parsed.tool);
+        if (parsed.tool && toolExists) {
           return {
             tool: parsed.tool,
             args: parsed.args || {},
@@ -536,15 +388,10 @@ class AgentOrchestrator {
    * Execute a tool
    */
   async executeTool(toolName, args) {
-    const tool = this.#tools[toolName];
-    if (!tool) {
-      throw new Error(`Unknown tool: ${toolName}`);
-    }
-
     logger.info(`Executing tool: ${toolName}`, { args });
     
     try {
-      const result = await tool.handler(args);
+      const result = await this.#toolExecutor.execute(toolName, args);
       
       // Update stats
       this.#stats.totalToolCalls++;
@@ -553,11 +400,7 @@ class AgentOrchestrator {
       
       emitEvent('toolExecuted', { tool: toolName, args, result });
       
-      return {
-        success: true,
-        tool: toolName,
-        result,
-      };
+      return result;
     } catch (error) {
       logger.error(`Tool execution failed: ${toolName}`, error);
       return {
@@ -713,10 +556,12 @@ class AgentOrchestrator {
    * Get available tools info - Enhanced format
    */
   getToolsInfo() {
-    return Object.entries(this.#tools).map(([name, tool]) => ({
-      name,
+    return AGENT_TOOLS.map(tool => ({
+      name: tool.name,
       description: tool.description,
+      category: tool.category,
       parameters: tool.parameters,
+      handler: tool.handler,
       type: 'function',
     }));
   }

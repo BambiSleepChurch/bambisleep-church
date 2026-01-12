@@ -523,3 +523,278 @@ export async function resetClarity() {
   if (!response.ok) throw new Error('Failed to reset Clarity');
   return await response.json();
 }
+
+// ============================================================================
+// PATREON API
+// ============================================================================
+
+/**
+ * Get Patreon identity (current user)
+ */
+export async function fetchPatreonIdentity() {
+  const response = await fetch(`${API_BASE()}/patreon/identity`);
+  if (!response.ok) throw new Error('Failed to fetch Patreon identity');
+  return await response.json();
+}
+
+/**
+ * List campaigns
+ */
+export async function fetchPatreonCampaigns(options = {}) {
+  const params = new URLSearchParams({ limit: options.limit || 10 });
+  const response = await fetch(`${API_BASE()}/patreon/campaigns?${params}`);
+  if (!response.ok) throw new Error('Failed to fetch Patreon campaigns');
+  return await response.json();
+}
+
+/**
+ * Get specific campaign
+ */
+export async function fetchPatreonCampaign(campaignId) {
+  const response = await fetch(`${API_BASE()}/patreon/campaigns/${campaignId}`);
+  if (!response.ok) throw new Error('Failed to fetch Patreon campaign');
+  return await response.json();
+}
+
+/**
+ * List campaign members/patrons
+ */
+export async function fetchPatreonMembers(campaignId, options = {}) {
+  const params = new URLSearchParams({ limit: options.limit || 20 });
+  if (options.pledge_status) params.set('pledge_status', options.pledge_status);
+  const response = await fetch(`${API_BASE()}/patreon/campaigns/${campaignId}/members?${params}`);
+  if (!response.ok) throw new Error('Failed to fetch Patreon members');
+  return await response.json();
+}
+
+/**
+ * List campaign posts
+ */
+export async function fetchPatreonPosts(campaignId, options = {}) {
+  const params = new URLSearchParams({ limit: options.limit || 20 });
+  const response = await fetch(`${API_BASE()}/patreon/campaigns/${campaignId}/posts?${params}`);
+  if (!response.ok) throw new Error('Failed to fetch Patreon posts');
+  return await response.json();
+}
+
+/**
+ * Get member info
+ */
+export async function fetchPatreonMember(memberId) {
+  const response = await fetch(`${API_BASE()}/patreon/members/${memberId}`);
+  if (!response.ok) throw new Error('Failed to fetch Patreon member');
+  return await response.json();
+}
+
+/**
+ * Get Patreon webhook status
+ */
+export async function fetchPatreonWebhooks() {
+  const response = await fetch(`${API_BASE()}/patreon/webhooks`);
+  if (!response.ok) throw new Error('Failed to fetch Patreon webhooks');
+  return await response.json();
+}
+
+// ============================================================================
+// LM STUDIO API
+// ============================================================================
+
+/**
+ * Get LM Studio status
+ */
+export async function fetchLMStudioStatus() {
+  const response = await fetch(`${API_BASE()}/lmstudio/status`);
+  if (!response.ok) throw new Error('Failed to fetch LM Studio status');
+  return await response.json();
+}
+
+/**
+ * List loaded models
+ */
+export async function fetchLMStudioModels() {
+  const response = await fetch(`${API_BASE()}/lmstudio/models`);
+  if (!response.ok) throw new Error('Failed to fetch LM Studio models');
+  return await response.json();
+}
+
+/**
+ * Get specific model info
+ */
+export async function fetchLMStudioModel(modelId) {
+  const response = await fetch(`${API_BASE()}/lmstudio/models/${encodeURIComponent(modelId)}`);
+  if (!response.ok) throw new Error('Failed to fetch LM Studio model');
+  return await response.json();
+}
+
+/**
+ * Create chat completion
+ */
+export async function createLMStudioCompletion(options = {}) {
+  const response = await fetch(`${API_BASE()}/lmstudio/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: options.model || 'default',
+      messages: options.messages || [],
+      temperature: options.temperature || 0.7,
+      max_tokens: options.max_tokens || 500,
+      stream: options.stream || false,
+    }),
+  });
+  if (!response.ok) throw new Error('Failed to create chat completion');
+  return await response.json();
+}
+
+/**
+ * Generate text embeddings
+ */
+export async function createLMStudioEmbedding(input, model = 'default') {
+  const response = await fetch(`${API_BASE()}/lmstudio/embeddings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input, model }),
+  });
+  if (!response.ok) throw new Error('Failed to create embedding');
+  return await response.json();
+}
+
+/**
+ * Load a model
+ */
+export async function loadLMStudioModel(modelPath) {
+  const response = await fetch(`${API_BASE()}/lmstudio/models/load`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: modelPath }),
+  });
+  if (!response.ok) throw new Error('Failed to load model');
+  return await response.json();
+}
+
+/**
+ * Unload a model
+ */
+export async function unloadLMStudioModel(modelId) {
+  const response = await fetch(`${API_BASE()}/lmstudio/models/${encodeURIComponent(modelId)}/unload`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error('Failed to unload model');
+  return await response.json();
+}
+
+/**
+ * Get model router suggestions
+ */
+export async function fetchModelRouterSuggestions(taskType) {
+  const response = await fetch(`${API_BASE()}/lmstudio/router/suggest?task=${taskType}`);
+  if (!response.ok) throw new Error('Failed to fetch model suggestions');
+  return await response.json();
+}
+
+// ============================================================================
+// BAMBISLEEP CHAT API
+// ============================================================================
+
+/**
+ * List chat triggers
+ */
+export async function fetchBambiSleepTriggers() {
+  const response = await fetch(`${API_BASE()}/bambisleep/triggers`);
+  if (!response.ok) throw new Error('Failed to fetch BambiSleep triggers');
+  return await response.json();
+}
+
+/**
+ * Activate a trigger
+ */
+export async function activateBambiSleepTrigger(triggerId, intensity = 1.0) {
+  const response = await fetch(`${API_BASE()}/bambisleep/triggers/${triggerId}/activate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ intensity }),
+  });
+  if (!response.ok) throw new Error('Failed to activate trigger');
+  return await response.json();
+}
+
+/**
+ * List spiral types
+ */
+export async function fetchBambiSleepSpirals() {
+  const response = await fetch(`${API_BASE()}/bambisleep/spirals`);
+  if (!response.ok) throw new Error('Failed to fetch BambiSleep spirals');
+  return await response.json();
+}
+
+/**
+ * Start a spiral
+ */
+export async function startBambiSleepSpiral(spiralType, duration = 60) {
+  const response = await fetch(`${API_BASE()}/bambisleep/spirals/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: spiralType, duration }),
+  });
+  if (!response.ok) throw new Error('Failed to start spiral');
+  return await response.json();
+}
+
+/**
+ * Stop current spiral
+ */
+export async function stopBambiSleepSpiral() {
+  const response = await fetch(`${API_BASE()}/bambisleep/spirals/stop`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error('Failed to stop spiral');
+  return await response.json();
+}
+
+/**
+ * Speak text using TTS
+ */
+export async function speakBambiSleepText(text, options = {}) {
+  const response = await fetch(`${API_BASE()}/bambisleep/speak`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text,
+      voice: options.voice || 'bambi',
+      speed: options.speed || 1.0,
+      pitch: options.pitch || 1.0,
+    }),
+  });
+  if (!response.ok) throw new Error('Failed to speak text');
+  return await response.json();
+}
+
+/**
+ * Get available voices
+ */
+export async function fetchBambiSleepVoices() {
+  const response = await fetch(`${API_BASE()}/bambisleep/voices`);
+  if (!response.ok) throw new Error('Failed to fetch BambiSleep voices');
+  return await response.json();
+}
+
+/**
+ * Set avatar expression
+ */
+export async function setBambiSleepExpression(expression) {
+  const response = await fetch(`${API_BASE()}/bambisleep/avatar/expression`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expression }),
+  });
+  if (!response.ok) throw new Error('Failed to set expression');
+  return await response.json();
+}
+
+/**
+ * Get chat status
+ */
+export async function fetchBambiSleepStatus() {
+  const response = await fetch(`${API_BASE()}/bambisleep/status`);
+  if (!response.ok) throw new Error('Failed to fetch BambiSleep status');
+  return await response.json();
+}

@@ -3,7 +3,7 @@
  * Speech Synthesis System - Kokoro TTS Integration with Lip Sync
  * 
  * Features:
- * - Kokoro-FastAPI integration (192.168.0.112:8880)
+ * - Kokoro-FastAPI integration (192.168.0.122:8880)
  * - High-quality neural TTS voices
  * - Phoneme-based lip sync callbacks
  * - Voice presets with Kokoro voices
@@ -31,7 +31,7 @@ export const KOKORO_VOICES = {
 };
 
 /**
- * Voice preset configurations
+ * Voice preset configurations (Enhanced)
  */
 export const VOICE_PRESETS = {
   bambi: {
@@ -45,11 +45,131 @@ export const VOICE_PRESETS = {
     rate: 1.05,
     pitch: 1.2,
   },
+  gentle: {
+    name: 'Gentle',
+    emoji: '💕',
+    description: 'Warm and soothing companion',
+    kokoroVoice: 'af_heart',  // Gentle, caring
+    speed: 0.92,
+    volume: 0.95,
+    rate: 0.98,
+    pitch: 1.15,
+  },
+  confident: {
+    name: 'Confident',
+    emoji: '💪',
+    description: 'Strong and assured presence',
+    kokoroVoice: 'af_jadzia',  // Confident, assertive
+    speed: 1.0,
+    volume: 1.0,
+    rate: 1.0,
+    pitch: 1.0,
+  },
+  professional: {
+    name: 'Professional',
+    emoji: '💼',
+    description: 'Clear and articulate speaker',
+    kokoroVoice: 'af_sarah',  // Professional, polished
+    speed: 0.98,
+    volume: 1.0,
+    rate: 1.0,
+    pitch: 1.05,
+  },
+  energetic: {
+    name: 'Energetic',
+    emoji: '⚡',
+    description: 'Vibrant and lively personality',
+    kokoroVoice: 'af_nova',  // Energetic, dynamic
+    speed: 1.05,
+    volume: 1.0,
+    rate: 1.1,
+    pitch: 1.25,
+  },
+  calm: {
+    name: 'Calm',
+    emoji: '🌊',
+    description: 'Peaceful and relaxing tone',
+    kokoroVoice: 'af_river',  // Calm, flowing
+    speed: 0.88,
+    volume: 0.9,
+    rate: 0.9,
+    pitch: 1.0,
+  },
+  airy: {
+    name: 'Airy',
+    emoji: '☁️',
+    description: 'Light and ethereal quality',
+    kokoroVoice: 'af_sky',  // Airy, soft
+    speed: 0.90,
+    volume: 0.85,
+    rate: 0.92,
+    pitch: 1.18,
+  },
+  natural: {
+    name: 'Natural',
+    emoji: '👩',
+    description: 'Authentic conversational style',
+    kokoroVoice: 'af_jessica',  // Natural, realistic
+    speed: 1.0,
+    volume: 1.0,
+    rate: 1.0,
+    pitch: 1.08,
+  },
+  clear: {
+    name: 'Clear',
+    emoji: '🔊',
+    description: 'Crisp and precise articulation',
+    kokoroVoice: 'af_kore',  // Clear, articulate
+    speed: 0.95,
+    volume: 1.0,
+    rate: 0.95,
+    pitch: 1.1,
+  },
+  smooth: {
+    name: 'Smooth',
+    emoji: '🎵',
+    description: 'Silky and melodious delivery',
+    kokoroVoice: 'af_nicole',  // Smooth, pleasant
+    speed: 0.93,
+    volume: 0.98,
+    rate: 0.95,
+    pitch: 1.12,
+  },
+  balanced: {
+    name: 'Balanced',
+    emoji: '⚖️',
+    description: 'Neutral and well-rounded',
+    kokoroVoice: 'af_alloy',  // Balanced, versatile
+    speed: 0.98,
+    volume: 1.0,
+    rate: 1.0,
+    pitch: 1.05,
+  },
+  warm: {
+    name: 'Warm',
+    emoji: '🔥',
+    description: 'Rich and inviting timbre',
+    kokoroVoice: 'af_aoede',  // Warm, welcoming
+    speed: 0.94,
+    volume: 1.0,
+    rate: 0.97,
+    pitch: 1.08,
+  },
+  whisper: {
+    name: 'Whisper',
+    emoji: '🌙',
+    description: 'Soft and intimate',
+    kokoroVoice: 'af_sky',  // Soft, quiet
+    speed: 0.85,
+    volume: 0.7,
+    rate: 0.85,
+    pitch: 0.95,
+  },
   machine: {
     name: 'Machine',
     emoji: '🤖',
     description: 'Synthetic and robotic',
-    kokoroVoice: 'af_nova',  // Energetic, synthetic
+    kokoroVoice: 'af_kore',  // Mechanical precision
     speed: 0.9,
     volume: 1.0,
     rate: 0.95,
@@ -57,33 +177,13 @@ export const VOICE_PRESETS = {
   },
   robot: {
     name: 'Robot',
-    emoji: '⚡',
+    emoji: '🔧',
     description: 'Deep mechanical voice',
-    kokoroVoice: 'af_kore',  // Clear, precise
+    kokoroVoice: 'af_alloy',  // Robotic neutral
     speed: 0.8,
     volume: 0.9,
     rate: 0.8,
     pitch: 0.7,
-  },
-  human: {
-    name: 'Human',
-    emoji: '👩',
-    description: 'Natural conversational tone',
-    kokoroVoice: 'af_jessica',  // Natural, conversational
-    speed: 1.0,
-    volume: 1.0,
-    rate: 1.0,
-    pitch: 1.1,
-  },
-  whisper: {
-    name: 'Whisper',
-    emoji: '🌙',
-    description: 'Soft and intimate',
-    kokoroVoice: 'af_river',  // Calm, soothing
-    speed: 0.85,
-    volume: 0.7,
-    rate: 0.85,
-    pitch: 0.95,
   },
 };
 
@@ -103,7 +203,7 @@ export class SpeechController {
   #selectedVoice = null;
   #currentAudio = null;
   #currentAudioUrl = null;
-  #kokoroUrl = 'http://192.168.0.112:8880';
+  #kokoroUrl = 'http://192.168.0.122:8880';
   #useKokoro = true;
   #kokoroHealthy = false;
 
@@ -111,7 +211,7 @@ export class SpeechController {
     this.#synth = window.speechSynthesis;
     this.#currentPreset = options.preset || 'bambi';
     this.#lipSyncCallback = options.onLipSync || null;
-    this.#kokoroUrl = options.kokoroUrl || 'http://192.168.0.112:8880';
+    this.#kokoroUrl = options.kokoroUrl || 'http://192.168.0.122:8880';
     this.#useKokoro = options.useKokoro !== false;
 
     // Wait for voices to load (Web Speech fallback)
@@ -127,34 +227,57 @@ export class SpeechController {
   /**
    * Check if Kokoro TTS server is healthy
    * @private
+   * @param {number} retries - Number of retry attempts
    */
-  async #checkKokoroHealth() {
+  async #checkKokoroHealth(retries = 2) {
     if (!this.#useKokoro) {
       this.#kokoroHealthy = false;
+      console.log('🔇 Kokoro TTS disabled, using Web Speech API');
       return;
     }
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch(`${this.#kokoroUrl}/health`, {
-        method: 'GET',
-        signal: controller.signal,
-      });
+        console.log(`🔍 Checking Kokoro health (attempt ${attempt}/${retries}): ${this.#kokoroUrl}`);
 
-      clearTimeout(timeoutId);
-      this.#kokoroHealthy = response.ok;
-      
-      if (this.#kokoroHealthy) {
-        console.log('🌸 Kokoro TTS server healthy');
-      } else {
-        console.warn('⚠️ Kokoro TTS server unhealthy, will use Web Speech fallback');
+        const response = await fetch(`${this.#kokoroUrl}/health`, {
+          method: 'GET',
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json' },
+        });
+
+        clearTimeout(timeoutId);
+        this.#kokoroHealthy = response.ok;
+        
+        if (this.#kokoroHealthy) {
+          const data = await response.json().catch(() => ({}));
+          console.log('🌸 Kokoro TTS server ONLINE:', {
+            url: this.#kokoroUrl,
+            status: response.status,
+            version: data.version || 'unknown',
+            voices: Object.keys(KOKORO_VOICES).length,
+          });
+          return;
+        } else {
+          console.warn(`⚠️ Kokoro TTS server returned ${response.status}`);
+        }
+      } catch (error) {
+        const errorType = error.name === 'AbortError' ? 'timeout' : error.message;
+        console.warn(`⚠️ Kokoro health check failed (${attempt}/${retries}):`, errorType);
+        
+        if (attempt < retries) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+        }
       }
-    } catch (error) {
-      console.warn('⚠️ Kokoro TTS server unavailable:', error.message);
-      this.#kokoroHealthy = false;
     }
+
+    // All attempts failed
+    this.#kokoroHealthy = false;
+    console.error(`❌ Kokoro TTS server OFFLINE after ${retries} attempts`);
+    console.warn('🔄 Falling back to Web Speech API');
   }
 
   /**
@@ -171,28 +294,49 @@ export class SpeechController {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-      console.log(`🎤 Requesting Kokoro TTS: voice=${voice}, speed=${speed}`);
+      const requestBody = {
+        model: 'kokoro',
+        voice: voice,
+        input: text.slice(0, 500), // Limit text length
+        response_format: format,
+        speed: speed,
+      };
+
+      console.log(`🎤 Kokoro TTS Request:`, {
+        url: `${this.#kokoroUrl}/v1/audio/speech`,
+        voice,
+        speed,
+        textLength: text.length,
+        format,
+      });
+
+      const startTime = Date.now();
 
       const response = await fetch(`${this.#kokoroUrl}/v1/audio/speech`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg, audio/wav, application/json',
           'Connection': 'keep-alive',
         },
-        body: JSON.stringify({
-          model: 'kokoro',
-          voice: voice,
-          input: text,
-          response_format: format,
-          speed: speed,
-        }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
+      const responseTime = Date.now() - startTime;
 
       if (!response.ok) {
-        const errorText = await response.text();
+        const contentType = response.headers.get('content-type');
+        let errorText = `HTTP ${response.status}`;
+        
+        if (contentType?.includes('json')) {
+          const errorData = await response.json().catch(() => ({}));
+          errorText = errorData.message || errorData.error || errorText;
+        } else {
+          errorText = await response.text().catch(() => errorText);
+        }
+        
         throw new Error(`Kokoro API error ${response.status}: ${errorText}`);
       }
 
@@ -200,9 +344,16 @@ export class SpeechController {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
 
+      console.log(`✅ Kokoro TTS success:`, {
+        size: `${(audioBlob.size / 1024).toFixed(1)} KB`,
+        type: audioBlob.type,
+        duration: `${responseTime}ms`,
+      });
+
       return audioUrl;
     } catch (error) {
-      console.error('🎤 Kokoro TTS error:', error.message);
+      const errorType = error.name === 'AbortError' ? 'Request timeout (30s)' : error.message;
+      console.error('❌ Kokoro TTS error:', errorType);
       throw error;
     }
   }
@@ -439,7 +590,7 @@ export class SpeechController {
   }
 
   /**
-   * Analyze text for phonemes (simplified)
+   * Analyze text for phonemes (enhanced accuracy)
    * @private
    */
   #analyzePhonemes(text) {
@@ -447,12 +598,40 @@ export class SpeechController {
     const phonemes = [];
 
     for (const word of words) {
-      // Simple phoneme approximation based on vowels
-      for (const char of word) {
-        if ('aeiou'.includes(char)) {
+      // Enhanced phoneme approximation with digraphs
+      for (let i = 0; i < word.length; i++) {
+        const char = word[i];
+        const nextChar = word[i + 1];
+        
+        // Handle common digraphs
+        if (char === 't' && nextChar === 'h') {
+          phonemes.push('th'); // θ or ð
+          i++; // Skip next char
+        } else if (char === 's' && nextChar === 'h') {
+          phonemes.push('sh'); // ʃ
+          i++;
+        } else if (char === 'c' && nextChar === 'h') {
+          phonemes.push('ch'); // tʃ
+          i++;
+        } else if (char === 'o' && nextChar === 'o') {
+          phonemes.push('oo'); // u:
+          i++;
+        } else if (char === 'e' && nextChar === 'e') {
+          phonemes.push('ee'); // i:
+          i++;
+        } else if ('aeiou'.includes(char)) {
           phonemes.push(char);
         } else if ('bcdfghjklmnpqrstvwxyz'.includes(char)) {
-          phonemes.push('_'); // Consonant
+          // Classify consonant types
+          if ('bpfvm'.includes(char)) {
+            phonemes.push('b'); // Bilabial (lips)
+          } else if ('td'.includes(char)) {
+            phonemes.push('t'); // Dental
+          } else if ('kg'.includes(char)) {
+            phonemes.push('k'); // Velar
+          } else {
+            phonemes.push('_'); // Other consonant
+          }
         }
       }
       phonemes.push(' '); // Word boundary
@@ -462,21 +641,32 @@ export class SpeechController {
   }
 
   /**
-   * Convert phoneme to mouth open amount
+   * Convert phoneme to mouth open amount (enhanced)
    * @private
    */
   #phonemeToMouthOpen(phoneme) {
-    const vowelMap = {
-      'a': 0.8,  // Wide open
-      'e': 0.4,  // Medium
-      'i': 0.2,  // Small
-      'o': 0.6,  // Round
-      'u': 0.5,  // Round medium
-      '_': 0.1,  // Consonant (mostly closed)
-      ' ': 0.0,  // Silence
+    const phonemeMap = {
+      // Vowels (mouth opening)
+      'a': 0.85,   // Wide open (cat, bat)
+      'e': 0.45,   // Medium (bed, met)
+      'i': 0.25,   // Small (bit, sit)
+      'o': 0.65,   // Round medium (hot, dot)
+      'u': 0.55,   // Round small (put, book)
+      'oo': 0.50,  // Long oo (food, mood)
+      'ee': 0.30,  // Long ee (feed, seed)
+      
+      // Consonants (lip/mouth position)
+      'b': 0.15,   // Bilabial (lips together)
+      't': 0.10,   // Dental (tongue-teeth)
+      'k': 0.08,   // Velar (back of throat)
+      'th': 0.20,  // Interdental (tongue between teeth)
+      'sh': 0.25,  // Postalveolar (rounded lips)
+      'ch': 0.22,  // Affricate
+      '_': 0.12,   // Generic consonant
+      ' ': 0.0,    // Silence/pause
     };
 
-    return vowelMap[phoneme] || 0.3;
+    return phonemeMap[phoneme] ?? 0.15; // Default small opening
   }
 
   /**
@@ -604,14 +794,24 @@ export class SpeechController {
    * @returns {Object}
    */
   getStatus() {
+    const preset = VOICE_PRESETS[this.#currentPreset];
+    
     return {
       kokoroAvailable: this.#kokoroHealthy,
       kokoroUrl: this.#kokoroUrl,
       useKokoro: this.#useKokoro,
       currentPreset: this.#currentPreset,
+      currentPresetDetails: {
+        name: preset.name,
+        emoji: preset.emoji,
+        kokoroVoice: preset.kokoroVoice,
+        speed: preset.speed,
+      },
       isSpeaking: this.#isProcessing || this.#synth.speaking || (this.#currentAudio && !this.#currentAudio.paused),
       queueLength: this.#queue.length,
       webSpeechVoice: this.#selectedVoice?.name || 'None',
+      webSpeechAvailable: this.#synth.getVoices().length > 0,
+      audioElement: this.#currentAudio ? 'active' : 'none',
     };
   }
 

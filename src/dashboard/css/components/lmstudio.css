@@ -1,0 +1,243 @@
+/**
+ * BambiSleep™ Church MCP Control Tower
+ * LM Studio Component Styles
+ */
+
+@layer components {
+  /* Status Card */
+  .lmstudio-status {
+    padding: var(--spacing-lg);
+  }
+
+  .status-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .status-icon {
+    font-size: var(--font-xl);
+  }
+
+  .status-header h3 {
+    margin: 0;
+    font-size: var(--font-lg);
+    color: var(--text-primary);
+  }
+
+  .status-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .detail-label {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .detail-value {
+    font-size: var(--font-md);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .detail-value.success {
+    color: var(--success-color);
+  }
+
+  .detail-value.error {
+    color: var(--error-color);
+  }
+
+  /* Models Grid */
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .model-card {
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  .model-card.active {
+    border-color: var(--success-color);
+    box-shadow: 0 0 20px var(--success-shadow);
+  }
+
+  .model-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .model-icon {
+    font-size: var(--font-xl);
+  }
+
+  .model-name {
+    flex: 1;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    word-break: break-word;
+  }
+
+  .model-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .model-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+
+  .model-actions .btn {
+    flex: 1;
+  }
+
+  /* Suggestions Panel */
+  .suggestions-panel {
+    padding: var(--spacing-lg);
+  }
+
+  .suggestions-panel h3 {
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: var(--font-lg);
+    color: var(--text-primary);
+  }
+
+  .suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .suggestion-item {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--glass-bg);
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .suggestion-item:hover {
+    border-color: var(--primary-color);
+  }
+
+  .suggestion-item.primary {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 20px var(--primary-shadow);
+  }
+
+  .suggestion-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 700;
+    font-size: var(--font-md);
+  }
+
+  .suggestion-details {
+    flex: 1;
+  }
+
+  .suggestion-model {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+  }
+
+  .suggestion-reason {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin: 0 0 var(--spacing-sm) 0;
+  }
+
+  .suggestion-scores {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  .score-badge {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--glass-bg);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-xs);
+    font-weight: 600;
+  }
+
+  /* Completion Result */
+  .completion-result {
+    padding: var(--spacing-lg);
+  }
+
+  .completion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .completion-header h3 {
+    margin: 0;
+    font-size: var(--font-lg);
+    color: var(--text-primary);
+  }
+
+  .completion-model {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--glass-bg);
+    border-radius: var(--radius-sm);
+  }
+
+  .completion-message {
+    padding: var(--spacing-md);
+    background: var(--glass-bg);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary-color);
+  }
+
+  .completion-message p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-primary);
+  }
+
+  .completion-usage {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+  }
+}

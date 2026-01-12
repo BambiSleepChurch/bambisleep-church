@@ -377,6 +377,53 @@ export const ttsHandlers = {
       sentencePairs,
       count: sentencePairs.length
     };
+  },
+
+  /**
+   * Get available TTS voices
+   */
+  getVoices() {
+    logger.info('Getting available TTS voices');
+    return [
+      { id: 'af_bella', name: 'Bella (American Female)', gender: 'female', language: 'en-US', preset: 'bambi' },
+      { id: 'af_nicole', name: 'Nicole (American Female)', gender: 'female', language: 'en-US', preset: 'human' },
+      { id: 'af_sarah', name: 'Sarah (American Female)', gender: 'female', language: 'en-US', preset: 'whisper' },
+      { id: 'af_sky', name: 'Sky (American Female)', gender: 'female', language: 'en-US', preset: 'human' },
+      { id: 'bf_emma', name: 'Emma (British Female)', gender: 'female', language: 'en-GB', preset: 'human' },
+      { id: 'bf_isabella', name: 'Isabella (British Female)', gender: 'female', language: 'en-GB', preset: 'human' },
+      { id: 'am_adam', name: 'Adam (American Male)', gender: 'male', language: 'en-US', preset: 'machine' },
+      { id: 'am_michael', name: 'Michael (American Male)', gender: 'male', language: 'en-US', preset: 'robot' },
+      { id: 'bm_george', name: 'George (British Male)', gender: 'male', language: 'en-GB', preset: 'machine' },
+      { id: 'bm_lewis', name: 'Lewis (British Male)', gender: 'male', language: 'en-GB', preset: 'robot' },
+      { id: 'af_alloy', name: 'Alloy (Synthetic Female)', gender: 'female', language: 'en-US', preset: 'machine' },
+      { id: 'af_nova', name: 'Nova (Synthetic Female)', gender: 'female', language: 'en-US', preset: 'machine' },
+    ];
+  },
+
+  /**
+   * Get available TTS engines
+   */
+  getEngines() {
+    logger.info('Getting available TTS engines');
+    return [
+      { id: 'kokoro', name: 'Kokoro (Neural TTS)', available: true, url: 'http://192.168.0.122:8880' },
+      { id: 'webspeech', name: 'Web Speech API', available: true, url: 'browser' }
+    ];
+  },
+
+  /**
+   * Speak text using TTS (placeholder - actual implementation would call Kokoro)
+   */
+  async speak(text, options = {}) {
+    logger.info('Speaking text', { length: text.length, options });
+    const { cleaned } = this.cleanTextForTTS(text);
+    return {
+      success: true,
+      text: cleaned,
+      voice: options.voice || 'af_bella',
+      engine: options.engine || 'kokoro',
+      duration: Math.ceil(cleaned.length / 15) // Rough estimate: 15 chars/sec
+    };
   }
 };
 

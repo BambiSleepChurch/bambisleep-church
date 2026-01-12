@@ -23,13 +23,13 @@ export function renderAvatarPanel() {
             <option value="neon">🌙 Neon</option>
             <option value="inverted">☀️ Light</option>
           </select>
-          <select id="voice-preset" class="avatar-select" title="Voice">
+          <select id="voice-preset" class="avatar-select" title="Voice Preset (15 options)">
             ${Object.entries(VOICE_PRESETS).map(([key, preset]) => `
               <option value="${key}">${preset.emoji} ${preset.name}</option>
             `).join('')}
           </select>
-          <button id="kokoro-check" class="btn btn-sm" title="Check Kokoro status">
-            🎤
+          <button id="kokoro-check" class="btn btn-sm" title="Check Kokoro TTS status">
+            🎤 Check
           </button>
           <button id="avatar-toggle" class="btn btn-sm" title="Toggle avatar">
             ▶️
@@ -40,13 +40,16 @@ export function renderAvatarPanel() {
       <div class="avatar-container">
         <canvas id="avatar-canvas" class="avatar-canvas" width="400" height="400"></canvas>
         <div class="avatar-status" id="avatar-status">Click ▶️ to start</div>
-        <div class="kokoro-status" id="kokoro-status" style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.8;">
-          Checking Kokoro TTS...
+        <div class="kokoro-status" id="kokoro-status" style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.9; padding: 0.5rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2);">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-warning); animation: pulse 2s infinite;"></span>
+            <span>Checking Kokoro TTS...</span>
+          </div>
         </div>
       </div>
       
       <div class="avatar-expressions">
-        <h3 class="expressions-title">Expressions</h3>
+        <h3 class="expressions-title">🎭 Expressions</h3>
         <div class="expression-buttons">
           <button class="btn btn-outline btn-sm" data-expression="happy">😊 Happy</button>
           <button class="btn btn-outline btn-sm" data-expression="sleepy">😴 Sleepy</button>
@@ -59,17 +62,24 @@ export function renderAvatarPanel() {
       </div>
       
       <div class="avatar-test">
-        <h3 class="test-title">Test Speech</h3>
+        <h3 class="test-title">🔊 Test Speech</h3>
+        <div class="preset-info" id="preset-info" style="margin-bottom: 0.5rem; font-size: 0.85rem; opacity: 0.8; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 0.25rem;">
+          <strong>Current:</strong> 🌸 Bambi | Voice: af_bella | Speed: 0.95x
+        </div>
         <div class="test-controls">
           <input 
             type="text" 
             id="test-speech-input" 
             class="test-input" 
-            placeholder="Enter text to speak..."
+            placeholder="Enter text to speak... (500 char limit)"
             value="Hello! I'm Bambi, your helpful AI assistant!"
+            maxlength="500"
           />
-          <button id="test-speech-btn" class="btn btn-primary">🔊 Speak</button>
-          <button id="stop-speech-btn" class="btn btn-outline">⏹️ Stop</button>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button id="test-speech-btn" class="btn btn-primary">🔊 Speak</button>
+            <button id="stop-speech-btn" class="btn btn-outline">⏹️ Stop</button>
+            <span id="char-count" style="font-size: 0.85rem; opacity: 0.7; margin-left: auto;">44/500</span>
+          </div>
         </div>
       </div>
     </div>
@@ -137,12 +147,52 @@ export class AvatarController {
 
     const status = this.#speech.getStatus();
     
+    console.log('🎤 Speech System Status:', status);
+    
+    const indicatorColor = status.kokoroAvailable ? 'var(--color-success)' : 'var(--color-warning)';
+    const statusText = status.kokoroAvailable ? 'ONLINE' : 'OFFLINE';
+    const textColor = status.kokoroAvailable ? 'var(--color-success)' : 'var(--color-warning)';
+    
     if (status.kokoroAvailable) {
-      statusEl.textContent = `🌸 Kokoro TTS: Online (${status.kokoroUrl})`;
-      statusEl.style.color = 'var(--color-success)';
+      statusEl.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background: ${indicatorColor};"></span>
+          <span style="color: ${textColor};">🌸 Kokoro TTS: <strong>${statusText}</strong></span>
+        </div>
+        <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem; margin-left: 1.25rem;">
+          ${status.kokoroUrl} | Voice: ${status.currentPresetDetails.kokoroVoice} | Speed: ${status.currentPresetDetails.speed}x
+        </div>
+      `;
     } else {
-      statusEl.textContent = `⚠️ Kokoro TTS: Offline - Using Web Speech fallback`;
-      statusEl.style.color = 'var(--color-warning)';
+      const webSpeechStatus = status.webSpeechAvailable ? 'Available' : 'Unavailable';
+      statusEl.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background: ${indicatorColor}; animation: pulse 2s infinite;"></span>
+          <span style="color: ${textColor};">⚠️ Kokoro TTS: <strong>${statusText}</strong></span>
+        </div>
+        <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem; margin-left: 1.25rem;">
+          Fallback: Web Speech API (${webSpeechStatus}) | Voice: ${status.webSpeechVoice}
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Update preset info display
+   * @private
+   */
+  #updatePresetInfo(presetName) {
+    const infoEl = document.getElementById('preset-info');
+    if (!infoEl) return;
+
+    const preset = VOICE_PRESETS[presetName];
+    if (preset) {
+      infoEl.innerHTML = `
+        <strong>Current:</strong> ${preset.emoji} ${preset.name} | 
+        Voice: ${preset.kokoroVoice} | 
+        Speed: ${preset.speed}x | 
+        ${preset.description}
+      `;
     }
   }
 
@@ -190,6 +240,7 @@ export class AvatarController {
       voiceSelect.addEventListener('change', (e) => {
         if (this.#speech) {
           this.#speech.setPreset(e.target.value);
+          this.#updatePresetInfo(e.target.value);
         }
       });
     }
@@ -207,6 +258,19 @@ export class AvatarController {
     const testSpeechBtn = document.getElementById('test-speech-btn');
     const testSpeechInput = document.getElementById('test-speech-input');
     if (testSpeechBtn && testSpeechInput) {
+      // Character counter
+      const updateCharCount = () => {
+        const charCount = document.getElementById('char-count');
+        if (charCount) {
+          const length = testSpeechInput.value.length;
+          charCount.textContent = `${length}/500`;
+          charCount.style.color = length > 450 ? 'var(--color-warning)' : 'inherit';
+        }
+      };
+      
+      testSpeechInput.addEventListener('input', updateCharCount);
+      updateCharCount(); // Initial count
+      
       testSpeechBtn.addEventListener('click', async () => {
         const text = testSpeechInput.value.trim();
         if (text) {
